@@ -2,20 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  padding-top: 64px; /* Ajuste este valor se necessário */
 }
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 56px; /* Ajuste para dispositivos móveis */
+  }
+}
+
+/* Adicionando transição suave para todos os elementos */
+* {
+  transition: all 0.3s ease-in-out;
+}
+
