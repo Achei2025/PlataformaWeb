@@ -7,17 +7,12 @@ html {
 }
 
 body {
-  padding-top: 64px; /* Ajuste este valor se necessário */
+  padding-top: 64px; /* Ajuste este valor de acordo com a altura da sua navbar */
 }
 
 @media (max-width: 768px) {
   body {
     padding-top: 56px; /* Ajuste para dispositivos móveis */
   }
-}
-
-/* Adicionando transição suave para todos os elementos */
-* {
-  transition: all 0.3s ease-in-out;
 }
 
