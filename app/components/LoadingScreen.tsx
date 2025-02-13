@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface LoadingScreenProps {
-  onLoadingComplete: () => void
+  onLoadingComplete: () => void;
 }
 
 export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsLoading(false)
-      onLoadingComplete()
-    }, 3000)
+      setIsLoading(false);
+      onLoadingComplete();
+    }, 3000);
 
-    return () => clearTimeout(timer)
-  }, [onLoadingComplete])
+    return () => clearTimeout(timer);
+  }, [onLoadingComplete]);
 
   const containerVariants = {
     hidden: { opacity: 1 },
@@ -26,7 +26,7 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
       opacity: 0,
       transition: { duration: 0.5 },
     },
-  }
+  };
 
   const textVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -48,13 +48,13 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
         when: "afterChildren",
       },
     },
-  }
+  };
 
   const letterVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 },
-  }
+  };
 
   return (
     <AnimatePresence>
@@ -76,6 +76,6 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }
 
