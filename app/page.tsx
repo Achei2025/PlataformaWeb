@@ -1,13 +1,13 @@
-import Navbar from "./components/Navbar"
-import Hero from "./components/Hero"
-import AboutUs from "./components/AboutUs"
+import Navbar from "./Navbar/Navbar"
+import Hero from "./Hero/Hero"
+import RobberyStats from "./RobberyStats/RobberyStats"
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       <Navbar />
       <Hero />
-      <AboutUs />
+      <RobberyStats/>
     </main>
   )
 }
