@@ -3,206 +3,157 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, User } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { Menu, X } from "lucide-react"
+import { motion } from "framer-motion"
 import styled, { ThemeProvider } from "styled-components"
-import LoadingScreen from "./LoadingScreen"
-import LoginModal from "@/app/components/ui/LoginModal"
-import theme from "@/app/theme"
+import AccountDropdown from "@/app/Navbar/AccountDropdown"
+import { Button } from "@/app/components/ui/button"
+
+const theme = {
+  colors: {
+    primary: "#4a90e2",
+    secondary: "#f39c12",
+    background: {
+      light: "rgba(255, 255, 255, 0.9)",
+      dark: "rgba(0, 0, 0, 0.8)",
+    },
+    text: {
+      light: "#4a90e2", // Azul
+      dark: "#333333", // Preto
+    },
+  },
+}
 
 const StyledNav = styled(motion.nav)<{ $isScrolled: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 40;
-  transition: all 0.3s;
-  background-color: ${(props) => (props.$isScrolled ? props.theme.colors.background.dark : props.theme.colors.background.light)};
+  z-index: 1000;
+  transition: all 0.3s ease-in-out;
+  background-color: ${(props) => (props.$isScrolled ? props.theme.colors.background.light : "transparent")};
+  backdrop-filter: ${(props) => (props.$isScrolled ? "blur(10px)" : "none")};
   box-shadow: ${(props) => (props.$isScrolled ? "0 4px 6px -1px rgba(0, 0, 0, 0.1)" : "none")};
 `
 
-const Logo = styled(Link)<{ $isScrolled: boolean }>`
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : props.theme.colors.text.light)};
+const NavContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
 `
 
-const NavItemStyled = styled(Link)<{ $isActive: boolean; $isScrolled: boolean }>`
-  position: relative;
-  display: block;
-  padding: 0.5rem 0.75rem;
-  transition: color 0.3s;
+const Logo = styled(Link)<{ $isScrolled: boolean }>`
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : props.theme.colors.text.light)};
+  transition: color 0.3s ease-in-out;
+`
+
+const NavItems = styled.ul<{ $isOpen: boolean; $isScrolled: boolean }>`
+  display: flex;
+  align-items: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: ${(props) => (props.$isScrolled ? props.theme.colors.background.light : props.theme.colors.background.dark)};
+    padding: 1rem;
+    clip-path: ${(props) => (props.$isOpen ? "inset(0% 0% 0% 0%)" : "inset(0% 0% 100% 0%)")};
+    transition: clip-path 0.3s ease-in-out;
+  }
+`
+
+const NavItem = styled(Link)<{ $isActive: boolean; $isScrolled: boolean }>`
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
   color: ${(props) =>
     props.$isActive
       ? props.theme.colors.secondary
       : props.$isScrolled
         ? props.theme.colors.text.dark
         : props.theme.colors.text.light};
+  transition: color 0.3s ease-in-out;
 
   &:hover {
     color: ${(props) => props.theme.colors.secondary};
   }
-`
 
-const NavItemBorder = styled.span<{ $isHovered: boolean; $isActive: boolean }>`
-  position: absolute;
-  inset: 0;
-  border: 2px solid ${(props) => props.theme.colors.secondary};
-  opacity: ${(props) => (props.$isHovered || props.$isActive ? 1 : 0)};
-  transition: clip-path 0.3s ease-in-out, opacity 0.3s ease-in-out;
-  clip-path: ${(props) => (props.$isHovered || props.$isActive ? "inset(0 0 0 0)" : "inset(100% 0 0 0)")};
-`
-
-const NavItem = ({
-  href,
-  text,
-  isActive,
-  isScrolled,
-}: { href: string; text: string; isActive: boolean; isScrolled: boolean }) => {
-  const [isHovered, setIsHovered] = useState(false)
-
-  return (
-    <NavItemStyled
-      href={href}
-      $isActive={isActive}
-      $isScrolled={isScrolled}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {text}
-      <NavItemBorder $isHovered={isHovered} $isActive={isActive} />
-    </NavItemStyled>
-  )
-}
-
-const LoginButton = styled.button<{ $isScrolled: boolean }>`
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem;
-  transition: color 0.3s;
-  color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : props.theme.colors.text.light)};
-
-  &:hover {
-    color: ${(props) => props.theme.colors.secondary};
+  @media (max-width: 768px) {
+    margin: 0.5rem 0;
+    color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : props.theme.colors.text.light)};
   }
 `
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [loadingComplete, setLoadingComplete] = useState(false)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
-      }
+      setIsScrolled(window.scrollY > 20)
     }
 
     window.addEventListener("scroll", handleScroll)
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const handleLoadingComplete = () => {
-    setLoadingComplete(true)
-  }
-
-  const navbarVariants = {
-    hidden: { y: -100 },
-    visible: {
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 120,
-        damping: 20,
-        delay: 0.2,
-      },
-    },
-  }
-
-  const logoVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        delay: 0.5,
-      },
-    },
-  }
+  const navItems = [
+    { href: "/", text: "Home" },
+    { href: "/about", text: "Sobre" },
+    { href: "#services", text: "Serviços" },
+    { href: "#contact", text: "Contato" },
+    { href: "/download", text: "Download" },
+  ]
 
   return (
     <ThemeProvider theme={theme}>
-      {!loadingComplete && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
-      {loadingComplete && (
-        <StyledNav $isScrolled={isScrolled} variants={navbarVariants} initial="hidden" animate="visible">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex justify-between items-center">
-              <motion.div variants={logoVariants} initial="hidden" animate="visible">
-                <Logo href="/" $isScrolled={isScrolled}>
-                  Achei!
-                </Logo>
-              </motion.div>
+      <StyledNav
+        $isScrolled={isScrolled}
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0, y: -100 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <NavContainer>
+          <Logo href="/" $isScrolled={isScrolled}>
+            Achei!
+          </Logo>
 
-              <div className="md:hidden">
-                <button
-                  onClick={() => setIsOpen(!isOpen)}
-                  className={`${isScrolled ? "text-black" : "text-blue-600"} focus:outline-none`}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(!isOpen)}
+            className={`md:hidden ${isScrolled ? "text-black" : "text-blue-500"}`}
+          >
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
+
+          <NavItems $isOpen={isOpen} $isScrolled={isScrolled}>
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <NavItem
+                  href={item.href}
+                  $isActive={pathname === item.href}
+                  $isScrolled={isScrolled}
+                  onClick={() => setIsOpen(false)}
                 >
-                  {isOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-              </div>
-
-              <ul
-                className={`md:flex space-x-6 ${isOpen ? "block" : "hidden"} absolute md:relative top-full left-0 right-0 ${
-                  isScrolled ? "bg-white" : "bg-transparent"
-                } md:bg-transparent p-4 md:p-0`}
-              >
-                <li>
-                  <NavItem href="/" text="Home" isActive={pathname === "/"} isScrolled={isScrolled} />
-                </li>
-                <li>
-                  <NavItem href="/about" text="Sobre" isActive={pathname === "/about"} isScrolled={isScrolled} />
-                </li>
-                <li>
-                  <NavItem
-                    href="#services"
-                    text="Serviços"
-                    isActive={pathname === "#services"}
-                    isScrolled={isScrolled}
-                  />
-                </li>
-                <li>
-                  <NavItem href="#contact" text="Contato" isActive={pathname === "#contact"} isScrolled={isScrolled} />
-                </li>
-                <li>
-                  <NavItem
-                    href="/download"
-                    text="Download"
-                    isActive={pathname === "/download"}
-                    isScrolled={isScrolled}
-                  />
-                </li>
-                <li>
-                  <LoginButton onClick={() => setIsLoginModalOpen(true)} $isScrolled={isScrolled}>
-                    <User size={18} className="mr-2" />
-                    Login
-                  </LoginButton>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </StyledNav>
-      )}
-      <AnimatePresence>{isLoginModalOpen && <LoginModal onClose={() => setIsLoginModalOpen(false)} />}</AnimatePresence>
+                  {item.text}
+                </NavItem>
+              </li>
+            ))}
+            <li>
+              <AccountDropdown isScrolled={isScrolled} />
+            </li>
+          </NavItems>
+        </NavContainer>
+      </StyledNav>
     </ThemeProvider>
   )
 }
