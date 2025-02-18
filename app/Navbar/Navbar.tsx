@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -24,7 +24,7 @@ const theme = {
   },
 }
 
-const StyledNav = styled(motion.nav)<{ $isScrolled: boolean }>`
+const StyledNav = styled(motion.nav)`
   position: fixed;
   top: 0;
   left: 0;
@@ -86,7 +86,7 @@ const NavItem = styled(Link)<{ $isActive: boolean; $isScrolled: boolean }>`
     margin: 0.5rem 0;
     color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : props.theme.colors.text.light)};
   }
-`
+`;
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -155,6 +155,6 @@ export default function Navbar() {
         </NavContainer>
       </StyledNav>
     </ThemeProvider>
-  )
+  );
 }
 
