@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -24,15 +24,15 @@ const theme = {
   },
 }
 
-const StyledNav = styled(motion.nav)`
+const StyledNav = styled(motion.nav)<{ $isScrolled: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
   transition: all 0.3s ease-in-out;
-  background-color: ${(props) => (props.$isScrolled ? props.theme.colors.background.light : "transparent")};
-  backdrop-filter: ${(props) => (props.$isScrolled ? "blur(10px)" : "none")};
+  background-color: ${(props) => (props.$isScrolled ? props.theme.colors.background.light : "rgba(0, 0, 0, 0.5)")};
+  backdrop-filter: blur(10px);
   box-shadow: ${(props) => (props.$isScrolled ? "0 4px 6px -1px rgba(0, 0, 0, 0.1)" : "none")};
 `
 
@@ -71,11 +71,7 @@ const NavItem = styled(Link)<{ $isActive: boolean; $isScrolled: boolean }>`
   padding: 0.5rem 1rem;
   margin: 0 0.5rem;
   color: ${(props) =>
-    props.$isActive
-      ? props.theme.colors.secondary
-      : props.$isScrolled
-        ? props.theme.colors.text.dark
-        : props.theme.colors.text.light};
+    props.$isActive ? props.theme.colors.secondary : props.$isScrolled ? props.theme.colors.text.dark : "#ffffff"};
   transition: color 0.3s ease-in-out;
 
   &:hover {
@@ -84,9 +80,9 @@ const NavItem = styled(Link)<{ $isActive: boolean; $isScrolled: boolean }>`
 
   @media (max-width: 768px) {
     margin: 0.5rem 0;
-    color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : props.theme.colors.text.light)};
+    color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : "#ffffff")};
   }
-`;
+`
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -95,7 +91,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      setIsScrolled(window.scrollY > 0)
     }
 
     window.addEventListener("scroll", handleScroll)
@@ -104,10 +100,10 @@ export default function Navbar() {
 
   const navItems = [
     { href: "/", text: "Home" },
-    { href: "/about", text: "Sobre" },
-    { href: "#services", text: "Serviços" },
-    { href: "#contact", text: "Contato" },
-    { href: "/download", text: "Download" },
+    { href: "/AboutUs", text: "Sobre Nós" },
+    { href: "/Map", text: "Mapa" },
+    { href: "/Download", text: "Download" },
+    { href: "/contact", text: "Contato" },
   ]
 
   return (
@@ -155,6 +151,6 @@ export default function Navbar() {
         </NavContainer>
       </StyledNav>
     </ThemeProvider>
-  );
+  )
 }
 

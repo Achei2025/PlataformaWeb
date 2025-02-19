@@ -1,6 +1,6 @@
 import Navbar from "./Navbar/Navbar"
 import Hero from "./Hero/Hero"
-import RobberyStats from "./RobberyStats/RobberyStats"
+import RobberyStats from "./Hero/RobberyStats"
 
 export default function Home() {
   return (

@@ -1,5 +1,5 @@
 import Navbar from "./Navbar/Navbar";
-import Download from "./Download/Download";
+import Download from "./Download/page";
 
 export default function DownloadPage() {
   return (
