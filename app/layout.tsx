@@ -1,21 +1,15 @@
-import type React from "react"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import Navbar from "@/app/Navbar/Navbar"
-import Footer from "@/app/Hero/Footer"
+import type React from "react";
+import { Inter } from 'next/font/google';
+import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Achei! - Recupere seus dispositivos",
   description: "Ajudamos você a localizar e recuperar seus dispositivos perdidos ou roubados.",
-}
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <head>
@@ -27,13 +21,9 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <div className="flex flex-col min-h-screen">
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+        {children}
       </body>
-    </html>
-  )
-}
 
+    </html>
+  );
+}

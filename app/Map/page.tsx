@@ -1,12 +1,5 @@
-import Map from "@/app/components/ui/Map"
-import Navbar from "@/app/Navbar/Navbar"
+import Map from "@/app/components/ui/Map";
 
 export default function MapPage() {
-  return (
-    <>
-      <Navbar />
-      <Map />
-    </>
-  )
+  return <Map />;
 }
-

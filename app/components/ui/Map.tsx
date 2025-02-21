@@ -29,12 +29,16 @@ const Map = () => {
       map = L.map("map", {
         center: [-14.235, -51.925], // Center of Brazil
         zoom: 4,
+        zoomControl: false, // Desativando os controles de zoom padrão
       })
 
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map)
+
+      // Adicionando manualmente os controles de zoom na posição inferior direita
+      L.control.zoom({ position: "bottomright" }).addTo(map)
 
       if ("geolocation" in navigator) {
         setIsLoading(true)
@@ -74,8 +78,8 @@ const Map = () => {
         id="map"
         style={{
           height: "100vh",
-          width: "100%",
-          position: "absolute",
+          width: "100vw",
+          position: "fixed",
           top: 0,
           left: 0,
           zIndex: 10,
@@ -92,4 +96,3 @@ const Map = () => {
 }
 
 export default Map
-

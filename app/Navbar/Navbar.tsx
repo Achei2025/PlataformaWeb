@@ -101,7 +101,7 @@ export default function Navbar() {
   const navItems = [
     { href: "/", text: "Home" },
     { href: "/AboutUs", text: "Sobre Nós" },
-    { href: "/Map", text: "Mapa" },
+    { href: "/map", text: "Mapa" },
     { href: "/Download", text: "Download" },
     { href: "/contact", text: "Contato" },
   ]
