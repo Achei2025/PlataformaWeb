@@ -103,7 +103,6 @@ export default function Navbar() {
     { href: "/AboutUs", text: "Sobre Nós" },
     { href: "/map", text: "Mapa" },
     { href: "/Download", text: "Download" },
-    { href: "/contact", text: "Contato" },
   ]
 
   return (
