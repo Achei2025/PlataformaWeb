@@ -1,6 +1,8 @@
+"use client"
+
 import type React from "react"
 import { Button } from "@/app/components/ui/button"
-import { Switch } from "@/app/components/ui/switch"
+import { DarkModeSwitch } from "@/app/components/ui/dark-mode-switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { Moon, Sun, User, Map, FileText, Settings } from "lucide-react"
 
@@ -13,51 +15,48 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, darkMode, setDarkMode }) => {
   return (
-    <aside className="w-64 h-full bg-gray-100 dark:bg-gray-800 p-6 flex flex-col">
-      <div className="flex items-center space-x-4 mb-6">
-        <Avatar>
+    <aside className="w-64 h-full bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 p-6 flex flex-col shadow-lg">
+      <div className="flex items-center space-x-4 mb-8">
+        <Avatar className="h-12 w-12 ring-2 ring-primary">
           <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarFallback>JD</AvatarFallback>
         </Avatar>
         <div>
-          <h2 className="text-lg font-semibold dark:text-white">John Doe</h2>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">John Doe</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">Usuário</p>
         </div>
       </div>
-      <nav className="space-y-2 flex-grow">
-        <Button
-          variant={activeTab === "cadastrar" ? "default" : "ghost"}
-          className="w-full justify-start"
-          onClick={() => setActiveTab("cadastrar")}
-        >
-          <User className="mr-2 h-4 w-4" /> Cadastrar Objeto
-        </Button>
-        <Button
-          variant={activeTab === "mapa" ? "default" : "ghost"}
-          className="w-full justify-start"
-          onClick={() => setActiveTab("mapa")}
-        >
-          <Map className="mr-2 h-4 w-4" /> Mapa
-        </Button>
-        <Button
-          variant={activeTab === "casos" ? "default" : "ghost"}
-          className="w-full justify-start"
-          onClick={() => setActiveTab("casos")}
-        >
-          <FileText className="mr-2 h-4 w-4" /> Casos
-        </Button>
-        <Button
-          variant={activeTab === "configuracoes" ? "default" : "ghost"}
-          className="w-full justify-start"
-          onClick={() => setActiveTab("configuracoes")}
-        >
-          <Settings className="mr-2 h-4 w-4" /> Configurações
-        </Button>
+      <nav className="space-y-3 flex-grow">
+        {[
+          { id: "cadastrar", icon: User, label: "Cadastrar Objeto" },
+          { id: "mapa", icon: Map, label: "Mapa" },
+          { id: "casos", icon: FileText, label: "Casos" },
+          { id: "configuracoes", icon: Settings, label: "Configurações" },
+        ].map((item) => (
+          <Button
+            key={item.id}
+            variant={activeTab === item.id ? "default" : "ghost"}
+            className={`w-full justify-start text-left transition-all duration-200 ${
+              activeTab === item.id
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "hover:bg-gray-200 dark:hover:bg-gray-700"
+            }`}
+            onClick={() => setActiveTab(item.id)}
+          >
+            <item.icon className="mr-3 h-5 w-5" />
+            {item.label}
+          </Button>
+        ))}
       </nav>
-      <div className="flex items-center space-x-2">
-        <Sun className="h-4 w-4" />
-        <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-        <Moon className="h-4 w-4" />
+      <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-300 dark:border-gray-600">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {darkMode ? "Modo Claro" : "Modo Escuro"}
+        </span>
+        <div className="flex items-center space-x-2">
+          <Sun className={`h-4 w-4 ${darkMode ? "text-gray-400" : "text-yellow-500"}`} />
+          <DarkModeSwitch checked={darkMode} onCheckedChange={setDarkMode} />
+          <Moon className={`h-4 w-4 ${darkMode ? "text-blue-500" : "text-gray-400"}`} />
+        </div>
       </div>
     </aside>
   )
