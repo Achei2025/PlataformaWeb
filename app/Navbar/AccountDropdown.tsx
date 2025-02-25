@@ -73,8 +73,8 @@ const AccountDropdown = ({ isScrolled }: { isScrolled: boolean }) => {
         <ChevronDown className="ml-2 h-4 w-4" />
       </DropdownButton>
       <DropdownContent $isOpen={isOpen}>
-        <DropdownItem href="/login">Login</DropdownItem>
-        <DropdownItem href="/register">Registrar-se</DropdownItem>
+        <DropdownItem href="/Login">Login</DropdownItem>
+        <DropdownItem href="/Register">Registrar-se</DropdownItem>
       </DropdownContent>
     </DropdownContainer>
   )
