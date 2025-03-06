@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Button } from "../components/ui/button"
@@ -21,9 +22,15 @@ import {
 } from "lucide-react"
 import styled, { css } from "styled-components"
 
+// Cores do Brasil
+const brazilGreen = "#009c3b"
+const brazilYellow = "#ffdf00"
+const brazilBlue = "#002776"
+const brazilWhite = "#ffffff"
+
 // Styled Components
 const Section = styled.section`
-  background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
+  background: linear-gradient(to bottom, ${brazilWhite}, #f3f4f6);
   min-height: 100vh;
 `
 
@@ -35,7 +42,8 @@ const HeroSection = styled.div`
   background-size: cover;
   background-position: center;
   background-blend-mode: overlay;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 38, 118, 0.8); /* Azul do Brasil com transparência */
+  border-bottom: 5px solid ${brazilYellow};
 `
 
 const Container = styled.div`
@@ -50,7 +58,7 @@ const HeroContent = styled.div`
 
 const HeroBadge = styled(Badge)`
   margin-bottom: 1rem;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: ${brazilGreen};
   color: white;
   border-color: rgba(255, 255, 255, 0.2);
 `
@@ -59,6 +67,8 @@ const HeroTitle = styled.h1`
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
+  color: ${brazilYellow};
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   
   @media (min-width: 768px) {
     font-size: 3.75rem;
@@ -69,7 +79,7 @@ const HeroDescription = styled.p`
   font-size: 1.25rem;
   max-width: 48rem;
   margin: 0 auto 2rem;
-  opacity: 0.8;
+  opacity: 0.9;
   
   @media (min-width: 768px) {
     font-size: 1.5rem;
@@ -90,11 +100,12 @@ const StyledButton = styled(Button)`
 
 const OutlineButton = styled(StyledButton)`
   background-color: transparent;
-  border-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  border: 2px solid ${brazilYellow};
+  color: ${brazilYellow};
   
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 223, 0, 0.2);
+    color: ${brazilWhite};
   }
 `
 
@@ -104,7 +115,7 @@ const GradientOverlay = styled.div`
   left: 0;
   right: 0;
   height: 4rem;
-  background: linear-gradient(to top, #f9fafb, transparent);
+  background: linear-gradient(to top, ${brazilWhite}, transparent);
 `
 
 const ContentContainer = styled.div`
@@ -128,17 +139,31 @@ const StatCard = styled(Card)`
   text-align: center;
   border: none;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
   
   &:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-5px);
+  }
+  
+  &:nth-child(1) {
+    border-top: 4px solid ${brazilGreen};
+  }
+  &:nth-child(2) {
+    border-top: 4px solid ${brazilYellow};
+  }
+  &:nth-child(3) {
+    border-top: 4px solid ${brazilBlue};
+  }
+  &:nth-child(4) {
+    border-top: 4px solid ${brazilGreen};
   }
 `
 
 const StatValue = styled.p`
   font-size: 1.875rem;
   font-weight: 700;
-  color: var(--primary);
+  color: ${brazilBlue};
   margin-bottom: 0.5rem;
   
   @media (min-width: 768px) {
@@ -148,22 +173,35 @@ const StatValue = styled.p`
 
 const StatLabel = styled.p`
   font-size: 0.875rem;
-  color: var(--muted-foreground);
+  color: #4b5563;
 `
 
 const SectionTitle = styled.h2`
   font-size: 1.875rem;
   font-weight: 700;
   text-align: center;
-  color: var(--primary);
+  color: ${brazilGreen};
   margin-bottom: 2rem;
+  position: relative;
+  
+  &:after {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(to right, ${brazilGreen}, ${brazilYellow}, ${brazilBlue});
+    margin: 0.5rem auto 0;
+    border-radius: 2px;
+  }
 `
 
 const SectionSubtitle = styled.h3`
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--primary);
+  color: ${brazilBlue};
   margin-bottom: 1rem;
+  border-left: 4px solid ${brazilYellow};
+  padding-left: 0.75rem;
 `
 
 const FeatureGrid = styled.div`
@@ -184,6 +222,7 @@ const FeatureCard = styled(Card)`
   border: none;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
+  background-color: ${brazilWhite};
   
   &:hover {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -206,8 +245,8 @@ const FeatureContent = styled(CardContent)`
 const IconWrapper = styled.div`
   margin-right: ${(props) => (props.$direction === "column" ? "0" : "1rem")};
   margin-bottom: ${(props) => (props.$direction === "column" ? "1rem" : "0")};
-  padding: ${(props) => (props.$padded ? "0.5rem" : "0")};
-  background-color: ${(props) => (props.$padded ? "#f9fafb" : "transparent")};
+  padding: ${(props) => (props.$padded ? "0.75rem" : "0")};
+  background-color: ${(props) => (props.$padded ? "rgba(0, 156, 59, 0.1)" : "transparent")};
   border-radius: ${(props) => (props.$padded ? "9999px" : "0")};
   display: flex;
   justify-content: center;
@@ -217,6 +256,7 @@ const FeatureTitle = styled.h4`
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: ${brazilBlue};
 `
 
 const FeatureDescription = styled.p`
@@ -230,30 +270,48 @@ const SectionHeader = styled.div`
 
 const SectionBadge = styled(Badge)`
   margin-bottom: 0.5rem;
+  background-color: ${brazilYellow};
+  color: ${brazilBlue};
+  font-weight: bold;
 `
 
 const ProcessCard = styled(FeatureCard)`
   position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  
+  &:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, ${brazilGreen}, ${brazilYellow}, ${brazilBlue});
+  }
 `
 
 const StepNumber = styled.div`
   position: absolute;
-  top: -1rem;
-  left: -1rem;
-  width: 2.5rem;
-  height: 2.5rem;
+  top: -0.65rem;
+  left: -0.65rem;
+  width: 3rem;
+  height: 3rem;
   border-radius: 9999px;
-  background-color: ${(props) => props.$color || "#3b82f6"};
+  background-color: ${(props) => props.$color || brazilBlue};
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
+  border: 3px solid white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 `
 
 const TestimonialCard = styled(FeatureCard)`
-  
+  background: linear-gradient(135deg, ${brazilWhite} 0%, rgba(0, 156, 59, 0.05) 100%);
+  border-left: 4px solid ${brazilGreen};
 `
 
 const TestimonialHeader = styled.div`
@@ -268,22 +326,47 @@ const TestimonialInfo = styled.div`
 
 const TestimonialName = styled.p`
   font-weight: 600;
+  color: ${brazilBlue};
 `
 
 const TestimonialRole = styled.p`
   font-size: 0.875rem;
-  color: var(--muted-foreground);
+  color: #4b5563;
 `
 
 const TestimonialContent = styled.p`
   font-style: italic;
-  color: var(--muted-foreground);
+  color: #4b5563;
+  position: relative;
+  padding-left: 1rem;
+  
+  &:before {
+    content: """;
+    position: absolute;
+    left: 0;
+    top: -0.5rem;
+    font-size: 2rem;
+    color: ${brazilGreen};
+    font-family: serif;
+  }
 `
 
 const CTACard = styled(Card)`
   border: none;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, ${brazilWhite} 0%, rgba(0, 39, 118, 0.05) 100%);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+  
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(to right, ${brazilGreen} 33%, ${brazilYellow} 33%, ${brazilYellow} 66%, ${brazilBlue} 66%);
+  }
 `
 
 const CTAContent = styled(CardContent)`
@@ -295,7 +378,7 @@ const CTATitle = styled.h3`
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  color: #1e293b;
+  color: ${brazilBlue};
 `
 
 const CTADescription = styled.p`
@@ -308,12 +391,33 @@ const CTADescription = styled.p`
   margin-right: auto;
 `
 
-const OrangeButton = styled(StyledButton)`
-  background-color: #f97316;
-  color: white;
+const BrazilButton = styled(StyledButton)`
+  background-color: ${brazilGreen};
+  color: ${brazilWhite};
+  font-weight: bold;
   
   &:hover {
-    background-color: #ea580c;
+    background-color: #007c2f;
+  }
+`
+
+const YellowButton = styled(StyledButton)`
+  background-color: ${brazilYellow};
+  color: ${brazilBlue};
+  font-weight: bold;
+  
+  &:hover {
+    background-color: #e6c800;
+  }
+`
+
+const BlueButton = styled(StyledButton)`
+  background-color: ${brazilBlue};
+  color: ${brazilWhite};
+  font-weight: bold;
+  
+  &:hover {
+    background-color: #001f5c;
   }
 `
 
@@ -321,18 +425,32 @@ const SectionContainer = styled.div`
   margin-bottom: 4rem;
 `
 
+// Estilização personalizada para as abas
+const StyledTabsList = styled(TabsList)`
+  background-color: rgba(0, 39, 118, 0.1);
+  padding: 4px;
+  border-radius: 0.5rem;
+`
+
+const StyledTabsTrigger = styled(TabsTrigger)`
+  &[data-state="active"] {
+    background-color: ${brazilGreen};
+    color: white;
+  }
+`
+
 export default function AboutUs() {
   const advantages = [
     {
-      category: "Prevenç��o",
+      category: "Prevenção",
       items: [
         {
-          icon: <Shield className="w-6 h-6" style={{ color: "#2563eb" }} />,
+          icon: <Shield className="w-6 h-6" style={{ color: brazilGreen }} />,
           title: "Registro Preventivo",
           description: "Catalogue seus itens antes que algo aconteça, com fotos, descrições e números de série",
         },
         {
-          icon: <Smartphone className="w-6 h-6" style={{ color: "#16a34a" }} />,
+          icon: <Smartphone className="w-6 h-6" style={{ color: brazilGreen }} />,
           title: "Acesso Fácil",
           description: "Informações dos seus itens sempre à mão, em qualquer dispositivo, a qualquer momento",
         },
@@ -342,12 +460,12 @@ export default function AboutUs() {
       category: "Ação Rápida",
       items: [
         {
-          icon: <FileCheck className="w-6 h-6" style={{ color: "#ca8a04" }} />,
+          icon: <FileCheck className="w-6 h-6" style={{ color: brazilYellow }} />,
           title: "BO Simplificado",
           description: "Processo simplificado para registrar ocorrências com todos os detalhes já preenchidos",
         },
         {
-          icon: <Clock className="w-6 h-6" style={{ color: "#dc2626" }} />,
+          icon: <Clock className="w-6 h-6" style={{ color: brazilYellow }} />,
           title: "Resposta Imediata",
           description: "Aja rapidamente em caso de roubo ou perda, compartilhando alertas com a comunidade",
         },
@@ -357,12 +475,12 @@ export default function AboutUs() {
       category: "Segurança",
       items: [
         {
-          icon: <Lock className="w-6 h-6" style={{ color: "#9333ea" }} />,
+          icon: <Lock className="w-6 h-6" style={{ color: brazilBlue }} />,
           title: "Dados Protegidos",
           description: "Suas informações seguras e criptografadas, com controle total sobre o que é compartilhado",
         },
         {
-          icon: <Bell className="w-6 h-6" style={{ color: "#ea580c" }} />,
+          icon: <Bell className="w-6 h-6" style={{ color: brazilBlue }} />,
           title: "Alertas",
           description: "Notificações sobre itens similares recuperados na sua região ou comunidade",
         },
@@ -372,24 +490,24 @@ export default function AboutUs() {
 
   const socialFeatures = [
     {
-      icon: <Users className="w-10 h-10" style={{ color: "#3b82f6" }} />,
+      icon: <Users className="w-10 h-10" style={{ color: brazilGreen }} />,
       title: "Comunidade Vigilante",
       description:
         "Conecte-se com pessoas da sua região para criar uma rede de proteção mútua e compartilhar alertas locais.",
     },
     {
-      icon: <Share2 className="w-10 h-10" style={{ color: "#16a34a" }} />,
+      icon: <Share2 className="w-10 h-10" style={{ color: brazilYellow }} />,
       title: "Compartilhamento Seguro",
       description:
         "Compartilhe alertas de itens perdidos ou roubados anonimamente e também com as pessoas ou grupos que você escolher.",
     },
     {
-      icon: <MessageSquare className="w-10 h-10" style={{ color: "#9333ea" }} />,
+      icon: <MessageSquare className="w-10 h-10" style={{ color: brazilBlue }} />,
       title: "Comunicação Direta",
       description: "Troque mensagens com pessoas que encontraram seus itens ou que têm informações relevantes.",
     },
     {
-      icon: <Map className="w-10 h-10" style={{ color: "#dc2626" }} />,
+      icon: <Map className="w-10 h-10" style={{ color: brazilGreen }} />,
       title: "Mapa de Ocorrências",
       description: "Visualize áreas com maior incidência de roubos e perdas para aumentar sua vigilância.",
     },
@@ -397,9 +515,9 @@ export default function AboutUs() {
 
   const statistics = [
     { value: "78%", label: "Aumento na chance de recuperação" },
-    { value: "15min", label: "Tempo médio para criar alerta" },
+    { value: "9min", label: "Tempo médio para criar alerta" },
     { value: "50k+", label: "Usuários ativos" },
-    { value: "32%", label: "Itens recuperados" },
+    { value: "10000+", label: "Avisos criados todos os dias" },
   ]
 
   const testimonials = [
@@ -431,12 +549,14 @@ export default function AboutUs() {
               Uma plataforma social que revoluciona a forma como você protege, registra e recupera seus bens
             </HeroDescription>
             <ButtonGroup>
-              <StyledButton size="lg" variant="secondary">
-                Comece Agora
-              </StyledButton>
-              <OutlineButton size="lg" variant="outline">
-                Saiba Mais
-              </OutlineButton>
+              <Link href="/Download" passHref>
+                <YellowButton size="lg">Baixe Agora</YellowButton>
+              </Link>
+              <Link href="/Register" passHref>
+                <OutlineButton size="lg" variant="outline">
+                  Cadastre-se
+                </OutlineButton>
+              </Link>
             </ButtonGroup>
           </HeroContent>
         </Container>
@@ -459,16 +579,18 @@ export default function AboutUs() {
         {/* Mission and Vision Tabs */}
         <SectionContainer>
           <Tabs defaultValue="mission" className="mb-16">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="mission">Nossa Missão</TabsTrigger>
-              <TabsTrigger value="vision">Nossa Visão</TabsTrigger>
-            </TabsList>
+            <StyledTabsList className="grid w-full grid-cols-2 mb-8">
+              <StyledTabsTrigger value="mission">Nossa Missão</StyledTabsTrigger>
+              <StyledTabsTrigger value="vision">Nossa Visão</StyledTabsTrigger>
+            </StyledTabsList>
             <TabsContent value="mission">
-              <Card>
-                <CardHeader>
-                  <CardTitle style={{ fontSize: "1.5rem", fontWeight: 600, color: "#16a34a" }}>Nossa Missão</CardTitle>
+              <Card style={{ borderLeft: `4px solid ${brazilGreen}` }}>
+                <CardHeader style={{ borderBottom: `2px solid rgba(0, 156, 59, 0.2)` }}>
+                  <CardTitle style={{ fontSize: "1.5rem", fontWeight: 600, color: brazilGreen }}>
+                    Nossa Missão
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent style={{ padding: "1.5rem" }}>
                   <p style={{ color: "#374151", marginBottom: "1rem" }}>
                     Nossa missão é empoderar os cidadãos com uma ferramenta inovadora que simplifica o registro e a
                     proteção de bens pessoais, proporcionando tranquilidade e agilidade em momentos de adversidade.
@@ -482,11 +604,11 @@ export default function AboutUs() {
               </Card>
             </TabsContent>
             <TabsContent value="vision">
-              <Card>
-                <CardHeader>
-                  <CardTitle style={{ fontSize: "1.5rem", fontWeight: 600, color: "#ca8a04" }}>Nossa Visão</CardTitle>
+              <Card style={{ borderLeft: `4px solid ${brazilYellow}` }}>
+                <CardHeader style={{ borderBottom: `2px solid rgba(255, 223, 0, 0.2)` }}>
+                  <CardTitle style={{ fontSize: "1.5rem", fontWeight: 600, color: brazilBlue }}>Nossa Visão</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent style={{ padding: "1.5rem" }}>
                   <p style={{ color: "#374151", marginBottom: "1rem" }}>
                     Visualizamos um futuro onde o registro preventivo de bens é uma prática comum e acessível a todos,
                     reduzindo significativamente o impacto de roubos e perdas na vida das pessoas.
@@ -509,7 +631,7 @@ export default function AboutUs() {
             <SectionTitle>O Poder da Comunidade</SectionTitle>
             <p
               style={{
-                color: "var(--muted-foreground)",
+                color: "#4b5563",
                 marginTop: "0.5rem",
                 maxWidth: "32rem",
                 marginLeft: "auto",
@@ -566,10 +688,10 @@ export default function AboutUs() {
 
           <FeatureGrid $columns="repeat(3, 1fr)">
             <ProcessCard>
-              <StepNumber $color="#3b82f6">1</StepNumber>
+              <StepNumber $color={brazilGreen}>1</StepNumber>
               <FeatureContent $direction="column">
                 <IconWrapper $direction="column">
-                  <Shield className="w-12 h-12" style={{ color: "#3b82f6" }} />
+                  <Shield className="w-12 h-12" style={{ color: brazilGreen }} />
                 </IconWrapper>
                 <FeatureTitle>Registre seus itens</FeatureTitle>
                 <FeatureDescription style={{ textAlign: "center" }}>
@@ -579,10 +701,10 @@ export default function AboutUs() {
             </ProcessCard>
 
             <ProcessCard>
-              <StepNumber $color="#ca8a04">2</StepNumber>
+              <StepNumber $color={brazilYellow}>2</StepNumber>
               <FeatureContent $direction="column">
                 <IconWrapper $direction="column">
-                  <AlertTriangle className="w-12 h-12" style={{ color: "#ca8a04" }} />
+                  <AlertTriangle className="w-12 h-12" style={{ color: brazilYellow }} />
                 </IconWrapper>
                 <FeatureTitle>Reporte ocorrências</FeatureTitle>
                 <FeatureDescription style={{ textAlign: "center" }}>
@@ -592,10 +714,10 @@ export default function AboutUs() {
             </ProcessCard>
 
             <ProcessCard>
-              <StepNumber $color="#16a34a">3</StepNumber>
+              <StepNumber $color={brazilBlue}>3</StepNumber>
               <FeatureContent $direction="column">
                 <IconWrapper $direction="column">
-                  <CheckCircle className="w-12 h-12" style={{ color: "#16a34a" }} />
+                  <CheckCircle className="w-12 h-12" style={{ color: brazilBlue }} />
                 </IconWrapper>
                 <FeatureTitle>Recupere com a comunidade</FeatureTitle>
                 <FeatureDescription style={{ textAlign: "center" }}>
@@ -618,9 +740,11 @@ export default function AboutUs() {
               <TestimonialCard key={index}>
                 <CardContent style={{ paddingTop: "1.5rem" }}>
                   <TestimonialHeader>
-                    <Avatar style={{ marginRight: "1rem" }}>
+                    <Avatar style={{ marginRight: "1rem", border: `2px solid ${brazilGreen}` }}>
                       <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                      <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback style={{ backgroundColor: brazilBlue, color: brazilWhite }}>
+                        {testimonial.name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <TestimonialInfo>
                       <TestimonialName>{testimonial.name}</TestimonialName>
@@ -644,7 +768,7 @@ export default function AboutUs() {
               a catalogar seus pertences e tenha a tranquilidade de saber que está preparado para qualquer
               eventualidade, com o apoio de uma comunidade inteira.
             </CTADescription>
-            <OrangeButton size="lg">Cadastre-se Gratuitamente</OrangeButton>
+            <BrazilButton size="lg">Cadastre-se Gratuitamente</BrazilButton>
           </CTAContent>
         </CTACard>
       </ContentContainer>

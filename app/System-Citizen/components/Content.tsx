@@ -11,6 +11,8 @@ interface ContentProps {
 const Content: React.FC<ContentProps> = ({ activeTab }) => {
   const renderContent = () => {
     switch (activeTab) {
+      case "dashboard":
+        return <DashboardTab />
       case "cadastrar":
         return <CadastrarTab />
       case "mapa":

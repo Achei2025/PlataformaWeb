@@ -4,7 +4,8 @@ import type React from "react"
 import { Button } from "@/app/components/ui/button"
 import { DarkModeSwitch } from "@/app/components/ui/dark-mode-switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
-import { Moon, Sun, User, Map, FileText, Settings } from "lucide-react"
+import { HomeIcon, Moon, Sun, User, Map, FileText, Settings } from "lucide-react"
+import Home from "@/app/page"
 
 interface SidebarProps {
   activeTab: string
@@ -28,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, darkMode, se
       </div>
       <nav className="space-y-3 flex-grow">
         {[
+          { id: "dashboard", icon: HomeIcon, label: "Dashboard" },
           { id: "cadastrar", icon: User, label: "Cadastrar Objeto" },
           { id: "mapa", icon: Map, label: "Mapa" },
           { id: "casos", icon: FileText, label: "Casos" },
