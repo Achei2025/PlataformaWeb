@@ -25,7 +25,7 @@ const Content: React.FC<ContentProps> = ({ activeTab }) => {
   }
 
   return (
-    <main className="flex-1 h-full p-6 bg-white dark:bg-gray-900 flex flex-col">
+    <main className="flex-1 h-full p-6 bg-white dark:bg-gray-900 flex flex-col z-10">
       <h1 className="text-2xl font-bold mb-6 dark:text-white">
         {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
       </h1>

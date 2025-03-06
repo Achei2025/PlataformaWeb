@@ -12,6 +12,11 @@ interface Caso {
   localizacao: string
   latitude: number
   longitude: number
+  categoria: string
+  imagem: string
+  descricao?: string
+  status?: string
+  boletimOcorrencia?: string
 }
 
 const MapaTab: React.FC = () => {
@@ -22,11 +27,17 @@ const MapaTab: React.FC = () => {
     const mockCasos: Caso[] = [
       {
         id: "1",
-        objeto: "Smartphone",
+        objeto: "Smartphone iPhone 13",
         dataRoubo: "2023-05-15",
-        localizacao: "São Paulo, SP",
+        localizacao: "Av. Paulista, São Paulo, SP",
         latitude: -23.5505,
         longitude: -46.6333,
+        categoria: "Eletrônicos",
+        imagem: "/placeholder.svg?height=200&width=200",
+        descricao:
+          "Smartphone roubado próximo à estação de metrô. O assaltante estava em uma motocicleta e abordou a vítima enquanto ela utilizava o celular.",
+        status: "Em investigação",
+        boletimOcorrencia: "BO-2023/05-12345",
       },
       // ... outros casos
     ]
@@ -41,4 +52,3 @@ const MapaTab: React.FC = () => {
 }
 
 export default MapaTab
-

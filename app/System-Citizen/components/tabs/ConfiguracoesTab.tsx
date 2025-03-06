@@ -96,7 +96,34 @@ const ConfiguracoesTab: React.FC = () => {
                   <div className="space-y-0.5">
                     <Label className="text-base">Notificações por Email</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receba atualizações importantes por email
+                      Receba atualizações importantes por email.
+                    </p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">Notificações sobre meus casos</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receba notificações sobre meus casos no email.
+                    </p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">Notificações de interações</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receba notificações quando outras pessoas comentam/respondem.
+                    </p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">Notificações do sistema</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receba notificações sobre atualizações do sistema ou relacionados.
                     </p>
                   </div>
                   <Switch />
@@ -105,16 +132,43 @@ const ConfiguracoesTab: React.FC = () => {
                   <div className="space-y-0.5">
                     <Label className="text-base">Notificações Push</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receba notificações em tempo real
+                      Receba notificações em tempo real.
                     </p>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-base">Notificações de Marketing</Label>
+                    <Label className="text-base">Notificações de Casos ao seu redor</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receba novidades e promoções
+                      Receba notificações de casos recentemente abertos ao seu redor.
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">Notificações sobre meus casos</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receba notificações de atualizações sobre meus casos.
+                    </p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">Notificações de locais quentes</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receba notificações ao entrar em locais quentes(áreas de risco).
+                    </p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">Notificações de interações</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receba notificações quando outras pessoas comentam/respondem.
                     </p>
                   </div>
                   <Switch />

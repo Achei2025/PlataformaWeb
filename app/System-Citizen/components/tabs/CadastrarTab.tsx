@@ -1,6 +1,8 @@
 import type React from "react"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import * as Yup from "yup"
+
+import styled from "styled-components"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
@@ -58,6 +60,14 @@ const validationSchema: Yup.ObjectSchema<FormValues> = Yup.object().shape({
   imagens: Yup.mixed<FileList>().nullable(),
 })
 
+const SelectContentStyled = styled(SelectContent)`
+  z-index: 1000;
+  position: relative;
+  background-color: #ffffff; /* Cor de fundo desejada */
+  border: 1px solid #ccc; /* Borda */
+  border-radius: 0.25rem; /* Bordas arredondadas */
+`
+
 const CadastrarTab: React.FC = () => {
   const initialValues: FormValues = {
     categoria: "",
@@ -100,13 +110,13 @@ const CadastrarTab: React.FC = () => {
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecione uma categoria" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContentStyled>
                           {categories.map((category) => (
                             <SelectItem key={category.value} value={category.value}>
                               {category.label}
                             </SelectItem>
                           ))}
-                        </SelectContent>
+                        </SelectContentStyled>
                       </Select>
                       <ErrorMessage name="categoria" component="div" className="text-red-500 text-sm mt-1" />
                     </div>
@@ -191,11 +201,11 @@ const CadastrarTab: React.FC = () => {
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecione a situação" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContentStyled>
                           <SelectItem value="novo">Novo</SelectItem>
                           <SelectItem value="usado">Usado</SelectItem>
                           <SelectItem value="danificado">Danificado</SelectItem>
-                        </SelectContent>
+                        </SelectContentStyled>
                       </Select>
                       <ErrorMessage name="situacao" component="div" className="text-red-500 text-sm mt-1" />
                     </div>

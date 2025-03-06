@@ -22,9 +22,10 @@ interface MapSidebarProps {
   onCasoSelect: (caso: Caso) => void
   onToggleHeatmap: (enabled: boolean) => void
   onBack: () => void
+  userType: "visitor" | "citizen" | "police"
 }
 
-const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHeatmap, onBack }) => {
+const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHeatmap, onBack, userType }) => {
   const [isOpen, setIsOpen] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [showHeatmap, setShowHeatmap] = useState(false)
@@ -36,8 +37,8 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHe
 
   const filteredCasos = casos.filter(
     (caso) =>
-      caso.objeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      caso.localizacao.toLowerCase().includes(searchTerm.toLowerCase()),
+      (caso.objeto && caso.objeto.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (caso.localizacao && caso.localizacao.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
   const toggleSidebar = () => setIsOpen(!isOpen)
@@ -51,9 +52,22 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHe
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
+  const getBackButtonText = () => {
+    switch (userType) {
+      case "visitor":
+        return "Voltar para Home"
+      case "citizen":
+        return "Voltar para Área do Cidadão"
+      case "police":
+        return "Voltar para Área Policial"
+      default:
+        return "Voltar"
+    }
+  }
+
   return (
     <div
-      className={`absolute top-0 left-0 h-full bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 z-50 ${
+      className={`absolute top-4 left-4 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 z-50 rounded-lg ${
         isOpen ? "w-80" : "w-12"
       }`}
     >
@@ -66,11 +80,60 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHe
       </Button>
 
       {isOpen && (
-        <div className="p-4 h-full overflow-y-auto">
-          <Button variant="ghost" className="mb-4 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={onBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
+        <div className="p-4 h-[calc(100vh-2rem)] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <Button variant="ghost" className="hover:bg-gray-100 dark:hover:bg-gray-700" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {getBackButtonText()}
+            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" /> Filtros
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">Filtros</h4>
+                    <p className="text-sm text-muted-foreground">Ajuste os filtros para refinar sua busca.</p>
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <Label htmlFor="date">Data</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        className="col-span-2 h-8"
+                        value={filters.date}
+                        onChange={(e) => handleFilterChange("date", e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <Label htmlFor="location">Localização</Label>
+                      <Input
+                        id="location"
+                        type="text"
+                        className="col-span-2 h-8"
+                        value={filters.location}
+                        onChange={(e) => handleFilterChange("location", e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <Label htmlFor="objectType">Tipo de Objeto</Label>
+                      <Input
+                        id="objectType"
+                        type="text"
+                        className="col-span-2 h-8"
+                        value={filters.objectType}
+                        onChange={(e) => handleFilterChange("objectType", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
 
           <h2 className="text-2xl font-bold mb-4">Casos de Roubo</h2>
 
@@ -92,54 +155,6 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHe
             <Switch id="heatmap" checked={showHeatmap} onCheckedChange={handleHeatmapToggle} />
             <Label htmlFor="heatmap">Mostrar mapa de calor</Label>
           </div>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full mb-4">
-                <Filter className="mr-2 h-4 w-4" /> Filtros
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="grid gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium leading-none">Filtros</h4>
-                  <p className="text-sm text-muted-foreground">Ajuste os filtros para refinar sua busca.</p>
-                </div>
-                <div className="grid gap-2">
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="date">Data</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      className="col-span-2 h-8"
-                      value={filters.date}
-                      onChange={(e) => handleFilterChange("date", e.target.value)}
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="location">Localização</Label>
-                    <Input
-                      id="location"
-                      type="text"
-                      className="col-span-2 h-8"
-                      value={filters.location}
-                      onChange={(e) => handleFilterChange("location", e.target.value)}
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="objectType">Tipo de Objeto</Label>
-                    <Input
-                      id="objectType"
-                      type="text"
-                      className="col-span-2 h-8"
-                      value={filters.objectType}
-                      onChange={(e) => handleFilterChange("objectType", e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
 
           <div className="space-y-4">
             {filteredCasos.map((caso) => (
