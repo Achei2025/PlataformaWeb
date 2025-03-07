@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
@@ -15,6 +16,8 @@ interface Caso {
   objeto: string
   dataRoubo: string
   localizacao: string
+  latitude?: number
+  longitude?: number
 }
 
 interface MapSidebarProps {
@@ -26,6 +29,7 @@ interface MapSidebarProps {
 }
 
 const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHeatmap, onBack, userType }) => {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [showHeatmap, setShowHeatmap] = useState(false)
@@ -38,7 +42,7 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHe
   const filteredCasos = casos.filter(
     (caso) =>
       (caso.objeto && caso.objeto.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (caso.localizacao && caso.localizacao.toLowerCase().includes(searchTerm.toLowerCase()))
+      (caso.localizacao && caso.localizacao.toLowerCase().includes(searchTerm.toLowerCase())),
   )
 
   const toggleSidebar = () => setIsOpen(!isOpen)
@@ -50,6 +54,16 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHe
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleBackClick = () => {
+    if (userType === "visitor") {
+      // Navigate to the home page for visitors
+      router.push("/")
+    } else {
+      // Use the provided onBack function for other user types
+      onBack()
+    }
   }
 
   const getBackButtonText = () => {
@@ -82,7 +96,7 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHe
       {isOpen && (
         <div className="p-4 h-[calc(100vh-2rem)] overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
-            <Button variant="ghost" className="hover:bg-gray-100 dark:hover:bg-gray-700" onClick={onBack}>
+            <Button variant="ghost" className="hover:bg-gray-100 dark:hover:bg-gray-700" onClick={handleBackClick}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               {getBackButtonText()}
             </Button>

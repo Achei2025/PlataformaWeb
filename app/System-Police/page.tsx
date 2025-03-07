@@ -6,6 +6,7 @@ import DashboardTab from "@/app/System-Police/Components/police/dashboard-tab"
 import CasosTab from "@/app/System-Police/Components/police/casos-tab"
 import MapaTab from "@/app/System-Police/Components/police/mapa-tab"
 import RelatoriosTab from "@/app/System-Police/Components/police/relatorios-tab"
+import ConfiguracoesTab from "@/app/System-Police/Components/police/configuracoes-tab"
 
 export default function PoliceSystem() {
   const [activeTab, setActiveTab] = useState("dashboard")
@@ -19,6 +20,7 @@ export default function PoliceSystem() {
         {activeTab === "casos" && <CasosTab />}
         {activeTab === "mapa" && <MapaTab />}
         {activeTab === "relatorios" && <RelatoriosTab />}
+        {activeTab === "configuracoes" && <ConfiguracoesTab/>}
       </main>
     </div>
   )

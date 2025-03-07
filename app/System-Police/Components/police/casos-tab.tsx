@@ -2,154 +2,212 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
-import { Input } from "@/app/components/ui/input"
-import { Button } from "@/app/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { Badge } from "@/app/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
-import { Search } from "lucide-react"
-
-interface Caso {
-  id: string
-  objeto: string
-  dataRoubo: string
-  localizacao: string
-  status: "Em andamento" | "Resolvido" | "Arquivado"
-  vitima: string
-}
-
-const mockCasos: Caso[] = [
-  {
-    id: "1",
-    objeto: "Smartphone",
-    dataRoubo: "2023-05-15",
-    localizacao: "São Paulo, SP",
-    status: "Em andamento",
-    vitima: "João Silva",
-  },
-  {
-    id: "2",
-    objeto: "Laptop",
-    dataRoubo: "2023-05-16",
-    localizacao: "Rio de Janeiro, RJ",
-    status: "Resolvido",
-    vitima: "Maria Santos",
-  },
-  {
-    id: "3",
-    objeto: "Bicicleta",
-    dataRoubo: "2023-05-17",
-    localizacao: "Belo Horizonte, MG",
-    status: "Arquivado",
-    vitima: "Pedro Oliveira",
-  },
-  // Adicione mais casos conforme necessário
-]
+import { CasosList } from "./casos-list"
+import { CasosFilters } from "./casos-filters"
+import { CasosHeader } from "./casos-header"
+import { CasoModal } from "./caso-modal"
+import { mockCasos } from "./mock-data"
+import type { Caso } from "./types"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/components/ui/alert-dialog"
+import { useToast } from "@/app/components/ui/use-toast"
 
 const CasosTab: React.FC = () => {
   const [casos, setCasos] = useState<Caso[]>(mockCasos)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | undefined>()
+  const [prioridadeFilter, setPrioridadeFilter] = useState<string | undefined>()
+  const [tipoObjetoFilter, setTipoObjetoFilter] = useState<string | undefined>()
+  const [selectedCasos, setSelectedCasos] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Caso
+    direction: "ascending" | "descending"
+  } | null>(null)
+  const [selectedCaso, setSelectedCaso] = useState<Caso | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [batchAction, setBatchAction] = useState<{ action: string; casoIds: string[] } | null>(null)
 
-  const filteredCasos = casos.filter(
-    (caso) =>
-      (caso.objeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        caso.vitima.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        caso.localizacao.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (!statusFilter || caso.status === statusFilter),
-  )
+  const { toast } = useToast()
+
+  const itemsPerPage = 10
+
+  const filteredCasos = casos.filter((caso) => {
+    const searchTermMatch =
+      caso.objeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      caso.vitima.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      caso.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      caso.id.toLowerCase().includes(searchTerm.toLowerCase())
+    const statusMatch = statusFilter ? caso.status === statusFilter : true
+    const prioridadeMatch = prioridadeFilter ? caso.prioridade === prioridadeFilter : true
+    const tipoObjetoMatch = tipoObjetoFilter ? caso.tipoObjeto === tipoObjetoFilter : true
+
+    return searchTermMatch && statusMatch && prioridadeMatch && tipoObjetoMatch
+  })
+
+  const totalPages = Math.ceil(filteredCasos.length / itemsPerPage)
+
+  const paginatedCasos = filteredCasos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      setSelectedCasos(paginatedCasos.map((caso) => caso.id))
+    } else {
+      setSelectedCasos([])
+    }
+  }
+
+  const handleSelectCaso = (casoId: string) => {
+    setSelectedCasos((prevSelectedCasos) => {
+      if (prevSelectedCasos.includes(casoId)) {
+        return prevSelectedCasos.filter((id) => id !== casoId)
+      } else {
+        return [...prevSelectedCasos, casoId]
+      }
+    })
+  }
+
+  const handleSort = (key: keyof Caso) => {
+    let direction: "ascending" | "descending" = "ascending"
+
+    if (sortConfig?.key === key && sortConfig.direction === "ascending") {
+      direction = "descending"
+    }
+
+    setSortConfig({ key, direction })
+
+    setCasos((prevCasos) => {
+      return [...prevCasos].sort((a, b) => {
+        if (a[key] < b[key]) {
+          return direction === "ascending" ? -1 : 1
+        }
+        if (a[key] > b[key]) {
+          return direction === "ascending" ? 1 : -1
+        }
+        return 0
+      })
+    })
+  }
+
+  const handleClearFilters = () => {
+    setSearchTerm("")
+    setStatusFilter(undefined)
+    setPrioridadeFilter(undefined)
+    setTipoObjetoFilter(undefined)
+  }
+
+  const handleOpenModal = (caso: Caso) => {
+    setSelectedCaso(caso)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setSelectedCaso(null)
+    setIsModalOpen(false)
+  }
+
+  const handleUpdateStatus = (casoId: string, newStatus: string) => {
+    setCasos((prevCasos) => prevCasos.map((caso) => (caso.id === casoId ? { ...caso, status: newStatus } : caso)))
+  }
+
+  const handleSendMessage = (casoId: string, message: string) => {
+    // Aqui você pode implementar a lógica para enviar a mensagem
+    console.log(`Mensagem enviada para o caso ${casoId}: ${message}`)
+    // Você pode atualizar o estado dos casos para incluir a nova mensagem, se necessário
+  }
+
+  const handleBatchAction = (action: string, casoIds: string[]) => {
+    setBatchAction({ action, casoIds })
+    setIsConfirmDialogOpen(true)
+  }
+
+  const confirmBatchAction = () => {
+    if (batchAction) {
+      const { action, casoIds } = batchAction
+      switch (action) {
+        case "resolver":
+          setCasos(casos.map((caso) => (casoIds.includes(caso.id) ? { ...caso, status: "Resolvido" } : caso)))
+          break
+        case "arquivar":
+          setCasos(casos.map((caso) => (casoIds.includes(caso.id) ? { ...caso, status: "Arquivado" } : caso)))
+          break
+        case "excluir":
+          setCasos(casos.filter((caso) => !casoIds.includes(caso.id)))
+          break
+        default:
+          console.log(`Ação não reconhecida: ${action}`)
+      }
+      setSelectedCasos([])
+      setIsConfirmDialogOpen(false)
+      toast({
+        title: "Ação em lote concluída",
+        description: `A ação "${action}" foi aplicada a ${casoIds.length} caso(s).`,
+      })
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Casos</h1>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <Input
-              placeholder="Buscar por objeto, vítima ou localização"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
-              icon={<Search className="h-4 w-4 text-gray-500" />}
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={undefined}>Todos</SelectItem>
-              <SelectItem value="Em andamento">Em andamento</SelectItem>
-              <SelectItem value="Resolvido">Resolvido</SelectItem>
-              <SelectItem value="Arquivado">Arquivado</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSearchTerm("")
-              setStatusFilter(undefined)
-            }}
-          >
-            Limpar Filtros
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Casos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Objeto</TableHead>
-                <TableHead>Data do Roubo</TableHead>
-                <TableHead>Localização</TableHead>
-                <TableHead>Vítima</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCasos.map((caso) => (
-                <TableRow key={caso.id}>
-                  <TableCell>{caso.id}</TableCell>
-                  <TableCell>{caso.objeto}</TableCell>
-                  <TableCell>{caso.dataRoubo}</TableCell>
-                  <TableCell>{caso.localizacao}</TableCell>
-                  <TableCell>{caso.vitima}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        caso.status === "Em andamento"
-                          ? "default"
-                          : caso.status === "Resolvido"
-                            ? "success"
-                            : "secondary"
-                      }
-                    >
-                      {caso.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm">
-                      Ver Detalhes
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+    <div className="space-y-6 pb-10">
+      <CasosHeader />
+      <CasosFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        prioridadeFilter={prioridadeFilter}
+        setPrioridadeFilter={setPrioridadeFilter}
+        tipoObjetoFilter={tipoObjetoFilter}
+        setTipoObjetoFilter={setTipoObjetoFilter}
+        handleClearFilters={handleClearFilters}
+      />
+      <CasosList
+        casos={paginatedCasos}
+        selectedCasos={selectedCasos}
+        handleSelectAll={handleSelectAll}
+        handleSelectCaso={handleSelectCaso}
+        handleSort={handleSort}
+        sortConfig={sortConfig}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
+        filteredCasosLength={filteredCasos.length}
+        onOpenModal={handleOpenModal}
+        onBatchAction={handleBatchAction}
+      />
+      {selectedCaso && (
+        <CasoModal
+          caso={selectedCaso}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onUpdateStatus={handleUpdateStatus}
+          onSendMessage={handleSendMessage}
+        />
+      )}
+      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar ação em lote</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você tem certeza que deseja {batchAction?.action} {batchAction?.casoIds.length} caso(s)? Esta ação não
+              pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBatchAction}>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

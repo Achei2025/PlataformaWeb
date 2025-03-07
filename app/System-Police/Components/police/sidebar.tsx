@@ -1,8 +1,12 @@
+"use client"
+
 import type React from "react"
+
 import { Button } from "@/app/components/ui/button"
 import { DarkModeSwitch } from "@/app/components/ui/dark-mode-switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
-import { PieChart, MapPin, FileText, LayoutDashboard, LogOut } from "lucide-react"
+import { LogOut } from "lucide-react"
+import { sidebarConfig } from "@/app/config/sidebar"
 
 interface SidebarProps {
   activeTab: string
@@ -25,12 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, darkMode, se
         </div>
       </div>
       <nav className="space-y-3 flex-grow">
-        {[
-          { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-          { id: "casos", icon: PieChart, label: "Casos" },
-          { id: "mapa", icon: MapPin, label: "Mapa" },
-          { id: "relatorios", icon: FileText, label: "Relatórios" },
-        ].map((item) => (
+        {sidebarConfig.map((item) => (
           <Button
             key={item.id}
             variant={activeTab === item.id ? "default" : "ghost"}
