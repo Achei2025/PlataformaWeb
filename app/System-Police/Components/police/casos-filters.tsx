@@ -13,8 +13,6 @@ interface CasosFiltersProps {
   setSearchTerm: (term: string) => void
   statusFilter: string | undefined
   setStatusFilter: (status: string | undefined) => void
-  prioridadeFilter: string | undefined
-  setPrioridadeFilter: (prioridade: string | undefined) => void
   tipoObjetoFilter: string | undefined
   setTipoObjetoFilter: (tipo: string | undefined) => void
   handleClearFilters: () => void
@@ -25,8 +23,6 @@ export const CasosFilters: React.FC<CasosFiltersProps> = ({
   setSearchTerm,
   statusFilter,
   setStatusFilter,
-  prioridadeFilter,
-  setPrioridadeFilter,
   tipoObjetoFilter,
   setTipoObjetoFilter,
   handleClearFilters,
@@ -54,16 +50,6 @@ export const CasosFilters: React.FC<CasosFiltersProps> = ({
             <SelectItem value="Resolvido">Resolvido</SelectItem>
             <SelectItem value="Pendente">Pendente</SelectItem>
             <SelectItem value="Recuperado">Recuperado</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Prioridade" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Alta">Alta</SelectItem>
-            <SelectItem value="Média">Média</SelectItem>
-            <SelectItem value="Baixa">Baixa</SelectItem>
           </SelectContent>
         </Select>
         <Select value={tipoObjetoFilter} onValueChange={setTipoObjetoFilter}>

@@ -34,21 +34,6 @@ export const getStatusBadge = (status: string) => {
   }
 }
 
-export const getPriorityBadge = (prioridade: string) => {
-  const baseClasses = "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset"
-
-  switch (prioridade.toLowerCase()) {
-    case "alta":
-      return <span className={`${baseClasses} bg-red-50 text-red-700 ring-red-600/20`}>{prioridade}</span>
-    case "média":
-      return <span className={`${baseClasses} bg-yellow-50 text-yellow-700 ring-yellow-600/20`}>{prioridade}</span>
-    case "baixa":
-      return <span className={`${baseClasses} bg-green-50 text-green-700 ring-green-600/20`}>{prioridade}</span>
-    default:
-      return <span className={`${baseClasses} bg-gray-50 text-gray-700 ring-gray-600/20`}>{prioridade}</span>
-  }
-}
-
 export const formatarData = (data: string) => {
   return new Date(data).toLocaleDateString("pt-BR")
 }

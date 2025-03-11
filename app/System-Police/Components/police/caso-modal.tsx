@@ -4,158 +4,231 @@ import type React from "react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/app/components/ui/dialog"
 import { Button } from "@/app/components/ui/button"
-import { Input } from "@/app/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
-import { ScrollArea } from "@/app/components/ui/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
-import { formatarData, getStatusBadge, getPriorityBadge } from "./utils"
-import type { Caso, Comentario } from "./types"
-import { Send } from "lucide-react"
+import { Badge } from "@/app/components/ui/badge"
+import { FileText } from "lucide-react"
+import { formatarData } from "./utils"
+import type { Caso } from "./types"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/components/ui/alert-dialog"
+import { SuccessDialog } from "./success-dialog"
 
 interface CasoModalProps {
   caso: Caso | null
   isOpen: boolean
   onClose: () => void
   onUpdateStatus: (casoId: string, newStatus: string) => void
-  onSendMessage: (casoId: string, message: string) => void
 }
 
-export const CasoModal: React.FC<CasoModalProps> = ({ caso, isOpen, onClose, onUpdateStatus, onSendMessage }) => {
+type ModalState = "details" | "confirm" | "success"
+
+export const CasoModal: React.FC<CasoModalProps> = ({ caso, isOpen, onClose, onUpdateStatus }) => {
   const [newStatus, setNewStatus] = useState(caso?.status || "")
-  const [newMessage, setNewMessage] = useState("")
+  const [modalState, setModalState] = useState<ModalState>("details")
 
   if (!caso) return null
 
   const handleStatusUpdate = () => {
-    onUpdateStatus(caso.id, newStatus)
+    setModalState("confirm")
   }
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      onSendMessage(caso.id, newMessage)
-      setNewMessage("")
-    }
+  const confirmStatusUpdate = () => {
+    onUpdateStatus(caso.id, newStatus)
+    setModalState("success")
+    setTimeout(() => {
+      setModalState("details")
+      onClose()
+    }, 2000)
+  }
+
+  if (modalState === "confirm") {
+    return (
+      <AlertDialog open={true} onOpenChange={() => setModalState("details")}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar alteração de status</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja alterar o status do incidente para "{newStatus}"?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setModalState("details")}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmStatusUpdate}>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    )
+  }
+
+  if (modalState === "success") {
+    return (
+      <SuccessDialog isOpen={true} onClose={() => setModalState("details")} message="Status atualizado com sucesso!" />
+    )
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-xl">
             Incidente {caso.id}
-            {getStatusBadge(caso.status)}
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700">
+              {caso.status}
+            </Badge>
           </DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="details" className="flex-grow overflow-hidden flex flex-col">
-          <TabsList className="mb-4">
-            <TabsTrigger value="details">Detalhes</TabsTrigger>
-            <TabsTrigger value="messages">Mensagens</TabsTrigger>
-            <TabsTrigger value="comments">Comentários</TabsTrigger>
+
+        <Tabs defaultValue="detalhes-objeto" className="w-full mt-6">
+          <TabsList className="w-full bg-gray-50 p-0">
+            <TabsTrigger value="detalhes-objeto" className="flex-1">
+              Detalhes do Objeto
+            </TabsTrigger>
+            <TabsTrigger value="detalhes-incidente" className="flex-1">
+              Detalhes do Incidente
+            </TabsTrigger>
+            <TabsTrigger value="mensagens" className="flex-1">
+              Mensagens
+            </TabsTrigger>
+            <TabsTrigger value="comentarios" className="flex-1">
+              Comentários
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="details" className="flex-grow overflow-hidden">
-            <ScrollArea className="h-[calc(100vh-300px)] pr-4">
-              <div className="grid grid-cols-2 gap-4">
+
+          <TabsContent value="detalhes-objeto" className="mt-6">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+              <div>
+                <label className="text-sm text-gray-500">Categoria do Objeto</label>
+                <p className="mt-1">{caso.categoriaObjeto}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Nome do Objeto</label>
+                <p className="mt-1">{caso.nomeObjeto}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Situação</label>
+                <p className="mt-1">{caso.situacao}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Marca</label>
+                <p className="mt-1">{caso.marca}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Modelo</label>
+                <p className="mt-1">{caso.modelo}</p>
+              </div>
+              {caso.categoriaObjeto === "Celular" && (
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Objeto</h4>
-                  <p className="text-lg">{caso.objeto}</p>
+                  <label className="text-sm text-gray-500">IMEI</label>
+                  <p className="mt-1">{caso.imei}</p>
                 </div>
+              )}
+              {caso.categoriaObjeto === "Veículo" && (
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Tipo de Objeto</h4>
-                  <p className="text-lg">{caso.tipoObjeto}</p>
+                  <label className="text-sm text-gray-500">Chassi</label>
+                  <p className="mt-1">{caso.chassi}</p>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Data do Roubo</h4>
-                  <p className="text-lg">{formatarData(caso.dataRoubo)}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Hora do Roubo</h4>
-                  <p className="text-lg">{caso.horaRoubo}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Localização</h4>
-                  <p className="text-lg">{caso.localizacao}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Vítima</h4>
-                  <p className="text-lg">{caso.vitima}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Telefone</h4>
-                  <p className="text-lg">{caso.telefone}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Prioridade</h4>
-                  <p className="text-lg">{getPriorityBadge(caso.prioridade)}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-gray-500">Valor Estimado</h4>
-                  <p className="text-lg">R$ {Number.parseFloat(caso.valorEstimado).toFixed(2)}</p>
-                </div>
-                <div className="col-span-2">
-                  <h4 className="font-semibold text-sm text-gray-500">Descrição</h4>
-                  <p className="text-lg">{caso.descricao}</p>
+              )}
+              <div className="col-span-2">
+                <label className="text-sm text-gray-500">Descrição do Objeto</label>
+                <p className="mt-1">{caso.descricaoObjeto}</p>
+              </div>
+              <div className="col-span-2">
+                <label className="text-sm text-gray-500">QR Code do Objeto</label>
+                <div className="mt-2">
+                  <img src={caso.qrCode || "/placeholder.svg"} alt="QR Code" className="w-32 h-32" />
                 </div>
               </div>
-            </ScrollArea>
-          </TabsContent>
-          <TabsContent value="messages" className="flex-grow overflow-hidden flex flex-col">
-            <ScrollArea className="flex-grow pr-4">
-              <div className="space-y-4">
-                {/* Exemplo de mensagem */}
-                <div className="flex items-start space-x-4 bg-gray-50 p-3 rounded-lg">
-                  <Avatar>
-                    <AvatarImage src="/police-avatar.png" alt="Policial" />
-                    <AvatarFallback>PL</AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Policial Silva</p>
-                    <p className="text-sm">Estamos investigando seu caso. Manteremos você informado.</p>
-                    <p className="text-xs text-gray-400">Há 2 horas</p>
-                  </div>
+              <div className="col-span-2">
+                <label className="text-sm text-gray-500">Imagens do Objeto</label>
+                <div className="mt-2 flex gap-2">
+                  {caso.imagensObjeto?.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img || "/placeholder.svg"}
+                      alt={`Imagem ${index + 1}`}
+                      className="w-24 h-24 object-cover rounded-md"
+                    />
+                  ))}
                 </div>
-                {/* Adicione mais mensagens conforme necessário */}
               </div>
-            </ScrollArea>
-            <div className="mt-4 flex items-center space-x-2">
-              <Input
-                placeholder="Digite sua mensagem..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
-              <Button onClick={handleSendMessage}>
-                <Send className="h-4 w-4 mr-2" />
-                Enviar
-              </Button>
+              <div>
+                <label className="text-sm text-gray-500">Outro Meio de Contato</label>
+                <p className="mt-1">{caso.outroContato}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Nota Fiscal</label>
+                <div className="mt-1">
+                  <Button variant="link" className="p-0 h-auto text-blue-600 hover:text-blue-800">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Ver Nota Fiscal
+                  </Button>
+                </div>
+              </div>
             </div>
           </TabsContent>
-          <TabsContent value="comments" className="flex-grow overflow-hidden flex flex-col">
-            <ScrollArea className="flex-grow pr-4">
-              <div className="space-y-4">
-                {caso.comentarios &&
-                  caso.comentarios.map((comentario: Comentario, index: number) => (
-                    <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Avatar>
-                          <AvatarFallback>{comentario.autor[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-medium">{comentario.autor}</p>
-                          <p className="text-xs text-gray-400">{formatarData(comentario.data)}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm">{comentario.texto}</p>
-                    </div>
-                  ))}
+
+          <TabsContent value="detalhes-incidente" className="mt-6">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+              <div>
+                <label className="text-sm text-gray-500">Data do Roubo</label>
+                <p className="mt-1">{formatarData(caso.dataRoubo)}</p>
               </div>
-            </ScrollArea>
+              <div>
+                <label className="text-sm text-gray-500">Hora do Roubo</label>
+                <p className="mt-1">{caso.horaRoubo}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Categoria do Roubo</label>
+                <p className="mt-1">{caso.categoriaRoubo}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Local do Roubo</label>
+                <p className="mt-1">{caso.localRoubo}</p>
+              </div>
+              <div className="col-span-2">
+                <label className="text-sm text-gray-500">Mapa do Local do Roubo</label>
+                <div className="mt-2 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-400">Mapa será exibido aqui</span>
+                </div>
+              </div>
+              <div className="col-span-2">
+                <label className="text-sm text-gray-500">Descrição do Roubo</label>
+                <p className="mt-1">{caso.descricaoRoubo}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Vítima</label>
+                <p className="mt-1">{caso.vitima}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500">Telefone</label>
+                <p className="mt-1">{caso.telefone}</p>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="mensagens" className="mt-6">
+            <div className="h-96 flex items-center justify-center text-gray-500">Mensagens serão exibidas aqui</div>
+          </TabsContent>
+
+          <TabsContent value="comentarios" className="mt-6">
+            <div className="h-96 flex items-center justify-center text-gray-500">Comentários serão exibidos aqui</div>
           </TabsContent>
         </Tabs>
-        <div className="flex justify-between items-center mt-4 pt-4 border-t">
-          <div className="flex items-center space-x-2">
+
+        <div className="flex justify-between items-center mt-6 pt-6 border-t">
+          <div className="flex items-center gap-2">
             <Select value={newStatus} onValueChange={setNewStatus}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Atualizar Status" />
+                <SelectValue placeholder="Em investigação" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Em investigação">Em investigação</SelectItem>

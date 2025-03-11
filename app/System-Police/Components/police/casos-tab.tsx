@@ -24,7 +24,6 @@ const CasosTab: React.FC = () => {
   const [casos, setCasos] = useState<Caso[]>(mockCasos)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | undefined>()
-  const [prioridadeFilter, setPrioridadeFilter] = useState<string | undefined>()
   const [tipoObjetoFilter, setTipoObjetoFilter] = useState<string | undefined>()
   const [selectedCasos, setSelectedCasos] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
@@ -48,10 +47,9 @@ const CasosTab: React.FC = () => {
       caso.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
       caso.id.toLowerCase().includes(searchTerm.toLowerCase())
     const statusMatch = statusFilter ? caso.status === statusFilter : true
-    const prioridadeMatch = prioridadeFilter ? caso.prioridade === prioridadeFilter : true
     const tipoObjetoMatch = tipoObjetoFilter ? caso.tipoObjeto === tipoObjetoFilter : true
 
-    return searchTermMatch && statusMatch && prioridadeMatch && tipoObjetoMatch
+    return searchTermMatch && statusMatch && tipoObjetoMatch
   })
 
   const totalPages = Math.ceil(filteredCasos.length / itemsPerPage)
@@ -101,7 +99,6 @@ const CasosTab: React.FC = () => {
   const handleClearFilters = () => {
     setSearchTerm("")
     setStatusFilter(undefined)
-    setPrioridadeFilter(undefined)
     setTipoObjetoFilter(undefined)
   }
 
@@ -163,8 +160,6 @@ const CasosTab: React.FC = () => {
         setSearchTerm={setSearchTerm}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
-        prioridadeFilter={prioridadeFilter}
-        setPrioridadeFilter={setPrioridadeFilter}
         tipoObjetoFilter={tipoObjetoFilter}
         setTipoObjetoFilter={setTipoObjetoFilter}
         handleClearFilters={handleClearFilters}

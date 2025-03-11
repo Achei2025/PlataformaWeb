@@ -5,8 +5,9 @@ import { Card, CardHeader, CardContent } from "@/app/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
 import { Checkbox } from "@/app/components/ui/checkbox"
 import { Button } from "@/app/components/ui/button"
-import { ArrowUpDown, Eye } from "lucide-react"
-import { getIconForObjectType, getStatusBadge, getPriorityBadge, formatarData } from "./utils"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/app/components/ui/dropdown-menu"
+import { ArrowUpDown, Eye, CheckCircle, Archive, Trash2 } from "lucide-react"
+import { getIconForObjectType, getStatusBadge, formatarData } from "./utils"
 import type { Caso } from "./types"
 
 interface CasosListProps {
@@ -22,6 +23,7 @@ interface CasosListProps {
   itemsPerPage: number
   filteredCasosLength: number
   onOpenModal: (caso: Caso) => void
+  onBatchAction: (action: string, casoIds: string[]) => void
 }
 
 export const CasosList: React.FC<CasosListProps> = ({
@@ -37,6 +39,7 @@ export const CasosList: React.FC<CasosListProps> = ({
   itemsPerPage,
   filteredCasosLength,
   onOpenModal,
+  onBatchAction,
 }) => {
   return (
     <Card>
@@ -45,9 +48,27 @@ export const CasosList: React.FC<CasosListProps> = ({
           <h3 className="text-lg font-semibold">Lista de Incidentes</h3>
           <div className="flex items-center gap-2">
             {selectedCasos.length > 0 && (
-              <Button variant="outline" size="sm">
-                Ações em lote ({selectedCasos.length})
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Ações em lote ({selectedCasos.length})
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => onBatchAction("resolver", selectedCasos)}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    <span>Marcar como resolvido</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onBatchAction("arquivar", selectedCasos)}>
+                    <Archive className="mr-2 h-4 w-4" />
+                    <span>Arquivar casos</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onBatchAction("excluir", selectedCasos)}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Excluir casos</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
@@ -83,12 +104,6 @@ export const CasosList: React.FC<CasosListProps> = ({
                 </TableHead>
                 <TableHead>Localização</TableHead>
                 <TableHead>Vítima</TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort("prioridade")}>
-                  <div className="flex items-center">
-                    Prioridade
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </div>
-                </TableHead>
                 <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
                   <div className="flex items-center">
                     Status
@@ -117,7 +132,6 @@ export const CasosList: React.FC<CasosListProps> = ({
                   <TableCell>{formatarData(caso.dataRoubo)}</TableCell>
                   <TableCell>{caso.localizacao}</TableCell>
                   <TableCell>{caso.vitima}</TableCell>
-                  <TableCell>{getPriorityBadge(caso.prioridade)}</TableCell>
                   <TableCell>{getStatusBadge(caso.status)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => onOpenModal(caso)}>

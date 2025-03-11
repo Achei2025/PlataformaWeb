@@ -1,9 +1,13 @@
 "use client"
 
 import React from "react"
-
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/app/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/app/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
+import { Button } from "@/app/components/ui/button"
+import { Badge } from "@/app/components/ui/badge"
+import { Progress } from "@/app/components/ui/progress"
+import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert"
 import {
   BarChart,
   Bar,
@@ -12,601 +16,713 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
-  AreaChart,
-  Area,
   Legend,
 } from "recharts"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
-import { Button } from "@/app/components/ui/button"
 import {
+  AlertTriangle,
+  Bell,
+  BookOpen,
+  CheckCircle2,
+  ChevronRight,
+  FileText,
+  MapPin,
+  Shield,
+  ShieldAlert,
+  Siren,
+  Users,
+  AlertCircle,
   ArrowUpRight,
   ArrowDownRight,
-  PhoneIncoming,
-  Shield,
-  MapPin,
+  Info,
+  Lightbulb,
+  Radio,
+  Megaphone,
+  Bookmark,
+  RefreshCw,
   Smartphone,
-  Clock,
-  AlertTriangle,
-  FileText,
-  TrendingUp,
-  Search,
-  Filter,
+  FileBarChart2,
 } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { Badge } from "@/app/components/ui/badge"
-import { Separator } from "@/app/components/ui/separator"
-import { Progress } from "@/app/components/ui/progress"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
-// Colors from Brazilian flag
-const colors = {
-  green: "#009c3b",
-  yellow: "#ffdf00",
-  blue: "#002776",
-  accent: "#3b82f6",
-  success: "#22c55e",
-  warning: "#f59e0b",
-  danger: "#ef4444",
-}
+// Cores para os gráficos
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
-const monthlyData = [
-  { name: "Jan", roubos: 400, recuperados: 240, tentativas: 120 },
-  { name: "Fev", roubos: 300, recuperados: 190, tentativas: 90 },
-  { name: "Mar", roubos: 200, recuperados: 110, tentativas: 60 },
-  { name: "Abr", roubos: 278, recuperados: 167, tentativas: 83 },
-  { name: "Mai", roubos: 189, recuperados: 134, tentativas: 56 },
-  { name: "Jun", roubos: 239, recuperados: 168, tentativas: 72 },
+// Dados para os gráficos
+const ocorrenciasMensais = [
+  { name: "Jan", ocorrencias: 65, resolvidos: 45 },
+  { name: "Fev", ocorrencias: 59, resolvidos: 40 },
+  { name: "Mar", ocorrencias: 80, resolvidos: 55 },
+  { name: "Abr", ocorrencias: 81, resolvidos: 60 },
+  { name: "Mai", ocorrencias: 56, resolvidos: 40 },
+  { name: "Jun", ocorrencias: 55, resolvidos: 42 },
+  { name: "Jul", ocorrencias: 40, resolvidos: 30 },
 ]
 
-const hourlyData = [
-  { hour: "00:00", incidents: 12 },
-  { hour: "03:00", incidents: 8 },
-  { hour: "06:00", incidents: 15 },
-  { hour: "09:00", incidents: 25 },
-  { hour: "12:00", incidents: 32 },
-  { hour: "15:00", incidents: 45 },
-  { hour: "18:00", incidents: 58 },
-  { hour: "21:00", incidents: 42 },
-]
-
-const locationData = [
-  { name: "Centro", value: 35 },
-  { name: "Zona Sul", value: 25 },
-  { name: "Zona Norte", value: 20 },
-  { name: "Zona Leste", value: 15 },
-  { name: "Zona Oeste", value: 5 },
-]
-
-const COLORS = [colors.green, colors.yellow, colors.blue, colors.accent, "#8884d8"]
-
-const deviceTypeData = [
-  { name: "Smartphones", value: 70 },
-  { name: "Notebooks", value: 15 },
-  { name: "Tablets", value: 10 },
+const tiposCrime = [
+  { name: "Roubo", value: 35 },
+  { name: "Furto", value: 25 },
+  { name: "Agressão", value: 20 },
+  { name: "Tráfico", value: 15 },
   { name: "Outros", value: 5 },
 ]
 
-const recentIncidents = [
-  {
-    id: "INC-7834",
-    type: "Roubo",
-    local: "Av. Paulista, 1578",
-    hora: "18:43",
-    status: "Em Investigação",
-    item: "iPhone 15",
-  },
-  { id: "INC-7833", type: "Roubo", local: "R. Augusta, 495", hora: "17:22", status: "Arquivado", item: "Samsung S23" },
-  {
-    id: "INC-7832",
-    type: "Tentativa",
-    local: "Pq. Ibirapuera",
-    hora: "16:15",
-    status: "Resolvido",
-    item: "MacBook Pro",
-  },
-  {
-    id: "INC-7831",
-    type: "Roubo",
-    local: "Shopping Eldorado",
-    hora: "14:38",
-    status: "Em Investigação",
-    item: "iPad Pro",
-  },
-  { id: "INC-7830", type: "Roubo", local: "Estação Sé", hora: "12:05", status: "Recuperado", item: "Xiaomi Mi 11" },
+const areasRisco = [
+  { area: "Centro", nivel: 85, incidentes: 42 },
+  { area: "Zona Sul", nivel: 65, incidentes: 28 },
+  { area: "Zona Norte", nivel: 75, incidentes: 35 },
+  { area: "Zona Leste", nivel: 60, incidentes: 25 },
+  { area: "Zona Oeste", nivel: 50, incidentes: 20 },
 ]
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-3 border rounded-md shadow-md text-xs">
-        <p className="font-bold">{`${label}`}</p>
-        {payload.map((entry: any, index: number) => (
-          <p key={`item-${index}`} style={{ color: entry.color }}>
-            {`${entry.name}: ${entry.value}`}
-          </p>
-        ))}
-      </div>
-    )
+const dicasSeguranca = [
+  {
+    id: 1,
+    titulo: "Verificação de Equipamento",
+    descricao: "Sempre verifique seu colete, rádio e arma antes de iniciar o turno.",
+    icone: Shield,
+  },
+  {
+    id: 2,
+    titulo: "Comunicação Constante",
+    descricao: "Mantenha comunicação regular com a central e sua equipe durante patrulhas.",
+    icone: Radio,
+  },
+  {
+    id: 3,
+    titulo: "Abordagem Segura",
+    descricao: "Mantenha distância segura e posição vantajosa durante abordagens de suspeitos.",
+    icone: AlertCircle,
+  },
+  {
+    id: 4,
+    titulo: "Atenção ao Entorno",
+    descricao: "Sempre observe o ambiente ao redor durante ocorrências para evitar emboscadas.",
+    icone: ShieldAlert,
+  },
+  {
+    id: 5,
+    titulo: "Documentação Precisa",
+    descricao: "Registre detalhadamente todas as ocorrências para garantir processos judiciais eficazes.",
+    icone: FileText,
+  },
+]
+
+const alertasRecentes = [
+  {
+    id: 1,
+    titulo: "Alerta de Alto Risco",
+    descricao: "Aumento de ocorrências armadas na região central nas últimas 24h",
+    nivel: "alto",
+    tempo: "10 minutos atrás",
+  },
+  {
+    id: 2,
+    titulo: "Suspeito Procurado",
+    descricao: "Indivíduo procurado por assalto a mão armada visto na Zona Norte",
+    nivel: "medio",
+    tempo: "2 horas atrás",
+  },
+  {
+    id: 3,
+    titulo: "Atualização de Procedimento",
+    descricao: "Novo protocolo para abordagem de veículos suspeitos em vigor",
+    nivel: "informativo",
+    tempo: "5 horas atrás",
+  },
+]
+
+const DashboardTab: React.FC = () => {
+  const [dicaAtual, setDicaAtual] = useState(0)
+  const [abaAtiva, setAbaAtiva] = useState("visao-geral")
+
+  // Função para alternar entre as dicas de segurança
+  const proximaDica = () => {
+    setDicaAtual((prev) => (prev + 1) % dicasSeguranca.length)
   }
 
-  return null
-}
-
-const DashboardTab = () => {
-  const [period, setPeriod] = useState("6m")
-  const [dataType, setDataType] = useState("roubos")
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Em Investigação":
-        return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            Em Investigação
-          </Badge>
-        )
-      case "Arquivado":
-        return (
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-            Arquivado
-          </Badge>
-        )
-      case "Resolvido":
-        return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            Resolvido
-          </Badge>
-        )
-      case "Recuperado":
-        return (
-          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-            Recuperado
-          </Badge>
-        )
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
+  // Formatar data atual
+  const dataAtual = format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+  const horaAtual = format(new Date(), "HH:mm")
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-1">Dashboard Policial</h1>
-          <p className="text-muted-foreground">Monitoramento e análise de crimes em tempo real</p>
+          <p className="text-muted-foreground">Visão geral do sistema e recursos para oficiais</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Select defaultValue="São Paulo">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Selecione a região" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="São Paulo">São Paulo</SelectItem>
-              <SelectItem value="Rio de Janeiro">Rio de Janeiro</SelectItem>
-              <SelectItem value="Belo Horizonte">Belo Horizonte</SelectItem>
-              <SelectItem value="Salvador">Salvador</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            Filtros
-          </Button>
-          <Button>
-            <Search className="h-4 w-4 mr-2" />
-            Pesquisar
-          </Button>
+        <div className="flex flex-col items-end">
+          <p className="text-sm font-medium">{dataAtual}</p>
+          <p className="text-2xl font-bold">{horaAtual}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-100">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total de Ocorrências</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-3xl font-bold mb-1">1,234</p>
-                <div className="flex items-center text-xs text-green-600">
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                  <span>12% de aumento</span>
-                </div>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <FileText className="h-6 w-6 text-blue-700" />
-              </div>
-            </div>
-            <Progress value={66} className="h-1 mt-4" />
-          </CardContent>
-        </Card>
+      {/* Alerta de Alto Risco */}
+      <Alert className="bg-red-50 border-red-200">
+        <AlertTriangle className="h-5 w-5 text-red-600" />
+        <AlertTitle className="text-red-600">Alerta de Alto Risco</AlertTitle>
+        <AlertDescription>
+          Aumento de ocorrências armadas na região central nas últimas 24h. Reforço solicitado para patrulhas.
+        </AlertDescription>
+      </Alert>
 
-        <Card className="bg-gradient-to-br from-white to-green-50 border-green-100">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Casos Resolvidos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-3xl font-bold mb-1">789</p>
-                <div className="flex items-center text-xs text-green-600">
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                  <span>8% de aumento</span>
-                </div>
-              </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <Shield className="h-6 w-6 text-green-700" />
-              </div>
-            </div>
-            <Progress value={63.9} className="h-1 mt-4" />
-          </CardContent>
-        </Card>
+      {/* Tabs para diferentes seções do dashboard */}
+      <Tabs value={abaAtiva} onValueChange={setAbaAtiva} className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="visao-geral">Visão Geral</TabsTrigger>
+          <TabsTrigger value="seguranca">Dicas de Segurança</TabsTrigger>
+          <TabsTrigger value="areas-risco">Áreas de Risco</TabsTrigger>
+          <TabsTrigger value="recursos">Recursos</TabsTrigger>
+        </TabsList>
 
-        <Card className="bg-gradient-to-br from-white to-yellow-50 border-yellow-100">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Dispositivos Recuperados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-3xl font-bold mb-1">412</p>
-                <div className="flex items-center text-xs text-yellow-600">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  <span>5% de aumento</span>
+        {/* Conteúdo da aba Visão Geral */}
+        <TabsContent value="visao-geral" className="space-y-6">
+          {/* Cards de estatísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total de Ocorrências</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-3xl font-bold mb-1">436</p>
+                    <div className="flex items-center text-xs text-red-600">
+                      <ArrowUpRight className="h-3 w-3 mr-1" />
+                      <span>12% em relação ao período anterior</span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded-full">
+                    <FileText className="h-6 w-6 text-blue-700" />
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 bg-yellow-100 rounded-full">
-                <Smartphone className="h-6 w-6 text-yellow-700" />
-              </div>
-            </div>
-            <Progress value={33.3} className="h-1 mt-4" />
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        <Card className="bg-gradient-to-br from-white to-red-50 border-red-100">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Chamadas de Emergência</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-3xl font-bold mb-1">267</p>
-                <div className="flex items-center text-xs text-red-600">
-                  <ArrowDownRight className="h-3 w-3 mr-1" />
-                  <span>3% de redução</span>
+            <Card className="bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Casos Resolvidos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-3xl font-bold mb-1">187</p>
+                    <div className="flex items-center text-xs text-green-600">
+                      <ArrowUpRight className="h-3 w-3 mr-1" />
+                      <span>8% em relação ao período anterior</span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-full">
+                    <CheckCircle2 className="h-6 w-6 text-green-700" />
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 bg-red-100 rounded-full">
-                <PhoneIncoming className="h-6 w-6 text-red-700" />
-              </div>
-            </div>
-            <Progress value={21.6} className="h-1 mt-4" />
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <div>
+            <Card className="bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Objetos Recuperados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-3xl font-bold mb-1">95</p>
+                    <div className="flex items-center text-xs text-yellow-600">
+                      <ArrowUpRight className="h-3 w-3 mr-1" />
+                      <span>5% em relação ao período anterior</span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-yellow-50 rounded-full">
+                    <Smartphone className="h-6 w-6 text-yellow-700" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Taxa de Resolução</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-3xl font-bold mb-1">42.9%</p>
+                    <div className="flex items-center text-xs text-red-600">
+                      <ArrowDownRight className="h-3 w-3 mr-1" />
+                      <span>3% em relação ao período anterior</span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-red-50 rounded-full">
+                    <FileBarChart2 className="h-6 w-6 text-red-700" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Gráficos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
                 <CardTitle>Ocorrências por Mês</CardTitle>
-                <CardDescription>Análise histórica de roubos, recuperações e tentativas</CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Select value={period} onValueChange={setPeriod}>
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="Período" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1m">Último mês</SelectItem>
-                    <SelectItem value="3m">3 meses</SelectItem>
-                    <SelectItem value="6m">6 meses</SelectItem>
-                    <SelectItem value="1y">1 ano</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="bar" className="w-full">
-              <div className="flex justify-between items-center mb-4">
-                <TabsList>
-                  <TabsTrigger value="bar">Barras</TabsTrigger>
-                  <TabsTrigger value="line">Linhas</TabsTrigger>
-                  <TabsTrigger value="area">Área</TabsTrigger>
-                </TabsList>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors.danger }}></div>
-                    <span className="text-xs">Roubos</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors.green }}></div>
-                    <span className="text-xs">Recuperados</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors.yellow }}></div>
-                    <span className="text-xs">Tentativas</span>
-                  </div>
-                </div>
-              </div>
-
-              <TabsContent value="bar">
+                <CardDescription>Comparativo entre ocorrências e casos resolvidos</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <BarChart data={ocorrenciasMensais}>
+                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip />
                     <Legend />
-                    <Bar dataKey="roubos" fill={colors.danger} />
-                    <Bar dataKey="recuperados" fill={colors.green} />
-                    <Bar dataKey="tentativas" fill={colors.yellow} />
+                    <Bar dataKey="ocorrencias" name="Ocorrências" fill="#0088FE" />
+                    <Bar dataKey="resolvidos" name="Resolvidos" fill="#00C49F" />
                   </BarChart>
                 </ResponsiveContainer>
-              </TabsContent>
+              </CardContent>
+            </Card>
 
-              <TabsContent value="line">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tipos de Ocorrências</CardTitle>
+                <CardDescription>Distribuição por categoria de crime</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line type="monotone" dataKey="roubos" stroke={colors.danger} strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="recuperados" stroke={colors.green} strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="tentativas" stroke={colors.yellow} strokeWidth={2} dot={{ r: 3 }} />
-                  </LineChart>
+                  <PieChart>
+                    <Pie
+                      data={tiposCrime}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {tiposCrime.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
                 </ResponsiveContainer>
-              </TabsContent>
+              </CardContent>
+            </Card>
+          </div>
 
-              <TabsContent value="area">
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey="roubos"
-                      stackId="1"
-                      stroke={colors.danger}
-                      fill={`${colors.danger}33`}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="recuperados"
-                      stackId="2"
-                      stroke={colors.green}
-                      fill={`${colors.green}33`}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="tentativas"
-                      stackId="3"
-                      stroke={colors.yellow}
-                      fill={`${colors.yellow}33`}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Ocorrências por Região</CardTitle>
-            <CardDescription>Distribuição geográfica dos casos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] flex flex-col">
-              <ResponsiveContainer width="100%" height="70%">
-                <PieChart>
-                  <Pie
-                    data={locationData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    labelLine={false}
+          {/* Alertas Recentes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Alertas Recentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {alertasRecentes.map((alerta) => (
+                  <div
+                    key={alerta.id}
+                    className={`p-4 rounded-lg border ${
+                      alerta.nivel === "alto"
+                        ? "bg-red-50 border-red-200"
+                        : alerta.nivel === "medio"
+                          ? "bg-yellow-50 border-yellow-200"
+                          : "bg-blue-50 border-blue-200"
+                    }`}
                   >
-                    {locationData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="grid grid-cols-2 gap-2 mt-auto">
-                {locationData.map((area, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
-                    <span className="text-xs">{area.name}</span>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-start gap-3">
+                        {alerta.nivel === "alto" ? (
+                          <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+                        ) : alerta.nivel === "medio" ? (
+                          <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                        ) : (
+                          <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                        )}
+                        <div>
+                          <h4 className="font-medium">{alerta.titulo}</h4>
+                          <p className="text-sm text-muted-foreground">{alerta.descricao}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{alerta.tempo}</span>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Horários Críticos</CardTitle>
-            <CardDescription>Períodos com maior incidência de crimes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={hourlyData} barSize={20}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="hour" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="incidents" fill={colors.blue}>
-                  {hourlyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.incidents > 40 ? colors.danger : colors.blue} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between p-2 bg-red-50 rounded-md">
-                <div className="flex items-center">
-                  <AlertTriangle className="h-4 w-4 mr-2 text-red-600" />
-                  <span className="text-sm font-medium">Horário crítico</span>
-                </div>
-                <span className="text-sm font-semibold">18:00 - 21:00</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-yellow-50 rounded-md">
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-2 text-yellow-600" />
-                  <span className="text-sm font-medium">Segundo pico</span>
-                </div>
-                <span className="text-sm font-semibold">12:00 - 15:00</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Dispositivos Roubados</CardTitle>
-            <CardDescription>Categorização por tipo de dispositivo</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={deviceTypeData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {deviceTypeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {deviceTypeData.map((device, i) => (
-                <div key={i} className="flex items-center p-2 bg-gray-50 rounded-md">
-                  <div
-                    className="w-3 h-3 rounded-full mr-2"
-                    style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                  ></div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium">{device.name}</span>
-                    <span className="text-xs text-muted-foreground">{device.value}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Incidentes Recentes</CardTitle>
-            <CardDescription>Últimas ocorrências registradas</CardDescription>
-          </CardHeader>
-          <CardContent className="px-0">
-            <div className="space-y-0">
-              {recentIncidents.map((incident, index) => (
-                <React.Fragment key={incident.id}>
-                  <div className={`flex flex-col px-6 py-3 ${index % 2 === 0 ? "bg-gray-50" : ""}`}>
-                    <div className="flex justify-between items-start mb-1">
-                      <div className="flex items-center">
-                        <span className="font-medium text-sm mr-2">{incident.id}</span>
-                        {getStatusBadge(incident.status)}
-                      </div>
-                      <span className="text-xs text-muted-foreground">{incident.hora}</span>
-                    </div>
-                    <div className="flex items-start">
-                      <Smartphone className="h-4 w-4 mr-2 text-blue-600 mt-0.5" />
-                      <div>
-                        <p className="text-sm">{incident.item}</p>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {incident.local}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {index < recentIncidents.length - 1 && <Separator />}
-                </React.Fragment>
-              ))}
-            </div>
-            <div className="px-6 pt-4">
+            </CardContent>
+            <CardFooter>
               <Button variant="outline" className="w-full">
-                Ver todos os incidentes
+                Ver Todos os Alertas
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardFooter>
+          </Card>
+        </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Taxa de Resolução por Região</CardTitle>
-          <CardDescription>Eficiência das operações policiais por localidade</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Centro</span>
-                <span className="text-sm font-medium">78%</span>
+        {/* Conteúdo da aba Dicas de Segurança */}
+        <TabsContent value="seguranca" className="space-y-6">
+          {/* Dica do Dia */}
+          <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-100">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5 text-yellow-500" />
+                Dica de Segurança do Dia
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-start gap-4">
+                <div className="p-4 bg-blue-100 rounded-full">
+                  {React.createElement(dicasSeguranca[dicaAtual].icone, { className: "h-8 w-8 text-blue-700" })}
+                </div>
+                <div>
+                  <h3 className="text-xl font-medium mb-2">{dicasSeguranca[dicaAtual].titulo}</h3>
+                  <p className="text-muted-foreground">{dicasSeguranca[dicaAtual].descricao}</p>
+                </div>
               </div>
-              <Progress value={78} className="h-2" />
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Zona Sul</span>
-                <span className="text-sm font-medium">65%</span>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="ghost" size="sm">
+                Salvar
+                <Bookmark className="ml-2 h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={proximaDica}>
+                Próxima Dica
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Lista de Dicas de Segurança */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Todas as Dicas de Segurança</CardTitle>
+              <CardDescription>Recomendações para aumentar sua segurança em campo</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {dicasSeguranca.map((dica) => (
+                  <div key={dica.id} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-primary/10 rounded-full">
+                        {React.createElement(dica.icone, { className: "h-5 w-5 text-primary" })}
+                      </div>
+                      <div>
+                        <h4 className="font-medium">{dica.titulo}</h4>
+                        <p className="text-sm text-muted-foreground">{dica.descricao}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <Progress value={65} className="h-2" />
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Zona Norte</span>
-                <span className="text-sm font-medium">57%</span>
+            </CardContent>
+          </Card>
+
+          {/* Procedimentos de Emergência */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Siren className="h-5 w-5 text-red-500" />
+                Procedimentos de Emergência
+              </CardTitle>
+              <CardDescription>Protocolos para situações críticas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg border bg-red-50">
+                  <h4 className="font-medium mb-2">Oficial Ferido</h4>
+                  <ol className="list-decimal pl-5 space-y-1 text-sm">
+                    <li>Comunique imediatamente à central via rádio (código 10-99)</li>
+                    <li>Informe localização exata e condição do oficial</li>
+                    <li>Solicite apoio médico e tático</li>
+                    <li>Aplique primeiros socorros se possível e seguro</li>
+                    <li>Estabeleça perímetro de segurança</li>
+                  </ol>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-yellow-50">
+                  <h4 className="font-medium mb-2">Confronto Armado</h4>
+                  <ol className="list-decimal pl-5 space-y-1 text-sm">
+                    <li>Busque cobertura imediatamente</li>
+                    <li>Comunique à central (código 10-71)</li>
+                    <li>Solicite reforços e informe localização precisa</li>
+                    <li>Identifique-se como policial e dê ordens claras</li>
+                    <li>Use força proporcional conforme protocolo</li>
+                  </ol>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-blue-50">
+                  <h4 className="font-medium mb-2">Perseguição Veicular</h4>
+                  <ol className="list-decimal pl-5 space-y-1 text-sm">
+                    <li>Informe central imediatamente (código 10-80)</li>
+                    <li>Forneça descrição do veículo, placa e direção</li>
+                    <li>Mantenha narração contínua da rota</li>
+                    <li>Avalie constantemente riscos à população civil</li>
+                    <li>Siga orientações do supervisor para continuar ou abortar</li>
+                  </ol>
+                </div>
               </div>
-              <Progress value={57} className="h-2" />
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Zona Leste</span>
-                <span className="text-sm font-medium">49%</span>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full">
+                Ver Manual Completo de Procedimentos
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        {/* Conteúdo da aba Áreas de Risco */}
+        <TabsContent value="areas-risco" className="space-y-6">
+          {/* Mapa de Calor (Simulado) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-red-500" />
+                Mapa de Calor de Ocorrências
+              </CardTitle>
+              <CardDescription>Concentração de ocorrências nas últimas 24 horas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="aspect-video bg-slate-100 rounded-md flex items-center justify-center">
+                <div className="text-center">
+                  <MapPin className="h-12 w-12 text-slate-300 mx-auto mb-2" />
+                  <p className="text-muted-foreground">Mapa interativo de ocorrências</p>
+                  <Button variant="outline" className="mt-4">
+                    Abrir Mapa Completo
+                  </Button>
+                </div>
               </div>
-              <Progress value={49} className="h-2" />
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Zona Oeste</span>
-                <span className="text-sm font-medium">72%</span>
+            </CardContent>
+          </Card>
+
+          {/* Áreas de Alto Risco */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Áreas de Alto Risco</CardTitle>
+              <CardDescription>Regiões com maior índice de criminalidade</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {areasRisco.map((area) => (
+                  <div key={area.area} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={
+                            area.nivel > 75
+                              ? "bg-red-100 text-red-800 hover:bg-red-100"
+                              : area.nivel > 60
+                                ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                                : "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                          }
+                        >
+                          Nível {area.nivel}%
+                        </Badge>
+                        <span className="font-medium">{area.area}</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">{area.incidentes} incidentes recentes</span>
+                    </div>
+                    <Progress value={area.nivel} className="h-2" />
+                    <div className="text-xs text-muted-foreground">
+                      {area.nivel > 75
+                        ? "Reforço policial recomendado. Abordagens devem ser realizadas com apoio."
+                        : area.nivel > 60
+                          ? "Atenção elevada recomendada. Patrulhamento em duplas."
+                          : "Patrulhamento normal. Mantenha vigilância padrão."}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <Progress value={72} className="h-2" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+
+          {/* Recomendações de Segurança por Área */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recomendações por Área</CardTitle>
+              <CardDescription>Orientações específicas para cada região</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg border bg-red-50">
+                  <h4 className="font-medium mb-2">Centro (Alto Risco)</h4>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>Patrulhamento em grupos de no mínimo 3 oficiais</li>
+                    <li>Comunicação constante com a central</li>
+                    <li>Atenção especial a pontos de tráfico identificados</li>
+                    <li>Verificação de becos e áreas com pouca iluminação</li>
+                    <li>Uso de colete balístico nível III obrigatório</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-yellow-50">
+                  <h4 className="font-medium mb-2">Zona Norte (Risco Moderado)</h4>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>Patrulhamento em duplas</li>
+                    <li>Atenção a horários de pico de ocorrências (18h-22h)</li>
+                    <li>Monitoramento de áreas próximas a terminais de transporte</li>
+                    <li>Verificação de denúncias de moradores com cautela</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-blue-50">
+                  <h4 className="font-medium mb-2">Zona Oeste (Risco Baixo)</h4>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>Patrulhamento preventivo</li>
+                    <li>Interação comunitária e presença visível</li>
+                    <li>Atenção a ocorrências de furtos em residências</li>
+                    <li>Verificação de veículos suspeitos estacionados</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Conteúdo da aba Recursos e Treinamentos */}
+        <TabsContent value="recursos" className="space-y-6">
+          {/* Recursos Disponíveis */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recursos Disponíveis</CardTitle>
+              <CardDescription>Materiais e ferramentas para apoio operacional</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg border bg-blue-50 flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 rounded-full">
+                    <FileText className="h-5 w-5 text-blue-700" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Manuais Operacionais</h4>
+                    <p className="text-sm text-muted-foreground">Procedimentos padrão e protocolos atualizados</p>
+                    <Button variant="link" className="px-0 h-8">
+                      Acessar Manuais
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-green-50 flex items-start gap-3">
+                  <div className="p-2 bg-green-100 rounded-full">
+                    <BookOpen className="h-5 w-5 text-green-700" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Biblioteca Digital</h4>
+                    <p className="text-sm text-muted-foreground">Acervo de estudos e referências técnicas</p>
+                    <Button variant="link" className="px-0 h-8">
+                      Acessar Biblioteca
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-yellow-50 flex items-start gap-3">
+                  <div className="p-2 bg-yellow-100 rounded-full">
+                    <Megaphone className="h-5 w-5 text-yellow-700" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Comunicados Oficiais</h4>
+                    <p className="text-sm text-muted-foreground">Informes e diretrizes da corporação</p>
+                    <Button variant="link" className="px-0 h-8">
+                      Ver Comunicados
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-purple-50 flex items-start gap-3">
+                  <div className="p-2 bg-purple-100 rounded-full">
+                    <Users className="h-5 w-5 text-purple-700" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Suporte Psicológico</h4>
+                    <p className="text-sm text-muted-foreground">Atendimento e apoio para oficiais</p>
+                    <Button variant="link" className="px-0 h-8">
+                      Agendar Atendimento
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Legislação Atualizada */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Legislação Atualizada</CardTitle>
+              <CardDescription>Mudanças recentes em leis e regulamentos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg border">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">Lei 14.599/2023 - Alterações no Código Penal</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Novas disposições sobre crimes cibernéticos e fraudes eletrônicas
+                      </p>
+                    </div>
+                    <Badge>Novo</Badge>
+                  </div>
+                  <Button variant="link" className="px-0 h-8">
+                    Ler na íntegra
+                  </Button>
+                </div>
+
+                <div className="p-4 rounded-lg border">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">Decreto 10.822 - Procedimentos de Abordagem</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Atualização dos protocolos de abordagem e revista pessoal
+                      </p>
+                    </div>
+                    <Badge variant="outline">Atualizado</Badge>
+                  </div>
+                  <Button variant="link" className="px-0 h-8">
+                    Ler na íntegra
+                  </Button>
+                </div>
+
+                <div className="p-4 rounded-lg border">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">Portaria 789 - Uso de Equipamentos</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Regulamentação do uso de câmeras corporais e equipamentos de monitoramento
+                      </p>
+                    </div>
+                    <Badge variant="outline">Atualizado</Badge>
+                  </div>
+                  <Button variant="link" className="px-0 h-8">
+                    Ler na íntegra
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full">
+                Ver Toda a Legislação
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Rodapé com atualização */}
+      <div className="flex justify-between items-center text-sm text-muted-foreground pt-4 border-t">
+        <div className="flex items-center gap-1">
+          <RefreshCw className="h-3 w-3" />
+          <span>Última atualização: hoje às {format(new Date(), "HH:mm")}</span>
+        </div>
+        <Button variant="ghost" size="sm">
+          Atualizar Dados
+        </Button>
+      </div>
     </div>
   )
 }

@@ -54,7 +54,6 @@ import {
   FileBarChart2,
   TrendingUp,
   TrendingDown,
-  Users,
   Map,
 } from "lucide-react"
 import { format, subDays } from "date-fns"
@@ -255,7 +254,7 @@ const RelatoriosTab: React.FC = () => {
 
         <Card className="bg-gradient-to-br from-white to-yellow-50 border-yellow-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Dispositivos Recuperados</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Objetos Recuperados</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex justify-between items-center">
@@ -661,7 +660,7 @@ const RelatoriosTab: React.FC = () => {
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Dispositivos Recuperados</span>
+                      <span className="text-sm font-medium">Objetos Recuperados</span>
                       <div className="flex items-center">
                         <TrendingUp className="h-4 w-4 mr-1 text-green-600" />
                         <span className="text-sm font-medium text-green-600">+15.8%</span>
@@ -1027,71 +1026,8 @@ const RelatoriosTab: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Tempo Médio de Resolução</CardTitle>
-                <CardDescription>Dias necessários para resolução por tipo de caso</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Alta</Badge>
-                        <span className="text-sm">Casos de alta prioridade</span>
-                      </div>
-                      <span className="font-medium">12 dias</span>
-                    </div>
-                    <Progress value={40} className="h-2" />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Média</Badge>
-                        <span className="text-sm">Casos de média prioridade</span>
-                      </div>
-                      <span className="font-medium">24 dias</span>
-                    </div>
-                    <Progress value={80} className="h-2" />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Baixa</Badge>
-                        <span className="text-sm">Casos de baixa prioridade</span>
-                      </div>
-                      <span className="font-medium">30 dias</span>
-                    </div>
-                    <Progress value={100} className="h-2" />
-                  </div>
-
-                  <Separator />
-
-                  <div className="p-3 bg-blue-50 rounded-md">
-                    <div className="flex justify-between items-center mb-1">
-                      <h4 className="text-sm font-medium">Tempo Médio Geral</h4>
-                      <div className="flex items-center">
-                        <span className="font-bold mr-2">22 dias</span>
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                          <TrendingDown className="h-3 w-3 mr-1" />
-                          -15%
-                        </Badge>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Redução de 15% no tempo médio de resolução em comparação com o período anterior
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
                 <CardTitle>Taxa de Recuperação</CardTitle>
-                <CardDescription>Dispositivos recuperados por tipo</CardDescription>
+                <CardDescription>Objetos recuperados por tipo</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -1140,100 +1076,6 @@ const RelatoriosTab: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Taxa média</span>
                     <span className="text-sm font-bold">24.8%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Eficiência por Equipe</CardTitle>
-                <CardDescription>Desempenho das equipes de investigação</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm">Equipe A</span>
-                      <span className="text-sm font-medium">85%</span>
-                    </div>
-                    <Progress value={85} className="h-2" />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm">Equipe B</span>
-                      <span className="text-sm font-medium">78%</span>
-                    </div>
-                    <Progress value={78} className="h-2" />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm">Equipe C</span>
-                      <span className="text-sm font-medium">72%</span>
-                    </div>
-                    <Progress value={72} className="h-2" />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm">Equipe D</span>
-                      <span className="text-sm font-medium">68%</span>
-                    </div>
-                    <Progress value={68} className="h-2" />
-                  </div>
-
-                  <Separator />
-
-                  <div className="p-3 bg-blue-50 rounded-md">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Users className="h-4 w-4 text-blue-600" />
-                      <h4 className="text-sm font-medium">Equipe Destaque</h4>
-                    </div>
-                    <p className="text-xs">
-                      Equipe A com melhor desempenho no período, resolvendo 85% dos casos atribuídos dentro do prazo
-                      estabelecido
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Satisfação das Vítimas</CardTitle>
-                <CardDescription>Avaliação do atendimento</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center h-[200px]">
-                  <div className="relative w-32 h-32">
-                    <svg viewBox="0 0 100 100" className="w-full h-full">
-                      <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="10" />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke={colors.green}
-                        strokeWidth="10"
-                        strokeDasharray="283"
-                        strokeDashoffset={283 - (283 * 78) / 100}
-                        transform="rotate(-90 50 50)"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center flex-col">
-                      <span className="text-3xl font-bold">78%</span>
-                      <span className="text-xs text-muted-foreground">Satisfação</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 text-center">
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      +5% vs período anterior
-                    </Badge>
-                    <p className="text-xs text-muted-foreground mt-2">Baseado em 324 avaliações de vítimas</p>
                   </div>
                 </div>
               </CardContent>

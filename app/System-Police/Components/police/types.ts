@@ -6,17 +6,27 @@ export interface Comentario {
 
 export interface Caso {
   id: string
-  objeto: string
-  tipoObjeto: string
+  categoriaObjeto: string
+  nomeObjeto: string
+  situacao: string
+  marca: string
+  modelo: string
+  imei?: string
+  chassi?: string
+  descricaoObjeto: string
+  qrCode?: string
+  imagensObjeto?: string[]
+  outroContato?: string
+  notaFiscal?: string
   dataRoubo: string
   horaRoubo: string
-  localizacao: string
+  categoriaRoubo: string
+  localRoubo: string
+  descricaoRoubo: string
   vitima: string
   telefone: string
   status: string
-  prioridade: string
-  valorEstimado: string
-  descricao: string
-  comentarios?: Comentario[]
 }
+
+
 
