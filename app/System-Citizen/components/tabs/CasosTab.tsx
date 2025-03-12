@@ -16,6 +16,8 @@ import {
   Shield,
   AlertCircle,
   Tag,
+  Clock,
+  Map,
 } from "lucide-react"
 
 // Interfaces
@@ -23,10 +25,12 @@ interface Caso {
   id: string
   objeto: string
   dataRoubo: string
+  horarioRoubo: string
   status: "Em análise" | "Localizado" | "Recuperado"
   categoria: "Armado" | "Moto" | "Furto" | "Distração" | "Outros"
   localizacao?: string
   descricao?: string
+  coordenadas?: { lat: number; lng: number }
 }
 
 interface Comentario {
@@ -1067,6 +1071,40 @@ const ErrorText = styled.p`
   }
 `
 
+const MapModal = styled(Dialog)`
+  z-index: 60;
+`
+
+const MapContainer = styled.div`
+  width: 100%;
+  height: 400px;
+  background-color: #e5e7eb;
+  border-radius: 0.375rem;
+  position: relative;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+`
+
+const MapPlaceholder = styled.div`
+  text-align: center;
+  padding: 1rem;
+`
+
+const InputGroup = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+`
+
+const InputWithButton = styled.div`
+  display: flex;
+  flex: 1;
+`
+
 export default function CasosPage() {
   const router = useRouter()
   const [showDialog, setShowDialog] = useState(false)
@@ -1084,6 +1122,9 @@ export default function CasosPage() {
   const [novaDescricao, setNovaDescricao] = useState<string>("")
   const [novaLocalizacao, setNovaLocalizacao] = useState<string>("")
   const [novaCategoria, setNovaCategoria] = useState<"Armado" | "Moto" | "Furto" | "Distração" | "Outros">("Outros")
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat: number; lng: number } | null>(null)
+  const [horarioRoubo, setHorarioRoubo] = useState("")
 
   // Estados para a página de detalhes
   const [casoAtual, setCasoAtual] = useState<Caso | null>(null)
@@ -1095,6 +1136,22 @@ export default function CasosPage() {
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false)
   const [casoIdToUpdate, setCasoIdToUpdate] = useState<string | null>(null)
   const [showRecoveredConfirmationDialog, setShowRecoveredConfirmationDialog] = useState(false)
+
+  // Mock list of objects from the database
+  const objetosDisponiveis = [
+    "Smartphone Samsung Galaxy",
+    "iPhone 13 Pro",
+    "Notebook Dell XPS",
+    "MacBook Air",
+    "Relógio Apple Watch",
+    "Bicicleta Caloi Elite",
+    "Mochila North Face",
+    "Carteira de couro",
+    "Tablet iPad Pro",
+    "Câmera Canon EOS",
+    "Fones de ouvido AirPods",
+    "Óculos Ray-Ban",
+  ]
 
   // Navegar para a página de detalhes do caso
   const navegarParaDetalhes = (id: string) => {
@@ -1163,10 +1220,12 @@ export default function CasosPage() {
       id: Math.floor(Math.random() * 10000).toString(),
       objeto: novoObjeto,
       dataRoubo: new Date().toLocaleDateString("pt-BR"),
+      horarioRoubo: horarioRoubo || "Não informado",
       status: "Em análise",
       categoria: novaCategoria,
       descricao: novaDescricao || undefined,
       localizacao: novaLocalizacao || undefined,
+      coordenadas: selectedCoordinates || undefined,
     }
 
     setCasos([...casos, novoCaso])
@@ -1174,12 +1233,14 @@ export default function CasosPage() {
     setNovaDescricao("")
     setNovaLocalizacao("")
     setNovaCategoria("Outros")
+    setHorarioRoubo("")
+    setSelectedCoordinates(null)
     setShowDialog(false)
   }
 
   // Adicionar um caso de teste com dados predefinidos
   const adicionarCasoTeste = () => {
-    const objetos = ["Smartphone", "Notebook", "Relógio", "Mochila", "Carteira"]
+    const objetos = objetosDisponiveis
     const locais = ["Av. Paulista", "Estação Sé", "Shopping Morumbi", "Parque Ibirapuera", ""]
     const status: Array<"Em análise" | "Localizado" | "Recuperado"> = ["Em análise", "Localizado", "Recuperado"]
     const categorias: Array<"Armado" | "Moto" | "Furto" | "Distração" | "Outros"> = [
@@ -1189,11 +1250,13 @@ export default function CasosPage() {
       "Distração",
       "Outros",
     ]
+    const horarios = ["08:30", "12:15", "15:45", "19:20", "22:10"]
 
     const novoCaso: Caso = {
       id: Math.floor(Math.random() * 10000).toString(),
       objeto: objetos[Math.floor(Math.random() * objetos.length)],
       dataRoubo: new Date(Date.now() - Math.floor(Math.random() * 30) * 86400000).toLocaleDateString("pt-BR"),
+      horarioRoubo: horarios[Math.floor(Math.random() * horarios.length)],
       status: status[Math.floor(Math.random() * status.length)],
       categoria: categorias[Math.floor(Math.random() * categorias.length)],
     }
@@ -1201,6 +1264,11 @@ export default function CasosPage() {
     const temLocalizacao = Math.random() > 0.3
     if (temLocalizacao) {
       novoCaso.localizacao = locais[Math.floor(Math.random() * locais.length)]
+      // Add random coordinates for São Paulo area
+      novoCaso.coordenadas = {
+        lat: -23.55 - Math.random() * 0.1,
+        lng: -46.63 - Math.random() * 0.1,
+      }
     }
 
     setCasos([...casos, novoCaso])
@@ -1369,6 +1437,11 @@ export default function CasosPage() {
                     <span>Data do roubo: {casoAtual.dataRoubo}</span>
                   </MetaItem>
 
+                  <MetaItem>
+                    <Clock size={16} />
+                    <span>Horário: {casoAtual.horarioRoubo || "Não informado"}</span>
+                  </MetaItem>
+
                   {casoAtual.localizacao && (
                     <MetaItem>
                       <MapPin size={16} />
@@ -1525,12 +1598,14 @@ export default function CasosPage() {
               <DialogBody>
                 <FormGroup>
                   <Label htmlFor="objeto">Objeto Roubado</Label>
-                  <Input
-                    id="objeto"
-                    placeholder="Ex: Smartphone, Carteira, Notebook..."
-                    value={novoObjeto}
-                    onChange={(e) => setNovoObjeto(e.target.value)}
-                  />
+                  <Select id="objeto" value={novoObjeto} onChange={(e) => setNovoObjeto(e.target.value)}>
+                    <option value="">Selecione um objeto...</option>
+                    {objetosDisponiveis.map((objeto, index) => (
+                      <option key={index} value={objeto}>
+                        {objeto}
+                      </option>
+                    ))}
+                  </Select>
                 </FormGroup>
                 <FormGroup>
                   <Label htmlFor="categoria">Categoria</Label>
@@ -1549,21 +1624,57 @@ export default function CasosPage() {
                   </Select>
                 </FormGroup>
                 <FormGroup>
-                  <Label htmlFor="descricao">Descrição (opcional)</Label>
-                  <Input
-                    id="descricao"
-                    placeholder="Descreva o objeto..."
-                    value={novaDescricao}
-                    onChange={(e) => setNovaDescricao(e.target.value)}
-                  />
+                  <Label htmlFor="dataHora">Data e Hora do Roubo</Label>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <Input
+                      type="date"
+                      id="dataRoubo"
+                      style={{ flex: 1 }}
+                      defaultValue={new Date().toISOString().split("T")[0]}
+                    />
+                    <Input
+                      type="time"
+                      id="horarioRoubo"
+                      style={{ flex: 1 }}
+                      value={horarioRoubo}
+                      onChange={(e) => setHorarioRoubo(e.target.value)}
+                    />
+                  </div>
                 </FormGroup>
                 <FormGroup>
-                  <Label htmlFor="localizacao">Local do Roubo (opcional)</Label>
-                  <Input
-                    id="localizacao"
-                    placeholder="Ex: Av. Paulista, Estação Sé..."
-                    value={novaLocalizacao}
-                    onChange={(e) => setNovaLocalizacao(e.target.value)}
+                  <Label htmlFor="localizacao">Local do Roubo</Label>
+                  <InputGroup>
+                    <InputWithButton>
+                      <Input
+                        id="localizacao"
+                        placeholder="Ex: Av. Paulista, Estação Sé..."
+                        value={novaLocalizacao}
+                        onChange={(e) => setNovaLocalizacao(e.target.value)}
+                        style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                      />
+                      <Button
+                        variant="secondary"
+                        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                        onClick={() => setShowMapModal(true)}
+                      >
+                        <Map size={16} />
+                      </Button>
+                    </InputWithButton>
+                  </InputGroup>
+                  {selectedCoordinates && (
+                    <div style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "#6b7280" }}>
+                      Localização selecionada no mapa: {selectedCoordinates.lat.toFixed(6)},{" "}
+                      {selectedCoordinates.lng.toFixed(6)}
+                    </div>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="descricao">Descreva o acontecido ou coloque mais informações</Label>
+                  <Textarea
+                    id="descricao"
+                    placeholder="Descreva como ocorreu o roubo, características do ladrão, etc..."
+                    value={novaDescricao}
+                    onChange={(e) => setNovaDescricao(e.target.value)}
                   />
                 </FormGroup>
               </DialogBody>
@@ -1577,6 +1688,47 @@ export default function CasosPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+        )}
+
+        {showMapModal && (
+          <MapModal>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Selecione a Localização</DialogTitle>
+              </DialogHeader>
+              <DialogBody>
+                <MapContainer>
+                  <MapPlaceholder>
+                    <Map size={48} color="#6b7280" />
+                    <p style={{ marginTop: "1rem" }}>Mapa interativo seria carregado aqui</p>
+                    <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
+                      Clique no mapa para marcar a localização exata do roubo
+                    </p>
+                  </MapPlaceholder>
+                  <Button
+                    onClick={() => {
+                      // Simular seleção de coordenadas (São Paulo)
+                      const randomLat = -23.55 - Math.random() * 0.1
+                      const randomLng = -46.63 - Math.random() * 0.1
+                      setSelectedCoordinates({ lat: randomLat, lng: randomLng })
+                      setNovaLocalizacao(novaLocalizacao || "Localização selecionada no mapa")
+                      setShowMapModal(false)
+                    }}
+                  >
+                    Simular Seleção de Localização
+                  </Button>
+                </MapContainer>
+              </DialogBody>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowMapModal(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={() => setShowMapModal(false)} disabled={!selectedCoordinates}>
+                  Confirmar Localização
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </MapModal>
         )}
       </Container>
     )
@@ -1657,6 +1809,7 @@ export default function CasosPage() {
                   <ObjectDetails>
                     <ObjectName>{caso.objeto}</ObjectName>
                     <ObjectMeta>Roubado em: {caso.dataRoubo}</ObjectMeta>
+                    <ObjectMeta>Horário: {caso.horarioRoubo}</ObjectMeta>
                     {caso.localizacao && (
                       <ObjectMeta>
                         <MapPin size={12} />
@@ -1716,68 +1869,6 @@ export default function CasosPage() {
         </CardList>
       )}
 
-      {showDialog && (
-        <Dialog>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Registrar Novo Caso</DialogTitle>
-            </DialogHeader>
-            <DialogBody>
-              <FormGroup>
-                <Label htmlFor="objeto">Objeto Roubado</Label>
-                <Input
-                  id="objeto"
-                  placeholder="Ex: Smartphone, Carteira, Notebook..."
-                  value={novoObjeto}
-                  onChange={(e) => setNovoObjeto(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="categoria">Categoria</Label>
-                <Select
-                  id="categoria"
-                  value={novaCategoria}
-                  onChange={(e) =>
-                    setNovaCategoria(e.target.value as "Armado" | "Moto" | "Furto" | "Distração" | "Outros")
-                  }
-                >
-                  <option value="Armado">Armado</option>
-                  <option value="Moto">Moto</option>
-                  <option value="Furto">Furto</option>
-                  <option value="Distração">Distração</option>
-                  <option value="Outros">Outros</option>
-                </Select>
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="descricao">Descrição (opcional)</Label>
-                <Input
-                  id="descricao"
-                  placeholder="Descreva o objeto..."
-                  value={novaDescricao}
-                  onChange={(e) => setNovaDescricao(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="localizacao">Local do Roubo (opcional)</Label>
-                <Input
-                  id="localizacao"
-                  placeholder="Ex: Av. Paulista, Estação Sé..."
-                  value={novaLocalizacao}
-                  onChange={(e) => setNovaLocalizacao(e.target.value)}
-                />
-              </FormGroup>
-            </DialogBody>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={adicionarCaso} disabled={!novoObjeto.trim()}>
-                Registrar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
       {showConfirmationDialog && (
         <Dialog>
           <DialogContent>
