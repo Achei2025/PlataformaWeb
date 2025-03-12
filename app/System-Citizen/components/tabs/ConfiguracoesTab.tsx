@@ -923,12 +923,87 @@ const LocationModal = ({
   )
 }
 
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
+}) => {
+  if (!isOpen) return null
+
+  return (
+    <ModalOverlay>
+      <ModalContainer>
+        <ModalHeader>
+          <ModalTitle>
+            <Save size={18} />
+            Confirmar Alterações
+          </ModalTitle>
+          <ModalCloseButton onClick={onClose}>
+            <X size={18} />
+          </ModalCloseButton>
+        </ModalHeader>
+        <ModalContent>
+          <ModalIconContainer>
+            <AlertCircle size={32} color={colors.blue} />
+          </ModalIconContainer>
+
+          <AlertTitle variant="info" style={{ textAlign: "center", marginBottom: "16px" }}>
+            Deseja salvar as alterações?
+          </AlertTitle>
+          <AlertText variant="info" style={{ marginBottom: "16px", textAlign: "center" }}>
+            Você está prestes a salvar as alterações nas suas configurações. Esta ação não pode ser desfeita.
+          </AlertText>
+
+          <AlertBox variant="info" style={{ marginTop: "20px" }}>
+            <AlertTitle variant="info">
+              <Info size={16} />
+              Lembrete de Privacidade
+            </AlertTitle>
+            <AlertText variant="info">
+              Suas informações são mantidas anônimas para outros usuários. Apenas você e os administradores do sistema
+              podem ver seus dados reais.
+            </AlertText>
+          </AlertBox>
+        </ModalContent>
+        <ModalFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={onConfirm}>Confirmar e Salvar</Button>
+        </ModalFooter>
+      </ModalContainer>
+    </ModalOverlay>
+  )
+}
+
+// Modifique a parte do estado no componente ConfiguracoesTab para adicionar o estado do tipo de nome anônimo
 const ConfiguracoesTab: React.FC = () => {
   const [activeTab, setActiveTab] = useState("profile")
   const [loading, setLoading] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [showLocationModal, setShowLocationModal] = useState(false)
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [pendingLocationState, setPendingLocationState] = useState(false)
+  const [username, setUsername] = useState("Anônimo_" + Math.floor(Math.random() * 10000))
+  const [useFixedAnonymous, setUseFixedAnonymous] = useState(false)
+
+  // Função para gerar um novo nome de usuário
+  const generateNewUsername = () => {
+    if (useFixedAnonymous) {
+      setUsername("Anônimo")
+    } else {
+      setUsername("Anônimo_" + Math.floor(Math.random() * 10000))
+    }
+  }
+
+  // Efeito para atualizar o nome quando o tipo de anonimato muda
+  useEffect(() => {
+    generateNewUsername()
+  }, [useFixedAnonymous])
 
   // Switches state - Notificações
   const [notificationSwitches, setNotificationSwitches] = useState({
@@ -1041,6 +1116,11 @@ const ConfiguracoesTab: React.FC = () => {
   }
 
   const handleSave = () => {
+    setShowConfirmationModal(true)
+  }
+
+  const handleConfirmSave = () => {
+    setShowConfirmationModal(false)
     setLoading(true)
     // Simulando uma requisição
     setTimeout(() => {
@@ -1154,9 +1234,16 @@ const ConfiguracoesTab: React.FC = () => {
                     <FormGroup>
                       <Label htmlFor="phone">
                         <Phone size={14} />
-                        Telefone
+                        Telefone Principal
                       </Label>
                       <Input id="phone" type="tel" placeholder="(00) 00000-0000" />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label htmlFor="secondaryPhone">
+                        <Phone size={14} />
+                        Telefone Secundário
+                      </Label>
+                      <Input id="secondaryPhone" type="tel" placeholder="(00) 00000-0000" />
                     </FormGroup>
                     <FormGroup>
                       <Label htmlFor="alternative-contact-type">
@@ -1172,7 +1259,7 @@ const ConfiguracoesTab: React.FC = () => {
                         </Select>
                         <Input id="alternative-contact" placeholder="Informe seu contato alternativo" />
                       </FormRow>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
                         Este contato será usado apenas para recuperação de conta em caso de emergência.
                       </p>
                     </FormGroup>
@@ -1603,42 +1690,36 @@ const ConfiguracoesTab: React.FC = () => {
                   <div>
                     <SectionHeading>
                       <User size={16} />
-                      Visibilidade do Perfil
+                      Configurações de Anonimato
                     </SectionHeading>
 
                     <FormGroup style={{ marginBottom: "16px" }}>
-                      <Label htmlFor="profile-visibility">Quem pode ver meu perfil</Label>
-                      <Select id="profile-visibility" defaultValue="public">
-                        <option value="public">Público</option>
-                        <option value="friends">Apenas Amigos</option>
-                        <option value="private">Privado</option>
-                      </Select>
+                      <Label htmlFor="username">Seu Nome de Usuário Anônimo</Label>
+                      <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} disabled />
+                      <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+                        Este é o nome que outros usuários verão. Ele foi gerado automaticamente para proteger sua
+                        identidade.
+                      </p>
                     </FormGroup>
 
-                    <Switch
-                      checked={notificationSwitches.showOnlineStatus}
-                      onChange={() => toggleSwitch("showOnlineStatus")}
-                      label="Mostrar Status Online"
-                      description="Permitir que outros vejam quando você está online"
-                    />
+                    <Button
+                      variant="outline"
+                      style={{ marginBottom: "16px" }}
+                      onClick={() => setUsername("Anônimo_" + Math.floor(Math.random() * 10000))}
+                    >
+                      Gerar Novo Nome Aleatório
+                    </Button>
 
-                    <FormGroup style={{ marginTop: "24px", marginBottom: "16px" }}>
-                      <Label htmlFor="activity-visibility">Quem pode ver minhas atividades</Label>
-                      <Select id="activity-visibility" defaultValue="friends">
-                        <option value="public">Público</option>
-                        <option value="friends">Apenas Amigos</option>
-                        <option value="private">Ninguém</option>
-                      </Select>
-                    </FormGroup>
-
-                    <FormGroup style={{ marginBottom: "16px" }}>
-                      <Label htmlFor="search-visibility">Quem pode me encontrar nas buscas</Label>
-                      <Select id="search-visibility" defaultValue="public">
-                        <option value="public">Todos</option>
-                        <option value="friends">Apenas Amigos</option>
-                        <option value="private">Ninguém</option>
-                      </Select>
-                    </FormGroup>
+                    <AlertBox variant="info">
+                      <AlertTitle variant="info">
+                        <Info size={16} />
+                        Sistema de Anonimato
+                      </AlertTitle>
+                      <AlertText variant="info">
+                        Para sua proteção, todas as interações na plataforma são anônimas. Outros usuários não podem ver
+                        suas informações pessoais, apenas seu nome de usuário anônimo.
+                      </AlertText>
+                    </AlertBox>
                   </div>
 
                   <div>
@@ -1706,6 +1787,13 @@ const ConfiguracoesTab: React.FC = () => {
         onClose={handleLocationCancel}
         onConfirm={handleLocationConfirm}
         isEnabling={pendingLocationState}
+      />
+
+      {/* Modal de Confirmação */}
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={handleConfirmSave}
       />
 
       {showToast && (
