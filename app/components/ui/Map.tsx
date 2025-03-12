@@ -6,6 +6,59 @@ import "leaflet/dist/leaflet.css"
 import L from "leaflet"
 import "leaflet.heat"
 import MapSidebar from "@/app/components/ui/MapSidebar"
+import VisitorLayout from "@/app/layouts/VisitorLayout"
+
+// Update custom CSS for dark theme
+const customMapStyle = `
+  .leaflet-container {
+    background: #121212;
+  }
+  .leaflet-tile-container img {
+    border: none !important;
+    filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(0.9) !important;
+  }
+  .leaflet-tile {
+    border: none !important;
+  }
+  .leaflet-tile-pane {
+    opacity: 1 !important;
+  }
+  .custom-theft-marker {
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));
+  }
+  .custom-user-marker {
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));
+  }
+  .leaflet-control-zoom {
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  }
+  .leaflet-control-zoom a {
+    background-color: #2c2c2c !important;
+    color: #ffffff !important;
+    border: none !important;
+  }
+  .leaflet-control-zoom a:hover {
+    background-color: #3c3c3c !important;
+  }
+  .leaflet-popup-content-wrapper {
+    background-color: #2c2c2c !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  }
+  .leaflet-popup-tip {
+    background-color: #2c2c2c !important;
+  }
+  .leaflet-control-attribution {
+    background-color: rgba(44, 44, 44, 0.8) !important;
+    color: #999 !important;
+    font-size: 10px !important;
+  }
+  .leaflet-control-attribution a {
+    color: #999 !important;
+  }
+`
 
 interface Caso {
   id: string
@@ -44,15 +97,19 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
         center: center,
         zoom: zoom,
         zoomControl: false,
+        renderer: L.canvas(), // Use canvas renderer for better performance
       })
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      // Use dark map style
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
         maxZoom: 20,
+        className: "dark-style-tiles",
       }).addTo(mapInstance)
 
+      // Add zoom control to the bottom-right corner
       L.control.zoom({ position: "bottomright" }).addTo(mapInstance)
 
       markersLayerRef.current = L.layerGroup().addTo(mapInstance)
@@ -75,9 +132,9 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
               html: `<div style="
                 width: 20px;
                 height: 20px;
-                background-color: #007bff;
+                background-color: #3498db;
                 border-radius: 50%;
-                box-shadow: 0 0 10px #007bff;
+                box-shadow: 0 0 10px #3498db;
               "></div>`,
               iconSize: [20, 20],
               iconAnchor: [10, 10],
@@ -119,15 +176,16 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
       html: `<div style="
         width: 30px;
         height: 30px;
-        background-color: #ff4136;
+        background-color: #ff4444;
         border-radius: 50%;
-        border: 2px solid #ffffff;
+        border: 2px solid #2c2c2c;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-size: 18px;
         font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       ">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
           <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
@@ -151,7 +209,20 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
     if (showHeatmap) {
       if (!heatLayerRef.current) {
         const heatData = casos.map((caso) => [caso.latitude, caso.longitude, 1])
-        heatLayerRef.current = (L as any).heatLayer(heatData, { radius: 25 }).addTo(mapRef.current)
+        heatLayerRef.current = (L as any)
+          .heatLayer(heatData, {
+            radius: 25,
+            gradient: {
+              0.4: "#4a90e2",
+              0.6: "#2ecc71",
+              0.7: "#f1c40f",
+              0.8: "#e67e22",
+              1.0: "#e74c3c",
+            },
+            blur: 15,
+            maxZoom: 17,
+          })
+          .addTo(mapRef.current)
       }
     } else if (heatLayerRef.current) {
       mapRef.current.removeLayer(heatLayerRef.current)
@@ -165,8 +236,14 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
     mapRef.current.setView([selectedCaso.latitude, selectedCaso.longitude], 15)
   }, [selectedCaso])
 
-  return (
-    <div className="relative h-screen w-full">
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.invalidateSize()
+    }
+  }, [])
+
+  const mapContent = (
+    <>
       <MapSidebar
         casos={casos}
         onCasoSelect={(caso) => {
@@ -179,7 +256,20 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
             if (enabled) {
               if (!heatLayerRef.current) {
                 const heatData = casos.map((caso) => [caso.latitude, caso.longitude, 1])
-                heatLayerRef.current = (L as any).heatLayer(heatData, { radius: 25 }).addTo(mapRef.current)
+                heatLayerRef.current = (L as any)
+                  .heatLayer(heatData, {
+                    radius: 25,
+                    gradient: {
+                      0.4: "#4a90e2",
+                      0.6: "#2ecc71",
+                      0.7: "#f1c40f",
+                      0.8: "#e67e22",
+                      1.0: "#e74c3c",
+                    },
+                    blur: 15,
+                    maxZoom: 17,
+                  })
+                  .addTo(mapRef.current)
               }
             } else if (heatLayerRef.current) {
               mapRef.current.removeLayer(heatLayerRef.current)
@@ -188,7 +278,7 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
           }
         }}
         onBack={onBack}
-        showPatrulhas={showPatrulhas}
+        userType={userType}
       />
       <div
         ref={mapContainerRef}
@@ -202,12 +292,25 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
         }}
       />
       {isLoading && (
-        <div className="absolute top-0 left-0 right-0 z-20 bg-black bg-opacity-50 text-white p-4 text-center">
+        <div className="absolute top-0 left-0 right-0 z-20 bg-gray-900 bg-opacity-70 text-white p-4 text-center">
           Carregando o mapa...
         </div>
       )}
       {error && <div className="absolute top-0 left-0 right-0 z-20 bg-red-500 text-white p-4 text-center">{error}</div>}
-    </div>
+    </>
+  )
+
+  return (
+    <>
+      <style jsx global>
+        {customMapStyle}
+      </style>
+      {userType === "visitor" ? (
+        <VisitorLayout>{mapContent}</VisitorLayout>
+      ) : (
+        <div className="relative h-screen w-full">{mapContent}</div>
+      )}
+    </>
   )
 }
 
