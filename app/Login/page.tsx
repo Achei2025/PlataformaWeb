@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import styled, { keyframes } from "styled-components"
-import { Eye, EyeOff, Mail, Lock, ChromeIcon as Google, FlagIcon as Gov, Loader2 } from "lucide-react"
+import { Eye, EyeOff, User, Lock, ChromeIcon as Google, FlagIcon as Gov, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -31,9 +31,10 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: calc(100vh - 80px);
+  height: 100vh;
   background: linear-gradient(135deg, ${colors.green} 0%, ${colors.blue} 100%);
   padding: 100px 20px 20px 20px;
+  overflow-y: auto;
 `
 
 const FormCard = styled.div`
@@ -86,29 +87,7 @@ const Title = styled.h1`
 const Subtitle = styled.p`
   color: #666;
   text-align: center;
-  margin-bottom: 20px;
-`
-
-const UserTypeContainer = styled.div`
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-`
-
-const UserTypeButton = styled.button<{ $active: boolean }>`
-  flex: 1;
-  padding: 12px;
-  border: 2px solid ${(props) => (props.$active ? colors.green : "#e1e1e1")};
-  border-radius: 10px;
-  background: ${(props) => (props.$active ? colors.green : "white")};
-  color: ${(props) => (props.$active ? "white" : "#666")};
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: ${(props) => (props.$active ? "#00b347" : "#f8f9fa")};
-  }
+  margin-bottom: 5px;
 `
 
 const Form = styled.form`
@@ -238,10 +217,10 @@ const SocialButtonsContainer = styled.div`
   gap: 10px;
 `
 
-const LinkText = styled.p`
+const StyledLinkText = styled.p`
   text-align: center;
-  margin-top: 20px;
   color: #666;
+  margin-bottom: 25px;
 
   a {
     color: ${colors.blue};
@@ -317,26 +296,48 @@ const SideSection = styled.div`
   gap: 20px;
 `
 
+const UserTypeContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+`
+
+const UserTypeButton = styled.button<{ $active: boolean }>`
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: ${({ $active }) => ($active ? colors.green : "#e1e1e1")};
+  color: ${({ $active }) => ($active ? "white" : "#666")};
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  &:hover {
+    background-color: ${colors.green};
+    color: white;
+  }
+`
+
 export default function LoginPage() {
   const router = useRouter()
   const [userType, setUserType] = useState<"citizen" | "police">("citizen")
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
+  const [cpf, setCpf] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
-  const [errors, setErrors] = useState({ email: "", password: "" })
+  const [errors, setErrors] = useState({ cpf: "", password: "" })
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
   const validateForm = () => {
-    const newErrors = { email: "", password: "" }
+    const newErrors = { cpf: "", password: "" }
     let isValid = true
 
-    if (!email) {
-      newErrors.email = "Email é obrigatório"
+    if (!cpf) {
+      newErrors.cpf = "CPF é obrigatório"
       isValid = false
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email inválido"
+    } else if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf)) {
+      newErrors.cpf = "CPF inválido"
       isValid = false
     }
 
@@ -386,6 +387,9 @@ export default function LoginPage() {
             </LogoContainer>
             <Title>Bem-vindo de volta</Title>
             <Subtitle>Faça login para continuar</Subtitle>
+            <StyledLinkText>
+              Não tem uma conta? <Link href="/Register">Registre-se</Link>
+            </StyledLinkText>
 
             <UserTypeContainer>
               <UserTypeButton type="button" $active={userType === "citizen"} onClick={() => setUserType("citizen")}>
@@ -399,10 +403,29 @@ export default function LoginPage() {
             <Form onSubmit={handleSubmit}>
               <InputGroup>
                 <Icon>
-                  <Mail size={20} />
+                  <User size={20} />
                 </Icon>
-                <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                {errors.email && <ErrorMessage>{errors.email}</ErrorMessage>}
+                <Input
+                  type="text"
+                  placeholder="CPF"
+                  value={cpf}
+                  onChange={(e) => {
+                    // Format CPF as user types (000.000.000-00)
+                    const value = e.target.value.replace(/\D/g, "") // Remove non-digits
+                    let formattedValue = ""
+
+                    if (value.length <= 11) {
+                      // Format as CPF
+                      formattedValue = value
+                        .replace(/(\d{3})(?=\d)/, "$1.")
+                        .replace(/(\d{3})(?=\d)/, "$1.")
+                        .replace(/(\d{3})(?=\d)/, "$1-")
+
+                      setCpf(formattedValue)
+                    }
+                  }}
+                />
+                {errors.cpf && <ErrorMessage>{errors.cpf}</ErrorMessage>}
               </InputGroup>
 
               <InputGroup>
@@ -458,7 +481,7 @@ export default function LoginPage() {
             </WelcomeSection>
 
             <SideSection>
-              <SectionTitle>Entrar com o</SectionTitle>
+              <SectionTitle>Você também pode entrar com:</SectionTitle>
               <SocialButtonsContainer>
                 <SocialButton type="button" onClick={() => handleSocialLogin("google")}>
                   <Google size={20} />
@@ -469,10 +492,6 @@ export default function LoginPage() {
                   GOV
                 </SocialButton>
               </SocialButtonsContainer>
-
-              <LinkText>
-                Não tem uma conta? <Link href="/Register">Registre-se</Link>
-              </LinkText>
             </SideSection>
           </RightColumn>
         </FormLayout>

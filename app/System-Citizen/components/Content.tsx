@@ -3,6 +3,7 @@ import CadastrarTab from "./tabs/CadastrarTab"
 import MapaTab from "./tabs/MapaTab"
 import CasosTab from "./tabs/CasosTab"
 import ConfiguracoesTab from "./tabs/ConfiguracoesTab"
+import DashboardTab from "./tabs/DashboardTab"
 
 interface ContentProps {
   activeTab: string
