@@ -1,3 +1,25 @@
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ * 
+ * This file is part of Achei.
+ * 
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Contact information: teamachei.2024@gmail.com
+*/
+
 "use client"
 
 import type React from "react"
@@ -77,7 +99,7 @@ const SubmitButton = styled(motion.button)`
   border-radius: 0.25rem;
   transition: background-color 0.3s;
   &:hover {
-    background-color: ${(props) => props.theme.colors.primaryHover};
+    background-color: ${(props) => `darken(${props.theme.colors.primary}, 10%)`};
   }
 `
 
@@ -151,4 +173,5 @@ export default function LoginModal({ onClose }: LoginModalProps) {
     </ThemeProvider>
   )
 }
+
 

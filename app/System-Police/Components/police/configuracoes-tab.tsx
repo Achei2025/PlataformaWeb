@@ -1,25 +1,24 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
-
+ */
 
 "use client"
 
@@ -49,7 +48,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/components/ui/alert-dialog"
-import { SuccessDialog } from "./success-dialog"
+import { SuccessDialog } from "@/app/components/ui/success-dialog"
 import { useToast } from "@/app/components/ui/use-toast"
 
 interface PerfilData {
@@ -185,10 +184,8 @@ const ConfiguracoesTab: React.FC = () => {
     setIsConfirmDialogOpen(false)
     setIsSuccessDialogOpen(true)
 
-    // Fecha o diálogo de sucesso após 2 segundos
-    setTimeout(() => {
-      setIsSuccessDialogOpen(false)
-    }, 2000)
+    // Não precisamos mais do setTimeout aqui, pois o SuccessDialog
+    // já tem seu próprio timer de 5 segundos para fechar automaticamente
   }
 
   return (
@@ -440,7 +437,7 @@ const ConfiguracoesTab: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Diálogo de Sucesso */}
+      {/* Diálogo de Sucesso - Usando nosso componente aprimorado */}
       <SuccessDialog
         isOpen={isSuccessDialogOpen}
         onClose={() => setIsSuccessDialogOpen(false)}

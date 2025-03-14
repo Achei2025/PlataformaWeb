@@ -20,43 +20,112 @@
  * Contact information: teamachei.2024@gmail.com
 */
 
-import { Smartphone, Laptop, Bike, Watch, Camera, HelpCircle } from "lucide-react"
+import type React from "react"
+import { Smartphone, Laptop, Car, CreditCard, Package, AlertCircle, CheckCircle, Clock, FileQuestion } from 'lucide-react'
 
-export const getIconForObjectType = (tipo: string) => {
+// Função existente para obter ícone por tipo de objeto
+export function getIconForObjectType(tipo: string): React.ReactNode {
   switch (tipo.toLowerCase()) {
     case "smartphone":
-      return <Smartphone className="h-4 w-4 text-blue-500" />
+      return <Smartphone className="h-5 w-5" />;
+    case "notebook":
     case "laptop":
-      return <Laptop className="h-4 w-4 text-purple-500" />
-    case "bicicleta":
-      return <Bike className="h-4 w-4 text-green-500" />
-    case "relógio":
-      return <Watch className="h-4 w-4 text-yellow-500" />
-    case "câmera":
-      return <Camera className="h-4 w-4 text-red-500" />
+      return <Laptop className="h-5 w-5" />;
+    case "veículo":
+    case "veiculo":
+    case "carro":
+      return <Car className="h-5 w-5" />;
+    case "cartão":
+    case "cartao":
+    case "cartão de crédito":
+    case "cartao de credito":
+      return <CreditCard className="h-5 w-5" />;
     default:
-      return <HelpCircle className="h-4 w-4 text-gray-500" />
+      return <Package className="h-5 w-5" />;
   }
 }
 
-export const getStatusBadge = (status: string) => {
-  const baseClasses = "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset"
+// Função para formatar data (já existente)
+export function formatarData(data: string): string {
+  if (!data) return "";
+  
+  const partes = data.split("-");
+  if (partes.length !== 3) return data;
+  
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
 
+// Adicionando as funções que estão faltando
+export interface StatusConfig {
+  text: string;
+  className: string;
+  icon: React.ElementType;
+}
+
+export function getStatusConfig(status: string): StatusConfig {
   switch (status.toLowerCase()) {
-    case "em investigação":
-      return <span className={`${baseClasses} bg-blue-50 text-blue-700 ring-blue-600/20`}>{status}</span>
     case "resolvido":
-      return <span className={`${baseClasses} bg-green-50 text-green-700 ring-green-600/20`}>{status}</span>
-    case "pendente":
-      return <span className={`${baseClasses} bg-yellow-50 text-yellow-700 ring-yellow-600/20`}>{status}</span>
-    case "recuperado":
-      return <span className={`${baseClasses} bg-purple-50 text-purple-700 ring-purple-600/20`}>{status}</span>
+      return {
+        text: "Resolvido",
+        className: "text-green-700 bg-green-100 border-green-200",
+        icon: CheckCircle
+      };
+    case "em investigação":
+    case "em investigacao":
+      return {
+        text: "Em investigação",
+        className: "text-blue-700 bg-blue-100 border-blue-200",
+        icon: Clock
+      };
+    case "arquivado":
+      return {
+        text: "Arquivado",
+        className: "text-gray-700 bg-gray-100 border-gray-200",
+        icon: FileQuestion
+      };
     default:
-      return <span className={`${baseClasses} bg-gray-50 text-gray-700 ring-gray-600/20`}>{status}</span>
+      return {
+        text: status,
+        className: "text-gray-700 bg-gray-100 border-gray-200",
+        icon: AlertCircle
+      };
   }
 }
 
-export const formatarData = (data: string) => {
-  return new Date(data).toLocaleDateString("pt-BR")
+export interface PriorityConfig {
+  text: string;
+  className: string;
 }
 
+export function getPriorityConfig(prioridade: string): PriorityConfig {
+  switch (prioridade.toLowerCase()) {
+    case "alta":
+      return {
+        text: "Alta",
+        className: "bg-red-500 hover:bg-red-600"
+      };
+    case "média":
+    case "media":
+      return {
+        text: "Média",
+        className: "bg-yellow-500 hover:bg-yellow-600"
+      };
+    case "baixa":
+      return {
+        text: "Baixa",
+        className: "bg-green-500 hover:bg-green-600"
+      };
+    default:
+      return {
+        text: prioridade,
+        className: "bg-gray-500 hover:bg-gray-600"
+      };
+  }
+}
+
+export function formatarValor(valor: number): string {
+  return valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+}

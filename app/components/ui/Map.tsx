@@ -1,3 +1,26 @@
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ * 
+ * This file is part of Achei.
+ * 
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Contact information: teamachei.2024@gmail.com
+*/
+
+
 "use client"
 
 import type React from "react"
@@ -60,6 +83,28 @@ const customMapStyle = `
   }
 `
 
+// Definindo a interface HeatLayer que está faltando
+declare module "leaflet" {
+  interface HeatMapOptions {
+    minOpacity?: number
+    maxZoom?: number
+    max?: number
+    radius?: number
+    blur?: number
+    gradient?: Record<string, string>
+  }
+
+  class HeatLayer extends L.Layer {
+    constructor(latlngs: Array<[number, number, number?]>, options?: HeatMapOptions)
+    setLatLngs(latlngs: Array<[number, number, number?]>): this
+    addLatLng(latlng: [number, number, number?]): this
+    setOptions(options: HeatMapOptions): this
+    redraw(): this
+  }
+
+  function heatLayer(latlngs: Array<[number, number, number?]>, options?: HeatMapOptions): HeatLayer
+}
+
 interface Caso {
   id: string
   objeto: string
@@ -75,14 +120,22 @@ interface MapProps {
   onBack: () => void
   selectedCaso: Caso | null
   showHeatmap: boolean
-  showPatrulhas: boolean
+  // Mantendo showPatrulhas, mas marcando como opcional já que não é usado
+  showPatrulhas?: boolean
 }
 
-const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, showPatrulhas, onBack }) => {
+const Map: React.FC<MapProps> = ({
+  userType,
+  selectedCaso,
+  casos,
+  showHeatmap,
+  // Removendo showPatrulhas dos parâmetros já que não é usado
+  onBack,
+}) => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const mapRef = useRef<L.Map | null>(null)
-  const mapContainerRef = useRef<HTMLDivElement | null>(null)
+  const mapContainerRef = useRef<HTMLDivElement>(null)
   const markersLayerRef = useRef<L.LayerGroup | null>(null)
   const heatLayerRef = useRef<L.HeatLayer | null>(null)
   const userMarkerRef = useRef<L.Marker | null>(null)
@@ -92,6 +145,9 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
 
     const initMap = (center: [number, number], zoom: number) => {
       if (mapRef.current) return // Prevent re-initialization
+
+      // Garantindo que mapContainerRef.current não é null
+      if (!mapContainerRef.current) return
 
       const mapInstance = L.map(mapContainerRef.current, {
         center: center,
@@ -197,9 +253,12 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
     })
 
     casos.forEach((caso) => {
-      L.marker([caso.latitude, caso.longitude], { icon: theftIcon })
-        .addTo(markersLayerRef.current!)
-        .bindPopup(`<b>${caso.objeto}</b><br>Roubado em: ${caso.dataRoubo}<br>Local: ${caso.localizacao}`)
+      // Garantindo que latitude e longitude existem
+      if (caso.latitude !== undefined && caso.longitude !== undefined) {
+        L.marker([caso.latitude, caso.longitude], { icon: theftIcon })
+          .addTo(markersLayerRef.current!)
+          .bindPopup(`<b>${caso.objeto}</b><br>Roubado em: ${caso.dataRoubo}<br>Local: ${caso.localizacao}`)
+      }
     })
   }, [casos])
 
@@ -208,21 +267,24 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
 
     if (showHeatmap) {
       if (!heatLayerRef.current) {
-        const heatData = casos.map((caso) => [caso.latitude, caso.longitude, 1])
-        heatLayerRef.current = (L as any)
-          .heatLayer(heatData, {
-            radius: 25,
-            gradient: {
-              0.4: "#4a90e2",
-              0.6: "#2ecc71",
-              0.7: "#f1c40f",
-              0.8: "#e67e22",
-              1.0: "#e74c3c",
-            },
-            blur: 15,
-            maxZoom: 17,
-          })
-          .addTo(mapRef.current)
+        // Filtrando casos com latitude e longitude definidos
+        const validCasos = casos.filter((caso) => caso.latitude !== undefined && caso.longitude !== undefined)
+
+        const heatData = validCasos.map((caso) => [caso.latitude, caso.longitude, 1] as [number, number, number])
+
+        // Usando L.heatLayer em vez de (L as any).heatLayer
+        heatLayerRef.current = L.heatLayer(heatData, {
+          radius: 25,
+          gradient: {
+            0.4: "#4a90e2",
+            0.6: "#2ecc71",
+            0.7: "#f1c40f",
+            0.8: "#e67e22",
+            1.0: "#e74c3c",
+          },
+          blur: 15,
+          maxZoom: 17,
+        }).addTo(mapRef.current)
       }
     } else if (heatLayerRef.current) {
       mapRef.current.removeLayer(heatLayerRef.current)
@@ -233,7 +295,10 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
   useEffect(() => {
     if (!mapRef.current || !selectedCaso) return
 
-    mapRef.current.setView([selectedCaso.latitude, selectedCaso.longitude], 15)
+    // Garantindo que latitude e longitude existem
+    if (selectedCaso.latitude !== undefined && selectedCaso.longitude !== undefined) {
+      mapRef.current.setView([selectedCaso.latitude, selectedCaso.longitude], 15)
+    }
   }, [selectedCaso])
 
   useEffect(() => {
@@ -247,7 +312,7 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
       <MapSidebar
         casos={casos}
         onCasoSelect={(caso) => {
-          if (mapRef.current) {
+          if (mapRef.current && caso.latitude !== undefined && caso.longitude !== undefined) {
             mapRef.current.setView([caso.latitude, caso.longitude], 15)
           }
         }}
@@ -255,21 +320,26 @@ const Map: React.FC<MapProps> = ({ userType, selectedCaso, casos, showHeatmap, s
           if (mapRef.current) {
             if (enabled) {
               if (!heatLayerRef.current) {
-                const heatData = casos.map((caso) => [caso.latitude, caso.longitude, 1])
-                heatLayerRef.current = (L as any)
-                  .heatLayer(heatData, {
-                    radius: 25,
-                    gradient: {
-                      0.4: "#4a90e2",
-                      0.6: "#2ecc71",
-                      0.7: "#f1c40f",
-                      0.8: "#e67e22",
-                      1.0: "#e74c3c",
-                    },
-                    blur: 15,
-                    maxZoom: 17,
-                  })
-                  .addTo(mapRef.current)
+                // Filtrando casos com latitude e longitude definidos
+                const validCasos = casos.filter((caso) => caso.latitude !== undefined && caso.longitude !== undefined)
+
+                const heatData = validCasos.map(
+                  (caso) => [caso.latitude, caso.longitude, 1] as [number, number, number],
+                )
+
+                // Usando L.heatLayer em vez de (L as any).heatLayer
+                heatLayerRef.current = L.heatLayer(heatData, {
+                  radius: 25,
+                  gradient: {
+                    0.4: "#4a90e2",
+                    0.6: "#2ecc71",
+                    0.7: "#f1c40f",
+                    0.8: "#e67e22",
+                    1.0: "#e74c3c",
+                  },
+                  blur: 15,
+                  maxZoom: 17,
+                }).addTo(mapRef.current)
               }
             } else if (heatLayerRef.current) {
               mapRef.current.removeLayer(heatLayerRef.current)

@@ -1,24 +1,24 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
+ */
 
 "use client"
 
@@ -443,6 +443,24 @@ interface ViaCepResponse {
   erro?: boolean
 }
 
+interface FormErrors {
+  fullName?: string
+  email?: string
+  cpf?: string
+  phone?: string
+  birthDate?: string
+  cep?: string
+  state?: string
+  city?: string
+  neighborhood?: string
+  street?: string
+  number?: string
+  complement?: string
+  password?: string
+  confirmPassword?: string
+  terms?: string // Changed from boolean to string to allow error messages
+}
+
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -467,7 +485,7 @@ export default function RegisterPage() {
     confirmPassword: "",
     terms: false,
   })
-  const [errors, setErrors] = useState<Partial<FormData>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
 
   const calculatePasswordStrength = (password: string): number => {
     if (!password) return 0
@@ -566,7 +584,7 @@ export default function RegisterPage() {
   }, [formData.cep])
 
   const validateForm = () => {
-    const newErrors: Partial<FormData> = {}
+    const newErrors: FormErrors = {}
     let isValid = true
 
     if (!formData.fullName) {

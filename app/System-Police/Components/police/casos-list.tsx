@@ -1,25 +1,3 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- * 
- * This file is part of Achei.
- * 
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
- * Contact information: teamachei.2024@gmail.com
-*/
-
 "use client"
 
 import type React from "react"
@@ -27,20 +5,26 @@ import { Card, CardHeader, CardContent } from "@/app/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
 import { Checkbox } from "@/app/components/ui/checkbox"
 import { Button } from "@/app/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/app/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu"
 import { ArrowUpDown, Eye, CheckCircle, Archive, Trash2 } from "lucide-react"
 import { getIconForObjectType, getStatusBadge, formatarData } from "./utils"
 import type { Caso } from "./types"
+import type { CheckedState } from "@radix-ui/react-checkbox"
 
 interface CasosListProps {
   casos: Caso[]
   selectedCasos: string[]
-  handleSelectAll: (event: React.ChangeEvent<HTMLInputElement>) => void
+  handleSelectAll: (checked: CheckedState) => void
   handleSelectCaso: (id: string) => void
   handleSort: (key: keyof Caso) => void
-  sortConfig: { key: keyof Caso; direction: "ascending" | "descending" } | null
+  // Removendo sortConfig se não for usado
   currentPage: number
-  setCurrentPage: (page: number) => void
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>
   totalPages: number
   itemsPerPage: number
   filteredCasosLength: number
@@ -54,7 +38,7 @@ export const CasosList: React.FC<CasosListProps> = ({
   handleSelectAll,
   handleSelectCaso,
   handleSort,
-  sortConfig,
+  // Removendo sortConfig dos parâmetros
   currentPage,
   setCurrentPage,
   totalPages,
@@ -63,6 +47,12 @@ export const CasosList: React.FC<CasosListProps> = ({
   onOpenModal,
   onBatchAction,
 }) => {
+  // Função auxiliar para determinar a direção da seta de ordenação
+  const getSortIndicator = (key: keyof Caso) => {
+    // Você pode implementar a lógica para mostrar a direção da ordenação aqui
+    return <ArrowUpDown className="ml-1 h-4 w-4" />
+  }
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -109,19 +99,19 @@ export const CasosList: React.FC<CasosListProps> = ({
                 <TableHead className="w-[100px] cursor-pointer" onClick={() => handleSort("id")}>
                   <div className="flex items-center">
                     ID
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    {getSortIndicator("id")}
                   </div>
                 </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort("objeto")}>
+                <TableHead className="cursor-pointer" onClick={() => handleSort("nomeObjeto")}>
                   <div className="flex items-center">
                     Objeto
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    {getSortIndicator("nomeObjeto")}
                   </div>
                 </TableHead>
                 <TableHead className="cursor-pointer" onClick={() => handleSort("dataRoubo")}>
                   <div className="flex items-center">
                     Data
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    {getSortIndicator("dataRoubo")}
                   </div>
                 </TableHead>
                 <TableHead>Localização</TableHead>
@@ -129,7 +119,7 @@ export const CasosList: React.FC<CasosListProps> = ({
                 <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
                   <div className="flex items-center">
                     Status
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    {getSortIndicator("status")}
                   </div>
                 </TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -148,11 +138,11 @@ export const CasosList: React.FC<CasosListProps> = ({
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {getIconForObjectType(caso.tipoObjeto)}
-                      <span>{caso.objeto}</span>
+                      <span>{caso.nomeObjeto}</span>
                     </div>
                   </TableCell>
                   <TableCell>{formatarData(caso.dataRoubo)}</TableCell>
-                  <TableCell>{caso.localizacao}</TableCell>
+                  <TableCell>{caso.localRoubo}</TableCell>
                   <TableCell>{caso.vitima}</TableCell>
                   <TableCell>{getStatusBadge(caso.status)}</TableCell>
                   <TableCell className="text-right">
@@ -177,7 +167,7 @@ export const CasosList: React.FC<CasosListProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
               disabled={currentPage === 1}
             >
               Anterior
@@ -185,7 +175,7 @@ export const CasosList: React.FC<CasosListProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
               disabled={currentPage === totalPages}
             >
               Próxima
