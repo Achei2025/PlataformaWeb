@@ -1,8 +1,31 @@
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ *
+ * This file is part of Achei.
+ *
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Contact information: teamachei.2024@gmail.com
+ */
+
 "use client"
 
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import DefaultLayout from "../layouts/layout"
 import styled from "styled-components"
 import {
   Eye,
@@ -744,7 +767,7 @@ export default function RegisterPage() {
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, "")
     if (numbers.length <= 11) {
-      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
+      return numbers.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3").substring(0, 15)
     }
     return value
   }
@@ -776,330 +799,362 @@ export default function RegisterPage() {
   }
 
   return (
-    <Container>
-      <FormCard>
-        <Title>Criar Conta</Title>
-        <Subtitle>Preencha seus dados para começar</Subtitle>
+    <DefaultLayout>
+      <Container>
+        <FormCard>
+          <Title>Criar Conta</Title>
+          <Subtitle>Preencha seus dados para começar</Subtitle>
 
-        {success && (
-          <SuccessMessage>Registro realizado com sucesso! Redirecionando para a página de login...</SuccessMessage>
-        )}
+          {success && (
+            <SuccessMessage>Registro realizado com sucesso! Redirecionando para a página de login...</SuccessMessage>
+          )}
 
-        {showConfirmation && (
-          <ConfirmationContainer>
-            <SectionTitle>Confirme seus dados</SectionTitle>
+          {showConfirmation && (
+            <ConfirmationContainer>
+              <SectionTitle>Confirme seus dados</SectionTitle>
 
-            <ConfirmationSection>
-              <ConfirmationTitle>Informações Pessoais</ConfirmationTitle>
-              <ConfirmationItem>
-                <ConfirmationLabel>Nome Completo:</ConfirmationLabel>
-                <ConfirmationValue>{formData.fullName}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Email:</ConfirmationLabel>
-                <ConfirmationValue>{formData.email}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>CPF:</ConfirmationLabel>
-                <ConfirmationValue>{formData.cpf}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Telefone:</ConfirmationLabel>
-                <ConfirmationValue>{formData.phone}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Data de Nascimento:</ConfirmationLabel>
-                <ConfirmationValue>{formatDate(formData.birthDate)}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Ocupação:</ConfirmationLabel>
-                <ConfirmationValue>{formData.occupation}</ConfirmationValue>
-              </ConfirmationItem>
-            </ConfirmationSection>
-
-            <ConfirmationSection>
-              <ConfirmationTitle>Endereço</ConfirmationTitle>
-              <ConfirmationItem>
-                <ConfirmationLabel>CEP:</ConfirmationLabel>
-                <ConfirmationValue>{formData.cep}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Estado:</ConfirmationLabel>
-                <ConfirmationValue>{formData.state}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Cidade:</ConfirmationLabel>
-                <ConfirmationValue>{formData.city}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Bairro:</ConfirmationLabel>
-                <ConfirmationValue>{formData.neighborhood}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Rua:</ConfirmationLabel>
-                <ConfirmationValue>{formData.street}</ConfirmationValue>
-              </ConfirmationItem>
-              <ConfirmationItem>
-                <ConfirmationLabel>Número:</ConfirmationLabel>
-                <ConfirmationValue>{formData.number}</ConfirmationValue>
-              </ConfirmationItem>
-              {formData.complement && (
+              <ConfirmationSection>
+                <ConfirmationTitle>Informações Pessoais</ConfirmationTitle>
                 <ConfirmationItem>
-                  <ConfirmationLabel>Complemento:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.complement}</ConfirmationValue>
+                  <ConfirmationLabel>Nome Completo:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.fullName}</ConfirmationValue>
                 </ConfirmationItem>
-              )}
-            </ConfirmationSection>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Email:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.email}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>CPF:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.cpf}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Telefone:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.phone}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Data de Nascimento:</ConfirmationLabel>
+                  <ConfirmationValue>{formatDate(formData.birthDate)}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Ocupação:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.occupation}</ConfirmationValue>
+                </ConfirmationItem>
+              </ConfirmationSection>
 
-            <ButtonGroup>
-              <BackButton type="button" onClick={goBackToForm}>
-                <ArrowLeft size={16} style={{ marginRight: "5px" }} /> Voltar e editar
-              </BackButton>
-              <Button type="button" onClick={handleSubmit} isLoading={isLoading}>
-                {isLoading ? "Registrando..." : "Confirmar e criar conta"}{" "}
-                {!isLoading && <Check size={16} style={{ marginLeft: "5px" }} />}
-              </Button>
-            </ButtonGroup>
-          </ConfirmationContainer>
-        )}
+              <ConfirmationSection>
+                <ConfirmationTitle>Endereço</ConfirmationTitle>
+                <ConfirmationItem>
+                  <ConfirmationLabel>CEP:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.cep}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Estado:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.state}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Cidade:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.city}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Bairro:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.neighborhood}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Rua:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.street}</ConfirmationValue>
+                </ConfirmationItem>
+                <ConfirmationItem>
+                  <ConfirmationLabel>Número:</ConfirmationLabel>
+                  <ConfirmationValue>{formData.number}</ConfirmationValue>
+                </ConfirmationItem>
+                {formData.complement && (
+                  <ConfirmationItem>
+                    <ConfirmationLabel>Complemento:</ConfirmationLabel>
+                    <ConfirmationValue>{formData.complement}</ConfirmationValue>
+                  </ConfirmationItem>
+                )}
+              </ConfirmationSection>
 
-        {!showConfirmation && (
-          <Form onSubmit={handleSubmit}>
-            <Section>
-              <SectionTitle>Informações Pessoais</SectionTitle>
-              <InputGroup>
-                <Icon>
-                  <User size={20} />
-                </Icon>
-                <Input
-                  type="text"
-                  name="fullName"
-                  placeholder="Nome Completo"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                />
-                {errors.fullName && <ErrorMessage>{errors.fullName}</ErrorMessage>}
-              </InputGroup>
+              <ButtonGroup>
+                <BackButton type="button" onClick={goBackToForm}>
+                  <ArrowLeft size={16} style={{ marginRight: "5px" }} /> Voltar e editar
+                </BackButton>
+                <Button type="button" onClick={handleSubmit} disabled={isLoading}>
+                  {isLoading ? "Registrando..." : "Confirmar e criar conta"}{" "}
+                  {!isLoading && <Check size={16} style={{ marginLeft: "5px" }} />}
+                </Button>
+              </ButtonGroup>
+            </ConfirmationContainer>
+          )}
 
-              <InputGroup>
-                <Icon>
-                  <Mail size={20} />
-                </Icon>
-                <Input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
-                {errors.email && <ErrorMessage>{errors.email}</ErrorMessage>}
-              </InputGroup>
-
-              <InputGroup>
-                <Icon>
-                  <User size={20} />
-                </Icon>
-                <Input
-                  type="text"
-                  name="cpf"
-                  placeholder="CPF"
-                  value={formData.cpf}
-                  onChange={(e) => {
-                    const formatted = formatCPF(e.target.value)
-                    setFormData((prev) => ({ ...prev, cpf: formatted }))
-                  }}
-                  maxLength={14}
-                />
-                {errors.cpf && <ErrorMessage>{errors.cpf}</ErrorMessage>}
-              </InputGroup>
-
-              <InputGroup style={{ gridColumn: "1 / -1" }}>
-                <Icon>
-                  <Phone size={20} />
-                </Icon>
-                <Input
-                  type="text"
-                  name="phone"
-                  placeholder="Telefone"
-                  value={formData.phone}
-                  onChange={(e) => {
-                    const formatted = formatPhone(e.target.value)
-                    setFormData((prev) => ({ ...prev, phone: formatted }))
-                  }}
-                />
-                {errors.phone && <ErrorMessage>{errors.phone}</ErrorMessage>}
-              </InputGroup>
-
-              <InputGroup>
-                <FieldLabel>
-                  <label htmlFor="birthDate">Data de Nascimento</label>
-                  <InfoIcon title="Informe sua data de nascimento">
-                    <Info size={16} />
-                  </InfoIcon>
-                </FieldLabel>
-                <InputWithLabel>
+          {!showConfirmation && (
+            <Form onSubmit={handleSubmit}>
+              <Section>
+                <SectionTitle>Informações Pessoais</SectionTitle>
+                <InputGroup>
                   <Icon>
-                    <Calendar size={20} />
+                    <User size={20} />
                   </Icon>
                   <Input
-                    id="birthDate"
-                    type="date"
-                    name="birthDate"
-                    placeholder="Data de Nascimento"
-                    value={formData.birthDate}
+                    type="text"
+                    name="fullName"
+                    placeholder="Nome Completo"
+                    value={formData.fullName}
                     onChange={handleChange}
                   />
-                </InputWithLabel>
-                {errors.birthDate && <ErrorMessage>{errors.birthDate}</ErrorMessage>}
-              </InputGroup>
+                  {errors.fullName && <ErrorMessage>{errors.fullName}</ErrorMessage>}
+                </InputGroup>
 
-              <SectionTitle style={{ marginTop: "20px" }}>Senha</SectionTitle>
-              <InputGroup>
-                <Icon>
-                  <Lock size={20} />
-                </Icon>
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Senha"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <PasswordIcon onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </PasswordIcon>
-                <PasswordStrength strength={calculatePasswordStrength(formData.password)} />
-                {errors.password && <ErrorMessage>{errors.password}</ErrorMessage>}
-              </InputGroup>
-
-              <InputGroup>
-                <Icon>
-                  <Lock size={20} />
-                </Icon>
-                <Input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  placeholder="Confirmar senha"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-                <PasswordIcon onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </PasswordIcon>
-                {errors.confirmPassword && <ErrorMessage>{errors.confirmPassword}</ErrorMessage>}
-              </InputGroup>
-
-              <div>
-                <CheckboxGroup>
-                  <Checkbox type="checkbox" name="terms" checked={formData.terms} onChange={handleChange} />
-                  <CheckboxLabel>
-                    Li e aceito os <Link href="/terms">Termos e Condições</Link> e a{" "}
-                    <Link href="/privacy">Política de Privacidade</Link>
-                  </CheckboxLabel>
-                </CheckboxGroup>
-                {errors.terms && (
-                  <div style={{ color: "#e74c3c", fontSize: "0.875rem", marginTop: "5px", marginLeft: "25px" }}>
-                    {errors.terms}
-                  </div>
-                )}
-              </div>
-            </Section>
-
-            <Section isLast>
-              <InputGroup>
-                <FieldLabel>
-                  <label>Gênero</label>
-                </FieldLabel>
-                <RadioGroup>
-                  <RadioOption>
-                    <RadioInput
-                      type="radio"
-                      id="gender-male"
-                      name="gender"
-                      value="Masculino"
-                      checked={formData.gender === "Masculino"}
-                      onChange={handleChange}
-                    />
-                    <RadioLabel htmlFor="gender-male">Masculino</RadioLabel>
-                  </RadioOption>
-                  <RadioOption>
-                    <RadioInput
-                      type="radio"
-                      id="gender-female"
-                      name="gender"
-                      value="Feminino"
-                      checked={formData.gender === "Feminino"}
-                      onChange={handleChange}
-                    />
-                    <RadioLabel htmlFor="gender-female">Feminino</RadioLabel>
-                  </RadioOption>
-                  <RadioOption>
-                    <RadioInput
-                      type="radio"
-                      id="gender-other"
-                      name="gender"
-                      value="Outro"
-                      checked={formData.gender === "Outro"}
-                      onChange={handleChange}
-                    />
-                    <RadioLabel htmlFor="gender-other">Outro</RadioLabel>
-                  </RadioOption>
-                </RadioGroup>
-                {errors.gender && <ErrorMessage>{errors.gender}</ErrorMessage>}
-              </InputGroup>
-
-              <InputGroup>
-                <FieldLabel>
-                  <label htmlFor="occupation">Ocupação</label>
-                </FieldLabel>
-                <InputWithLabel>
+                <InputGroup>
                   <Icon>
-                    <Landmark size={20} />
+                    <Mail size={20} />
                   </Icon>
-                  <Select id="occupation" name="occupation" value={formData.occupation} onChange={handleChange}>
-                    <option value="">Selecione sua ocupação</option>
-                    <option value="Estudante">Estudante</option>
-                    <option value="Profissional">Profissional</option>
-                    <option value="Autônomo">Autônomo</option>
-                    <option value="Outro">Outro</option>
-                  </Select>
-                </InputWithLabel>
-                {errors.occupation && <ErrorMessage>{errors.occupation}</ErrorMessage>}
-              </InputGroup>
+                  <Input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
+                  {errors.email && <ErrorMessage>{errors.email}</ErrorMessage>}
+                </InputGroup>
 
-              <SectionTitle style={{ marginTop: "20px" }}>Endereço</SectionTitle>
+                <InputGroup>
+                  <Icon>
+                    <User size={20} />
+                  </Icon>
+                  <Input
+                    type="text"
+                    name="cpf"
+                    placeholder="CPF"
+                    value={formData.cpf}
+                    onChange={(e) => {
+                      const formatted = formatCPF(e.target.value)
+                      setFormData((prev) => ({ ...prev, cpf: formatted }))
+                    }}
+                    maxLength={14}
+                  />
+                  {errors.cpf && <ErrorMessage>{errors.cpf}</ErrorMessage>}
+                </InputGroup>
 
-              <InputGroup>
-                <Icon>
-                  <MapPin size={20} />
-                </Icon>
-                <Input
-                  type="text"
-                  name="cep"
-                  placeholder="CEP"
-                  value={formData.cep}
-                  onChange={(e) => {
-                    const formatted = formatCEP(e.target.value)
-                    setFormData((prev) => ({ ...prev, cep: formatted }))
-                  }}
-                  maxLength={9}
-                />
-                {isFetchingCep && (
-                  <LoadingIcon>
-                    <Loader2 size={20} />
-                  </LoadingIcon>
-                )}
-                {errors.cep && <ErrorMessage>{errors.cep}</ErrorMessage>}
-              </InputGroup>
+                <InputGroup style={{ gridColumn: "1 / -1" }}>
+                  <Icon>
+                    <Phone size={20} />
+                  </Icon>
+                  <Input
+                    type="text"
+                    name="phone"
+                    placeholder="Telefone"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value)
+                      setFormData((prev) => ({ ...prev, phone: formatted }))
+                    }}
+                  />
+                  {errors.phone && <ErrorMessage>{errors.phone}</ErrorMessage>}
+                </InputGroup>
 
-              <InputRow>
+                <InputGroup>
+                  <FieldLabel>
+                    <label htmlFor="birthDate">Data de Nascimento</label>
+                    <InfoIcon title="Informe sua data de nascimento">
+                      <Info size={16} />
+                    </InfoIcon>
+                  </FieldLabel>
+                  <InputWithLabel>
+                    <Icon>
+                      <Calendar size={20} />
+                    </Icon>
+                    <Input
+                      id="birthDate"
+                      type="date"
+                      name="birthDate"
+                      placeholder="Data de Nascimento"
+                      value={formData.birthDate}
+                      onChange={handleChange}
+                    />
+                  </InputWithLabel>
+                  {errors.birthDate && <ErrorMessage>{errors.birthDate}</ErrorMessage>}
+                </InputGroup>
+
+                <SectionTitle style={{ marginTop: "20px" }}>Senha</SectionTitle>
+                <InputGroup>
+                  <Icon>
+                    <Lock size={20} />
+                  </Icon>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Senha"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <PasswordIcon onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </PasswordIcon>
+                  <PasswordStrength strength={calculatePasswordStrength(formData.password)} />
+                  {errors.password && <ErrorMessage>{errors.password}</ErrorMessage>}
+                </InputGroup>
+
+                <InputGroup>
+                  <Icon>
+                    <Lock size={20} />
+                  </Icon>
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="Confirmar senha"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                  <PasswordIcon onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </PasswordIcon>
+                  {errors.confirmPassword && <ErrorMessage>{errors.confirmPassword}</ErrorMessage>}
+                </InputGroup>
+
+                <div>
+                  <CheckboxGroup>
+                    <Checkbox type="checkbox" name="terms" checked={formData.terms} onChange={handleChange} />
+                    <CheckboxLabel>
+                      Li e aceito os <Link href="/terms">Termos e Condições</Link> e a{" "}
+                      <Link href="/privacy">Política de Privacidade</Link>
+                    </CheckboxLabel>
+                  </CheckboxGroup>
+                  {errors.terms && (
+                    <div style={{ color: "#e74c3c", fontSize: "0.875rem", marginTop: "5px", marginLeft: "25px" }}>
+                      {errors.terms}
+                    </div>
+                  )}
+                </div>
+              </Section>
+
+              <Section isLast>
+                <InputGroup>
+                  <FieldLabel>
+                    <label>Gênero</label>
+                  </FieldLabel>
+                  <RadioGroup>
+                    <RadioOption>
+                      <RadioInput
+                        type="radio"
+                        id="gender-male"
+                        name="gender"
+                        value="Masculino"
+                        checked={formData.gender === "Masculino"}
+                        onChange={handleChange}
+                      />
+                      <RadioLabel htmlFor="gender-male">Masculino</RadioLabel>
+                    </RadioOption>
+                    <RadioOption>
+                      <RadioInput
+                        type="radio"
+                        id="gender-female"
+                        name="gender"
+                        value="Feminino"
+                        checked={formData.gender === "Feminino"}
+                        onChange={handleChange}
+                      />
+                      <RadioLabel htmlFor="gender-female">Feminino</RadioLabel>
+                    </RadioOption>
+                    <RadioOption>
+                      <RadioInput
+                        type="radio"
+                        id="gender-other"
+                        name="gender"
+                        value="Outro"
+                        checked={formData.gender === "Outro"}
+                        onChange={handleChange}
+                      />
+                      <RadioLabel htmlFor="gender-other">Outro</RadioLabel>
+                    </RadioOption>
+                  </RadioGroup>
+                  {errors.gender && <ErrorMessage>{errors.gender}</ErrorMessage>}
+                </InputGroup>
+
+                <InputGroup>
+                  <FieldLabel>
+                    <label htmlFor="occupation">Ocupação</label>
+                  </FieldLabel>
+                  <InputWithLabel>
+                    <Icon>
+                      <Landmark size={20} />
+                    </Icon>
+                    <Select id="occupation" name="occupation" value={formData.occupation} onChange={handleChange}>
+                      <option value="">Selecione sua ocupação</option>
+                      <option value="Estudante">Estudante</option>
+                      <option value="Profissional">Profissional</option>
+                      <option value="Autônomo">Autônomo</option>
+                      <option value="Outro">Outro</option>
+                    </Select>
+                  </InputWithLabel>
+                  {errors.occupation && <ErrorMessage>{errors.occupation}</ErrorMessage>}
+                </InputGroup>
+
+                <SectionTitle style={{ marginTop: "20px" }}>Endereço</SectionTitle>
+
                 <InputGroup>
                   <Icon>
                     <MapPin size={20} />
                   </Icon>
                   <Input
                     type="text"
-                    name="state"
-                    placeholder="Estado"
-                    value={formData.state}
+                    name="cep"
+                    placeholder="CEP"
+                    value={formData.cep}
+                    onChange={(e) => {
+                      const formatted = formatCEP(e.target.value)
+                      setFormData((prev) => ({ ...prev, cep: formatted }))
+                    }}
+                    maxLength={9}
+                  />
+                  {isFetchingCep && (
+                    <LoadingIcon>
+                      <Loader2 size={20} />
+                    </LoadingIcon>
+                  )}
+                  {errors.cep && <ErrorMessage>{errors.cep}</ErrorMessage>}
+                </InputGroup>
+
+                <InputRow>
+                  <InputGroup>
+                    <Icon>
+                      <MapPin size={20} />
+                    </Icon>
+                    <Input
+                      type="text"
+                      name="state"
+                      placeholder="Estado"
+                      value={formData.state}
+                      onChange={handleChange}
+                      disabled={isFetchingCep}
+                    />
+                    {errors.state && <ErrorMessage>{errors.state}</ErrorMessage>}
+                  </InputGroup>
+
+                  <InputGroup>
+                    <Icon>
+                      <MapPin size={20} />
+                    </Icon>
+                    <Input
+                      type="text"
+                      name="city"
+                      placeholder="Cidade"
+                      value={formData.city}
+                      onChange={handleChange}
+                      disabled={isFetchingCep}
+                    />
+                    {errors.city && <ErrorMessage>{errors.city}</ErrorMessage>}
+                  </InputGroup>
+                </InputRow>
+
+                <InputGroup>
+                  <Icon>
+                    <MapPin size={20} />
+                  </Icon>
+                  <Input
+                    type="text"
+                    name="neighborhood"
+                    placeholder="Bairro"
+                    value={formData.neighborhood}
                     onChange={handleChange}
                     disabled={isFetchingCep}
                   />
-                  {errors.state && <ErrorMessage>{errors.state}</ErrorMessage>}
+                  {errors.neighborhood && <ErrorMessage>{errors.neighborhood}</ErrorMessage>}
                 </InputGroup>
 
                 <InputGroup>
@@ -1108,98 +1163,68 @@ export default function RegisterPage() {
                   </Icon>
                   <Input
                     type="text"
-                    name="city"
-                    placeholder="Cidade"
-                    value={formData.city}
+                    name="street"
+                    placeholder="Rua"
+                    value={formData.street}
                     onChange={handleChange}
                     disabled={isFetchingCep}
                   />
-                  {errors.city && <ErrorMessage>{errors.city}</ErrorMessage>}
-                </InputGroup>
-              </InputRow>
-
-              <InputGroup>
-                <Icon>
-                  <MapPin size={20} />
-                </Icon>
-                <Input
-                  type="text"
-                  name="neighborhood"
-                  placeholder="Bairro"
-                  value={formData.neighborhood}
-                  onChange={handleChange}
-                  disabled={isFetchingCep}
-                />
-                {errors.neighborhood && <ErrorMessage>{errors.neighborhood}</ErrorMessage>}
-              </InputGroup>
-
-              <InputGroup>
-                <Icon>
-                  <MapPin size={20} />
-                </Icon>
-                <Input
-                  type="text"
-                  name="street"
-                  placeholder="Rua"
-                  value={formData.street}
-                  onChange={handleChange}
-                  disabled={isFetchingCep}
-                />
-                {errors.street && <ErrorMessage>{errors.street}</ErrorMessage>}
-              </InputGroup>
-
-              <InputRow>
-                <InputGroup>
-                  <Icon>
-                    <MapPin size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="number"
-                    placeholder="Número"
-                    value={formData.number}
-                    onChange={handleChange}
-                  />
-                  {errors.number && <ErrorMessage>{errors.number}</ErrorMessage>}
+                  {errors.street && <ErrorMessage>{errors.street}</ErrorMessage>}
                 </InputGroup>
 
-                <InputGroup>
-                  <Icon>
-                    <MapPin size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="complement"
-                    placeholder="Complemento"
-                    value={formData.complement}
-                    onChange={handleChange}
-                  />
-                </InputGroup>
-              </InputRow>
+                <InputRow>
+                  <InputGroup>
+                    <Icon>
+                      <MapPin size={20} />
+                    </Icon>
+                    <Input
+                      type="text"
+                      name="number"
+                      placeholder="Número"
+                      value={formData.number}
+                      onChange={handleChange}
+                    />
+                    {errors.number && <ErrorMessage>{errors.number}</ErrorMessage>}
+                  </InputGroup>
 
-              <Button type="submit" isLoading={isLoading} style={{ marginTop: "auto" }}>
-                {isLoading ? "Registrando..." : "Criar Conta"}
-              </Button>
+                  <InputGroup>
+                    <Icon>
+                      <MapPin size={20} />
+                    </Icon>
+                    <Input
+                      type="text"
+                      name="complement"
+                      placeholder="Complemento"
+                      value={formData.complement}
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+                </InputRow>
 
-              <Divider>ou continue com</Divider>
+                <Button type="submit" disabled={isLoading} style={{ marginTop: "auto" }}>
+                  {isLoading ? "Registrando..." : "Criar Conta"}
+                </Button>
 
-              <SocialButtonsContainer>
-                <SocialButton type="button" onClick={() => console.log("Google login")}>
-                  <Google size={20} /> Google
-                </SocialButton>
-                <SocialButton type="button" onClick={() => console.log("GOV login")}>
-                  <Landmark size={20} /> GOV
-                </SocialButton>
-              </SocialButtonsContainer>
-            </Section>
-          </Form>
-        )}
+                <Divider>ou continue com</Divider>
 
-        <LinkText>
-          Já tem uma conta? <Link href="/Login">Faça login</Link>
-        </LinkText>
-      </FormCard>
-    </Container>
+                <SocialButtonsContainer>
+                  <SocialButton type="button" onClick={() => console.log("Google login")}>
+                    <Google size={20} /> Google
+                  </SocialButton>
+                  <SocialButton type="button" onClick={() => console.log("GOV login")}>
+                    <Landmark size={20} /> GOV
+                  </SocialButton>
+                </SocialButtonsContainer>
+              </Section>
+            </Form>
+          )}
+
+          <LinkText>
+            Já tem uma conta? <Link href="/Login">Faça login</Link>
+          </LinkText>
+        </FormCard>
+      </Container>
+    </DefaultLayout>
   )
 }
 

@@ -29,6 +29,7 @@ import styled, { keyframes } from "styled-components"
 import { Eye, EyeOff, User, Lock, ChromeIcon as Google, FlagIcon as Gov, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import DefaultLayout from "../layouts/layout"
 
 // Brazilian flag colors
 const colors = {
@@ -410,6 +411,7 @@ export default function LoginPage() {
   }
 
   return (
+  <DefaultLayout>
     <Container>
       <FormCard>
         {success && <SuccessMessage>Login realizado com sucesso! Redirecionando...</SuccessMessage>}
@@ -556,6 +558,7 @@ export default function LoginPage() {
         </FormLayout>
       </FormCard>
     </Container>
+  </DefaultLayout>
   )
 }
 
