@@ -28,9 +28,6 @@ Nosso objetivo é facilitar a recuperação de bens roubados e fornecer às auto
 - **React Router** – Gerenciamento de rotas na versão Web  
 
 
-## 📂 Estrutura de Pastas  
-
-
 
 
 
@@ -38,7 +35,7 @@ Nosso objetivo é facilitar a recuperação de bens roubados e fornecer às auto
 
 1️⃣ **Clone o repositório:**  
 ```sh
-git clone https://github.com/seu-repositorio/achei-frontend.git
+git clone https://github.com/Achei2025/PlataformaWeb.git
 cd achei-frontend
 ```
 
@@ -52,7 +49,7 @@ npm install
 REACT_APP_API_URL=http://localhost:8080
 ```
 
-4️⃣ **Execute o projeto:**  
+4️⃣ **Execute o projeto:**    
 ```sh
 npm run dev
 ```
@@ -148,6 +145,32 @@ const LoginForm = () => {
 
 export default LoginForm;
 ```
+
+
+## 🗺️ Mapas – Leaflet  
+
+📌 **Exemplo de mapa interativo com Leaflet:**  
+```jsx
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+const MapComponent = () => {
+  return (
+    <MapContainer center={[-23.55052, -46.633308]} zoom={13} style={{ height: "400px", width: "100%" }}>
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution="&copy; OpenStreetMap contributors"
+      />
+      <Marker position={[-23.55052, -46.633308]}>
+        <Popup>Registro de objeto roubado aqui.</Popup>
+      </Marker>
+    </MapContainer>
+  );
+};
+
+export default MapComponent;
+```
+
 
 ## 🚀 Conclusão  
 
