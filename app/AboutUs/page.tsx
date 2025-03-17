@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Button } from "../components/ui/button"
 import { Badge } from "../components/ui/badge"
+import DefaultLayout from "../layouts/layout"
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
 import {
   Shield,
@@ -126,6 +127,8 @@ export default function AboutUs() {
   ]
 
   return (
+    
+  <DefaultLayout>
     <section className="bg-gradient-to-b from-white to-gray-100 min-h-screen">
       {/* Hero Section */}
       <div
@@ -155,7 +158,7 @@ export default function AboutUs() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="bg-transparent border-2 border-[#ffdf00] text-[#ffdfকিন্ত0] hover:bg-[#ffdf00]/20 hover:text-white"
+                  className="bg-transparent border-2 border-[#ffdf00] text-[#ffdf কিন্ত0] hover:bg-[#ffdf00]/20 hover:text-white"
                 >
                   Cadastre-se
                 </Button>
@@ -282,7 +285,9 @@ export default function AboutUs() {
                     className="border-none shadow-sm hover:shadow transition-all duration-300 bg-white"
                   >
                     <CardContent className="p-6 flex">
-                      <div className="mr-4 p-3 bg-[#009c3b]/10 rounded-full flex justify-center">{item.icon}</div>
+                      <div className="mr-4 p-3 bg-[#009c3b]/10 rounded-full flex items-center justify-center">
+                        {item.icon}
+                      </div>
                       <div>
                         <h4 className="text-xl font-semibold mb-2 text-[#002776]">{item.title}</h4>
                         <p className="text-gray-600">{item.description}</p>
@@ -382,7 +387,7 @@ export default function AboutUs() {
                       <p className="text-sm text-gray-600">{testimonial.role}</p>
                     </div>
                   </div>
-                  <p className="italic text-gray-600 relative pl-4 before:content-['\u0022'] before:absolute before:left-0 before:top-[-0.5rem] before:text-4xl before:text-[#009c3b] before:font-serif">
+                  <p className="italic text-gray-600 relative pl-4 before:content-[open-quote] before:absolute before:left-0 before:top-[-0.5rem] before:text-4xl before:text-[#009c3b] before:font-serif">
                     {testimonial.content}
                   </p>
                 </CardContent>
@@ -407,6 +412,7 @@ export default function AboutUs() {
         </Card>
       </div>
     </section>
+    </DefaultLayout>
   )
 }
 
