@@ -25,89 +25,13 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Menu, X } from "lucide-react"
-import { motion } from "framer-motion"
-import styled, { ThemeProvider } from "styled-components"
-import AccountDropdown from "@/app/Navbar/AccountDropdown"
-import { Button } from "@/app/components/ui/button"
+import { motion, AnimatePresence } from "framer-motion"
+import { Home, Info, Map, Download, Menu, X } from "lucide-react"
+import AccountDropdown from "./AccountDropdown"
 
-const theme = {
-  colors: {
-    primary: "#4a90e2",
-    secondary: "#f39c12",
-    background: {
-      light: "rgba(255, 255, 255, 0.9)",
-      dark: "rgba(0, 0, 0, 0.8)",
-    },
-    text: {
-      light: "#4a90e2", // Azul
-      dark: "#333333", // Preto
-    },
-  },
-}
-
-const StyledNav = styled(motion.nav)<{ $isScrolled: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  transition: all 0.3s ease-in-out;
-  background-color: ${(props) => (props.$isScrolled ? props.theme.colors.background.light : "rgba(0, 0, 0, 0.5)")};
-  backdrop-filter: blur(10px);
-  box-shadow: ${(props) => (props.$isScrolled ? "0 4px 6px -1px rgba(0, 0, 0, 0.1)" : "none")};
-`
-
-const NavContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-`
-
-const Logo = styled(Link)<{ $isScrolled: boolean }>`
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : props.theme.colors.text.light)};
-  transition: color 0.3s ease-in-out;
-`
-
-const NavItems = styled.ul<{ $isOpen: boolean; $isScrolled: boolean }>`
-  display: flex;
-  align-items: center;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: ${(props) => (props.$isScrolled ? props.theme.colors.background.light : props.theme.colors.background.dark)};
-    padding: 1rem;
-    clip-path: ${(props) => (props.$isOpen ? "inset(0% 0% 0% 0%)" : "inset(0% 0% 100% 0%)")};
-    transition: clip-path 0.3s ease-in-out;
-  }
-`
-
-const NavItem = styled(Link)<{ $isActive: boolean; $isScrolled: boolean }>`
-  padding: 0.5rem 1rem;
-  margin: 0 0.5rem;
-  color: ${(props) =>
-    props.$isActive ? props.theme.colors.secondary : props.$isScrolled ? props.theme.colors.text.dark : "#ffffff"};
-  transition: color 0.3s ease-in-out;
-
-  &:hover {
-    color: ${(props) => props.theme.colors.secondary};
-  }
-
-  @media (max-width: 768px) {
-    margin: 0.5rem 0;
-    color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : "#ffffff")};
-  }
-`
-
-export default function Navbar() {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
@@ -122,57 +46,115 @@ export default function Navbar() {
   }, [])
 
   const navItems = [
-    { href: "/", text: "Home" },
-    { href: "/AboutUs", text: "Sobre Nós" },
-    { href: "/map", text: "Mapa" },
-    { href: "/Download", text: "Download" },
+    { href: "/", text: "Home", icon: <Home className="h-4 w-4 mr-2" /> },
+    { href: "/AboutUs", text: "Sobre Nós", icon: <Info className="h-4 w-4 mr-2" /> },
+    { href: "/map", text: "Mapa", icon: <Map className="h-4 w-4 mr-2" /> },
+    { href: "/Download", text: "Download", icon: <Download className="h-4 w-4 mr-2" /> },
   ]
 
   return (
-    <ThemeProvider theme={theme}>
-      <StyledNav
-        $isScrolled={isScrolled}
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: { opacity: 0, y: -100 },
-          visible: { opacity: 1, y: 0 },
-        }}
+    <>
+      <motion.nav
+        className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-300 ${
+          isScrolled ? "bg-white/90 shadow-md" : "bg-black/50"
+        } backdrop-blur-md`}
+        initial={{ opacity: 0, y: -100 }}
+        animate={{ opacity: 1, y: 0 }}
       >
-        <NavContainer>
-          <Logo href="/" $isScrolled={isScrolled}>
-            Achei!
-          </Logo>
+        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
+          {/* Logo */}
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/placeholder.svg?height=40&width=40"
+              alt="Achei Logo"
+              width={40}
+              height={40}
+              className="h-10 w-auto"
+            />
+            <span className={`ml-2 text-xl font-bold ${isScrolled ? "text-[#333333]" : "text-[#4a90e2]"}`}>Achei!</span>
+          </Link>
 
-          <Button
-            variant="ghost"
-            size="icon"
+          {/* Mobile Menu Button */}
+          <button
             onClick={() => setIsOpen(!isOpen)}
-            className={`md:hidden ${isScrolled ? "text-black" : "text-blue-500"}`}
+            className={`p-2 md:hidden ${isScrolled ? "text-[#333333]" : "text-[#4a90e2]"}`}
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+          </button>
 
-          <NavItems $isOpen={isOpen} $isScrolled={isScrolled}>
+          {/* Desktop Navigation */}
+          <ul className="hidden md:flex items-center">
             {navItems.map((item) => (
               <li key={item.href}>
-                <NavItem
+                <Link
                   href={item.href}
-                  $isActive={pathname === item.href}
-                  $isScrolled={isScrolled}
-                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center px-4 py-2 mx-2 transition-colors duration-300 ${
+                    pathname === item.href
+                      ? "text-[#f39c12]"
+                      : isScrolled
+                        ? "text-[#333333] hover:text-[#f39c12]"
+                        : "text-white hover:text-[#f39c12]"
+                  }`}
                 >
+                  <span className={pathname === item.href ? "text-[#f39c12]" : ""}>{item.icon}</span>
                   {item.text}
-                </NavItem>
+                </Link>
               </li>
             ))}
             <li>
               <AccountDropdown isScrolled={isScrolled} />
             </li>
-          </NavItems>
-        </NavContainer>
-      </StyledNav>
-    </ThemeProvider>
+          </ul>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`md:hidden ${isScrolled ? "bg-white/90" : "bg-black/80"}`}
+            >
+              <ul className="flex flex-col py-4">
+                {navItems.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center px-8 py-3 transition-colors duration-300 ${
+                        pathname === item.href
+                          ? "text-[#f39c12]"
+                          : isScrolled
+                            ? "text-[#333333] hover:text-[#f39c12]"
+                            : "text-white hover:text-[#f39c12]"
+                      }`}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <span className={pathname === item.href ? "text-[#f39c12]" : ""}>{item.icon}</span>
+                      {item.text}
+                    </Link>
+                  </li>
+                ))}
+                <li className="px-8 py-3">
+                  <AccountDropdown isScrolled={isScrolled} />
+                </li>
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.nav>
+    </>
   )
 }
+
+export default Navbar
+
+
+
+
+
+
+
+
 

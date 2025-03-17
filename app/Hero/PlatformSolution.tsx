@@ -28,6 +28,7 @@ import type React from "react"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { motion } from "framer-motion"
 import { Shield, Bell, MapPin, Smartphone, Lock, Users } from "lucide-react"
+import Image from "next/image"
 
 const platformFeatures = [
   {
@@ -134,11 +135,16 @@ const PlatformSolution: React.FC = () => {
               className="relative flex justify-center items-center"
             >
               <div className="absolute w-[400px] h-[400px] bg-gradient-to-r from-green-200 via-yellow-100 to-blue-200 rounded-full blur-3xl opacity-20" />
-              <img
-                src="/image/centersmart.png"
-                alt="App Preview"
-                className="relative z-10 w-full max-w-[280px] mx-auto"
-              />
+              <div className="relative z-10 w-full max-w-[280px] mx-auto">
+                <Image
+                  src="/image/centersmart.png"
+                  alt="App Preview"
+                  width={280}
+                  height={560}
+                  priority
+                  className="w-full h-auto"
+                />
+              </div>
             </motion.div>
 
             {/* Right Features */}
@@ -193,4 +199,6 @@ const PlatformSolution: React.FC = () => {
 }
 
 export default PlatformSolution
+
+
 

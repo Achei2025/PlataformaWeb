@@ -25,53 +25,14 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import { User, ChevronDown } from "lucide-react"
-import styled from "styled-components"
+import { User, ChevronDown, LogIn, UserPlus } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
-const DropdownContainer = styled.div`
-  position: relative;
-  display: inline-block;
-`
+interface AccountDropdownProps {
+  isScrolled: boolean
+}
 
-const DropdownButton = styled.button<{ $isScrolled: boolean }>`
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: ${(props) => (props.$isScrolled ? props.theme.colors.text.dark : props.theme.colors.text.light)};
-  transition: color 0.3s ease-in-out;
-
-  &:hover {
-    color: ${(props) => props.theme.colors.secondary};
-  }
-`
-
-const DropdownContent = styled.div<{ $isOpen: boolean }>`
-  display: ${(props) => (props.$isOpen ? "block" : "none")};
-  position: absolute;
-  right: 0;
-  background-color: ${(props) => props.theme.colors.background.light};
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1001;
-  border-radius: 4px;
-  overflow: hidden;
-`
-
-const DropdownItem = styled(Link)`
-  color: ${(props) => props.theme.colors.text.dark};
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-
-  &:hover {
-    background-color: ${(props) => props.theme.colors.background.dark};
-    color: ${(props) => props.theme.colors.text.light};
-  }
-`
-
-const AccountDropdown = ({ isScrolled }: { isScrolled: boolean }) => {
+const AccountDropdown = ({ isScrolled }: AccountDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -89,19 +50,55 @@ const AccountDropdown = ({ isScrolled }: { isScrolled: boolean }) => {
   }, [])
 
   return (
-    <DropdownContainer ref={dropdownRef}>
-      <DropdownButton $isScrolled={isScrolled} onClick={() => setIsOpen(!isOpen)}>
-        <User className="mr-2 h-4 w-4" />
-        <span>Conta</span>
-        <ChevronDown className="ml-2 h-4 w-4" />
-      </DropdownButton>
-      <DropdownContent $isOpen={isOpen}>
-        <DropdownItem href="/Login">Login</DropdownItem>
-        <DropdownItem href="/Register">Registrar-se</DropdownItem>
-      </DropdownContent>
-    </DropdownContainer>
+    <div ref={dropdownRef} className="relative inline-block">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+          isScrolled ? "text-gray-800 hover:bg-gray-100" : "text-white hover:bg-white/20"
+        }`}
+      >
+        <motion.div initial={{ scale: 1 }} whileHover={{ scale: 1.1 }} className="flex items-center">
+          <User className="h-4 w-4" />
+          <span className="ml-2">Conta</span>
+          <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>
+            <ChevronDown className="ml-2 h-4 w-4" />
+          </motion.div>
+        </motion.div>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg overflow-hidden z-50"
+          >
+            <div className="py-1">
+              <Link
+                href="/Login"
+                className="flex items-center px-4 py-3 text-gray-800 hover:bg-gradient-to-r hover:from-blue-500 hover:to-green-500 hover:text-white transition-all duration-300"
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                <span>Login</span>
+              </Link>
+              <Link
+                href="/Register"
+                className="flex items-center px-4 py-3 text-gray-800 hover:bg-gradient-to-r hover:from-blue-500 hover:to-green-500 hover:text-white transition-all duration-300"
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                <span>Registrar-se</span>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
 
 export default AccountDropdown
+
+
 

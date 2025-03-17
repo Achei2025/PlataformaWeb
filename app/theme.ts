@@ -22,22 +22,31 @@
 
 
 
+// Tema atualizado com estrutura consistente
 const theme = {
-    colors: {
-      primary: "#3B82F6", // blue-600
-      primaryHover: "#2563EB", // blue-700
-      secondary: "#DC2626", // red-600
-      text: {
-        light: "#3B82F6", // blue-600
-        dark: "#000000",
-      },
-      background: {
-        light: "transparent",
-        dark: "#FFFFFF",
-      },
-    },
-  }
-  
-  export default theme
+  colors: {
+    primary: "#0070f3",
+    primaryHover: "#0051a2",
+    secondary: "#ff4081",
+    text: "#333333", // Simplificando para um valor único
+    background: "#ffffff", // Simplificando para um valor único
+    muted: "#f1f1f1",
+  },
+  breakpoints: {
+    xs: "320px",
+    sm: "576px",
+    md: "768px",
+    lg: "992px",
+    xl: "1200px",
+  },
+}
+
+export default theme
+
+
+
+
+
+
   
   

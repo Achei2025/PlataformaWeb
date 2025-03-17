@@ -1,3 +1,25 @@
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ * 
+ * This file is part of Achei.
+ * 
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Contact information: teamachei.2024@gmail.com
+*/
+
 "use client"
 
 import Link from "next/link"
@@ -20,6 +42,7 @@ import {
   Map,
   AlertTriangle,
   CheckCircle,
+  ArrowRight,
 } from "lucide-react"
 
 // Cores do Brasil
@@ -122,6 +145,13 @@ export default function AboutUs() {
       role: "Usuária desde 2025",
       content:
         "O registro preventivo me salvou quando perdi minha carteira. Tinha todos os documentos catalogados e foi muito mais fácil resolver tudo.",
+      avatar: "/placeholder.svg?height=40&width=40",
+    },
+    {
+      name: "Roberto Almeida",
+      role: "Usuário desde 2024",
+      content:
+        "O mapa de ocorrências me ajudou a evitar áreas de risco. Mudei minha rota diária e me sinto muito mais seguro agora.",
       avatar: "/placeholder.svg?height=40&width=40",
     },
   ]

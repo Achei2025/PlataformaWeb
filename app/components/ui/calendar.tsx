@@ -1,7 +1,28 @@
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ * 
+ * This file is part of Achei.
+ * 
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Contact information: teamachei.2024@gmail.com
+*/
+
 "use client"
 
 import type * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"
 import { ptBR } from "date-fns/locale"
 
@@ -15,7 +36,7 @@ function Calendar({ className, classNames, showOutsideDays = true, locale = ptBR
     <DayPicker
       locale={locale}
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("p-3 rdp-with-custom-icons", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
@@ -26,8 +47,8 @@ function Calendar({ className, classNames, showOutsideDays = true, locale = ptBR
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
         ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
+        nav_button_previous: "absolute left-1 custom-prev-button",
+        nav_button_next: "absolute right-1 custom-next-button",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
         head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
@@ -45,10 +66,6 @@ function Calendar({ className, classNames, showOutsideDays = true, locale = ptBR
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-      }}
       {...props}
     />
   )
@@ -56,4 +73,9 @@ function Calendar({ className, classNames, showOutsideDays = true, locale = ptBR
 Calendar.displayName = "Calendar"
 
 export { Calendar }
+
+
+
+
+
 

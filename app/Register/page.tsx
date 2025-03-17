@@ -474,6 +474,24 @@ interface ViaCepResponse {
   erro?: boolean
 }
 
+interface FormErrors {
+  fullName?: string
+  email?: string
+  cpf?: string
+  phone?: string
+  birthDate?: string
+  cep?: string
+  state?: string
+  city?: string
+  neighborhood?: string
+  street?: string
+  number?: string
+  complement?: string
+  password?: string
+  confirmPassword?: string
+  terms?: string // Changed from boolean to string to allow error messages
+}
+
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -500,7 +518,7 @@ export default function RegisterPage() {
     confirmPassword: "",
     terms: false,
   })
-  const [errors, setErrors] = useState<Partial<FormData>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
 
   const calculatePasswordStrength = (password: string): number => {
     if (!password) return 0
@@ -599,7 +617,7 @@ export default function RegisterPage() {
   }, [formData.cep])
 
   const validateForm = () => {
-    const newErrors: Partial<FormData> = {}
+    const newErrors: FormErrors = {}
     let isValid = true
 
     if (!formData.fullName) {
