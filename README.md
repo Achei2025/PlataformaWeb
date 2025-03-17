@@ -1,36 +1,156 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📌 Achei! – Rastreando e Recuperando Objetos Roubados  
 
-## Getting Started
+## 🔎 Uma solução inovadora para segurança e recuperação de bens  
 
-First, run the development server:
+O **Achei!** é uma plataforma digital projetada para ajudar cidadãos e autoridades a rastrear e recuperar objetos roubados. Com uma interface intuitiva e um banco de dados colaborativo, o sistema permite que vítimas de furtos registrem detalhes sobre seus bens desaparecidos, incluindo descrições detalhadas, imagens e locais do incidente.  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Além disso, o **Achei!** oferece acesso exclusivo para **agentes da lei**, permitindo que policiais consultem e atualizem registros, enviem notificações e cruzem informações para aumentar as chances de recuperação dos objetos.  
+
+### 🔹 Funcionalidades principais  
+✅ **Cadastro de objetos roubados** – Registre bens furtados com detalhes como número de série, fotos e última localização conhecida.  
+✅ **Dashboard para cidadãos** – Gerencie seus registros e facilite a geração de boletins de ocorrência.  
+✅ **Plataforma exclusiva para autoridades** – Consultas, atualizações e integração com investigações em andamento.  
+✅ **Mapas interativos** – Visualize zonas de risco, registros de furtos e dados de localização em tempo real.  
+✅ **Notificações e alertas** – Receba avisos sobre objetos recuperados e movimentações suspeitas.  
+
+Com foco em **segurança, escalabilidade e eficiência**, o **Achei!** utiliza tecnologias modernas para oferecer uma experiência confiável e robusta. A implementação do **Context API** no React garante um gerenciamento eficiente dos estados do sistema, melhorando a consistência e o desempenho da plataforma.  
+
+Nosso objetivo é facilitar a recuperação de bens roubados e fornecer às autoridades uma ferramenta poderosa para combater crimes e aumentar a segurança da população. 🚀  
+
+
+## 🛠 Tecnologias Utilizadas  
+
+- **React (Web)** – Interface do usuário  
+- **Context API** – Gerenciamento global de estado  
+- **Styled-Components** – Estilização dinâmica e modular  
+- **Formik + Yup** – Manipulação e validação de formulários  
+- **Leaflet** – Mapas interativos para exibição de registros  
+- **React Router** – Gerenciamento de rotas na versão Web  
+
+
+## 📂 Estrutura de Pastas  
+
+
+
+
+
+## ⚙️ Configuração e Instalação  
+
+1️⃣ **Clone o repositório:**  
+```sh
+git clone https://github.com/seu-repositorio/achei-frontend.git
+cd achei-frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2️⃣ **Instale as dependências:**  
+```sh
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3️⃣ **Configure as variáveis de ambiente (`.env`):**  
+```
+REACT_APP_API_URL=http://localhost:8080
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4️⃣ **Execute o projeto:**  
+```sh
+npm run dev
+```
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌍 Gerenciamento de Estados – Context API  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Utilizamos a **Context API** para gerenciar estados globais de forma eficiente e escalável.  
 
-## Deploy on Vercel
+📌 **Exemplo de um Contexto para autenticação (`AuthContext.js`):**  
+```jsx
+import { createContext, useState } from "react";
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+export const AuthContext = createContext();
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+
+  const login = (userData) => {
+    setUser(userData);
+  };
+
+  const logout = () => {
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+```
+
+---
+
+## 🎨 Estilização – Styled-Components  
+
+📌 **Exemplo de um botão estilizado:**  
+```jsx
+import styled from "styled-components";
+
+const Button = styled.button`
+  background: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  &:hover {
+    background: #0056b3;
+  }
+`;
+
+export default Button;
+```
+
+---
+
+## 📋 Formulários – Formik + Yup  
+
+📌 **Exemplo de um formulário de login:**  
+```jsx
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
+const LoginForm = () => {
+  const validationSchema = Yup.object({
+    email: Yup.string().email("E-mail inválido").required("Obrigatório"),
+    password: Yup.string().min(6, "Mínimo 6 caracteres").required("Obrigatório"),
+  });
+
+  const handleSubmit = (values) => {
+    console.log(values);
+  };
+
+  return (
+    <Formik initialValues={{ email: "", password: "" }} validationSchema={validationSchema} onSubmit={handleSubmit}>
+      <Form>
+        <Field type="email" name="email" placeholder="E-mail" />
+        <ErrorMessage name="email" component="div" />
+        
+        <Field type="password" name="password" placeholder="Senha" />
+        <ErrorMessage name="password" component="div" />
+        
+        <button type="submit">Entrar</button>
+      </Form>
+    </Formik>
+  );
+};
+
+export default LoginForm;
+```
+
+## 🚀 Conclusão  
+
+O frontend do **Achei!** foi projetado para ser modular, responsivo e escalável. As tecnologias escolhidas garantem **performance**, **facilidade de manutenção** e **boa experiência do usuário**.  
+
+
