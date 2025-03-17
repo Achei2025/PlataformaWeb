@@ -1,24 +1,24 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
+ */
 
 "use client"
 
@@ -26,7 +26,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import * as Yup from "yup"
-import styled, { css } from "styled-components"
+import styled, { css, ThemeProvider } from "styled-components"
 // Importe o QRCode de forma dinâmica para evitar erros de SSR
 import dynamic from "next/dynamic"
 
@@ -49,18 +49,19 @@ import {
   Info,
   Image,
   FileImage,
+  DollarSign,
+  Search,
+  Edit,
+  Trash2,
   ChevronLeft,
   ChevronRight,
   ZoomIn,
   ZoomOut,
-  Maximize,
-  Minimize,
-  DollarSign,
+  RotateCw,
+  Maximize2,
+  Minimize2,
+  ImageIcon,
   AlertTriangle,
-  Search,
-  Edit,
-  Trash2,
-  Plus,
 } from "lucide-react"
 import {
   Dialog,
@@ -71,10 +72,12 @@ import {
   DialogFooter,
 } from "../../../components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs"
+import { useToast } from "../../../components/ui/use-toast"
 
 const categories = [
   { value: "eletronico", label: "Eletrônico" },
   { value: "veiculo", label: "Veículo" },
+  { value: "imovel", label: "Imóvel" },
   { value: "outro", label: "Outro" },
 ]
 
@@ -146,78 +149,88 @@ const validationSchema: Yup.ObjectSchema<FormValues> = Yup.object().shape({
     .matches(/^\d+(\.\d{1,2})?$/, "Formato inválido. Use ponto para decimais (ex: 1234.56)"),
 })
 
-// Tema de cores aprimorado
+// Update the dark theme colors for better contrast and readability
 const theme = {
-  primary: "#3b82f6",
-  primaryHover: "#2563eb",
-  secondary: "#10b981",
-  secondaryHover: "#059669",
-  background: "#f3f4f6",
-  cardBackground: "#ffffff",
-  cardBackgroundHover: "#f9fafb",
-  text: "#1f2937",
-  textLight: "#6b7280",
-  border: "#d1d5db",
-  borderHover: "#9ca3af",
-  error: "#ef4444",
-  success: "#10b981",
-  warning: "#f59e0b",
-  info: "#3b82f6",
-  shadow: "rgba(0, 0, 0, 0.1)",
-  shadowHover: "rgba(0, 0, 0, 0.15)",
+  light: {
+    primary: "#3b82f6",
+    primaryHover: "#2563eb",
+    secondary: "#10b981",
+    secondaryHover: "#059669",
+    background: "#f3f4f6",
+    cardBackground: "#ffffff",
+    cardBackgroundHover: "#f9fafb",
+    text: "#1f2937",
+    textLight: "#6b7280",
+    border: "#d1d5db",
+    borderHover: "#9ca3af",
+    error: "#ef4444",
+    success: "#10b981",
+    warning: "#f59e0b",
+    info: "#3b82f6",
+    shadow: "rgba(0, 0, 0, 0.1)",
+    shadowHover: "rgba(0, 0, 0, 0.15)",
+  },
+  dark: {
+    primary: "#60a5fa", // Lighter blue for better visibility
+    primaryHover: "#3b82f6",
+    secondary: "#34d399", // Lighter green
+    secondaryHover: "#10b981",
+    background: "#0f172a", // Deeper dark background
+    cardBackground: "#1e293b", // Softer dark card
+    cardBackgroundHover: "#334155",
+    text: "#f1f5f9", // Lighter text for better contrast
+    textLight: "#cbd5e1", // Lighter secondary text
+    border: "#334155", // More visible border
+    borderHover: "#475569",
+    error: "#f87171", // Lighter red
+    success: "#34d399", // Lighter green
+    warning: "#fbbf24", // Lighter yellow
+    info: "#60a5fa", // Lighter blue
+    shadow: "rgba(0, 0, 0, 0.3)",
+    shadowHover: "rgba(0, 0, 0, 0.4)",
+  },
 }
 
-// Estilos compartilhados aprimorados
-const inputStyles = css`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid ${theme.border};
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  transition: all 0.2s ease-in-out;
-  background-color: ${theme.cardBackground};
-  &:focus {
-    outline: none;
-    border-color: ${theme.primary};
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-  }
-  &:hover {
-    border-color: ${theme.borderHover};
-  }
-`
-
-// Componentes estilizados aprimorados
+// Ajustar os estilos dos componentes para usar as novas cores
 const Container = styled.div`
   width: 100%;
   min-height: 100vh;
   padding: 2rem;
-  background-color: ${theme.background};
+  background-color: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.foreground};
+  
   @media (max-width: 768px) {
     padding: 1rem;
   }
 `
 
-const FormCard = styled(Card)`
+// Update FormCard for better dark mode contrast
+const FormCard = styled(Card)<{ isDark: boolean }>`
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  background-color: ${theme.cardBackground};
-  box-shadow: 0 4px 6px -1px ${theme.shadow}, 0 2px 4px -1px ${theme.shadow};
+  background-color: ${(props) => (props.isDark ? theme.dark.cardBackground : theme.light.cardBackground)};
+  box-shadow: 0 4px 6px -1px ${(props) => (props.isDark ? theme.dark.shadow : theme.light.shadow)}, 
+              0 2px 4px -1px ${(props) => (props.isDark ? theme.dark.shadow : theme.light.shadow)};
   border-radius: 0.75rem;
   overflow: hidden;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  border: 1px solid ${(props) => (props.isDark ? theme.dark.border : theme.light.border)};
   
   &:hover {
-    box-shadow: 0 10px 15px -3px ${theme.shadowHover}, 0 4px 6px -2px ${theme.shadowHover};
+    box-shadow: 0 10px 15px -3px ${(props) => (props.isDark ? theme.dark.shadowHover : theme.light.shadowHover)}, 
+                0 4px 6px -2px ${(props) => (props.isDark ? theme.dark.shadowHover : theme.light.shadowHover)};
   }
 `
 
-const CardTitleStyled = styled(CardTitle)`
+// Update CardTitleStyled for better dark mode contrast
+const CardTitleStyled = styled(CardTitle)<{ isDark: boolean }>`
   font-size: 1.875rem;
   font-weight: 700;
-  color: ${theme.text};
+  color: ${(props) => (props.isDark ? theme.dark.primary : theme.light.text)};
   text-align: center;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
 `
 
 const FormContainer = styled(Form)`
@@ -229,22 +242,24 @@ const FormContainer = styled(Form)`
 const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 1rem;
   @media (min-width: 768px) {
     grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
   }
 `
 
 const FormSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.75rem;
 `
 
 const FormField = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
 `
 
 const FormRow = styled.div`
@@ -253,62 +268,101 @@ const FormRow = styled.div`
   gap: 1rem;
 `
 
-const LabelStyled = styled(Label)`
-  font-size: 0.875rem;
+// Update LabelStyled for better dark mode contrast
+const LabelStyled = styled(Label)<{ isDark: boolean }>`
+  font-size: 0.8rem;
   font-weight: 600;
-  color: ${theme.text};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: color 0.3s ease;
 `
 
-const InputStyled = styled(Input)`
+// Update inputStyles for better dark mode contrast
+const inputStyles = css<{ isDark: boolean }>`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${(props) => (props.isDark ? theme.dark.border : theme.light.border)};
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+  background-color: ${(props) => (props.isDark ? "rgba(30, 41, 59, 0.8)" : theme.light.cardBackground)};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
+  
+  &:focus {
+    outline: none;
+    border-color: ${(props) => (props.isDark ? theme.dark.primary : theme.light.primary)};
+    box-shadow: 0 0 0 3px ${(props) => (props.isDark ? "rgba(96, 165, 250, 0.3)" : "rgba(59, 130, 246, 0.25)")};
+  }
+  
+  &:hover {
+    border-color: ${(props) => (props.isDark ? theme.dark.borderHover : theme.light.borderHover)};
+  }
+`
+
+// Update InputStyled for better dark mode contrast
+const InputStyled = styled(Input)<{ isDark: boolean }>`
   ${inputStyles}
 `
 
-const TextareaStyled = styled(Textarea)`
+// Update TextareaStyled for better dark mode contrast
+const TextareaStyled = styled(Textarea)<{ isDark: boolean }>`
   ${inputStyles}
-  height: 6rem;
+  height: 5rem;
   resize: vertical;
 `
 
-const SelectTriggerStyled = styled(SelectTrigger)`
+// Update SelectTriggerStyled for better dark mode contrast
+const SelectTriggerStyled = styled(SelectTrigger)<{ isDark: boolean }>`
   ${inputStyles}
 `
 
-const SelectContentStyled = styled(SelectContent)`
+// Update SelectContentStyled for better dark mode contrast
+const SelectContentStyled = styled(SelectContent)<{ isDark: boolean }>`
   z-index: 1000;
-  background-color: ${theme.cardBackground};
-  border: 1px solid ${theme.border};
+  background-color: ${(props) => (props.isDark ? theme.dark.cardBackground : theme.light.cardBackground)};
+  border: 1px solid ${(props) => (props.isDark ? theme.dark.border : theme.light.border)};
   border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px ${theme.shadow}, 0 2px 4px -1px ${theme.shadow};
+  box-shadow: 0 4px 6px -1px ${(props) => (props.isDark ? theme.dark.shadow : theme.light.shadow)}, 
+              0 2px 4px -1px ${(props) => (props.isDark ? theme.dark.shadow : theme.light.shadow)};
   overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  
+  & > * {
+    color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
+  }
 `
 
-const ErrorText = styled.div`
-  color: ${theme.error};
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+// Update ErrorText for better dark mode contrast
+const ErrorText = styled.div<{ isDark: boolean }>`
+  color: ${(props) => (props.isDark ? theme.dark.error : theme.light.error)};
+  font-size: 0.75rem;
+  margin-top: 0.125rem;
 `
 
-const SubmitButton = styled(Button)`
+// Update SubmitButton for better dark mode contrast
+const SubmitButton = styled(Button)<{ isDark: boolean }>`
   width: 100%;
   padding: 0.75rem;
   font-size: 1rem;
   font-weight: 600;
-  background-color: ${theme.primary};
+  background-color: ${(props) => (props.isDark ? theme.dark.primary : theme.light.primary)};
   color: white;
   border: none;
-  border-radius: 9999px; // Modificado para arredondar as bordas
+  border-radius: 9999px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
+  
   &:hover {
-    background-color: ${theme.primaryHover};
+    background-color: ${(props) => (props.isDark ? theme.dark.primaryHover : theme.light.primaryHover)};
     transform: translateY(-1px);
   }
+  
   &:active {
     transform: translateY(0);
   }
+  
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -321,21 +375,24 @@ const FileInputWrapper = styled.div`
   overflow: hidden;
 `
 
-const FileInputLabel = styled.label`
+// Update FileInputLabel for better dark mode contrast
+const FileInputLabel = styled.label<{ isDark: boolean }>`
   display: inline-block;
   padding: 0.75rem 1rem;
   font-size: 1rem;
   font-weight: 600;
-  color: ${theme.text};
-  background-color: ${theme.background};
-  border: 1px solid ${theme.border};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
+  background-color: ${(props) => (props.isDark ? "rgba(30, 41, 59, 0.5)" : theme.light.background)};
+  border: 1px solid ${(props) => (props.isDark ? theme.dark.border : theme.light.border)};
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
+  
   &:hover {
-    background-color: ${theme.border};
+    background-color: ${(props) => (props.isDark ? theme.dark.borderHover : theme.light.borderHover)};
     transform: translateY(-1px);
   }
+  
   &:active {
     transform: translateY(0);
   }
@@ -351,116 +408,148 @@ const FileInput = styled.input`
   width: 100%;
 `
 
-const QRCodeContainer = styled.div`
+// Update QRCodeContainer for better dark mode contrast
+const QRCodeContainer = styled.div<{ isDark: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background-color: ${theme.background};
+  background-color: ${(props) => (props.isDark ? "rgba(15, 23, 42, 0.7)" : theme.light.background)};
   border-radius: 0.5rem;
   margin: 0.5rem 0;
+  transition: background-color 0.3s ease;
 `
 
 const ObjectListContainer = styled.div`
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
   
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
   }
 `
 
-const ObjectCard = styled(Card)`
+// Update ObjectCard for better dark mode contrast
+const ObjectCard = styled(Card)<{ isDark: boolean }>`
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
   cursor: pointer;
   border: 1px solid transparent;
+  height: 100%;
+  background-color: ${(props) => (props.isDark ? theme.dark.cardBackground : theme.light.cardBackground)};
   
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 25px -5px ${theme.shadowHover}, 0 10px 10px -5px ${theme.shadowHover};
-    border-color: ${theme.primary};
+    transform: translateY(-5px);
+    box-shadow: 0 15px 20px -5px ${(props) => (props.isDark ? theme.dark.shadowHover : theme.light.shadowHover)}, 
+                0 10px 10px -5px ${(props) => (props.isDark ? theme.dark.shadowHover : theme.light.shadowHover)};
+    border-color: ${(props) => (props.isDark ? theme.dark.primary : theme.light.primary)};
   }
   
   &:active {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
   }
 `
 
-const ObjectCardContent = styled(CardContent)`
+// Update ObjectCardContent for better dark mode contrast
+const ObjectCardContent = styled(CardContent)<{ isDark: boolean }>`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex: 1;
   padding: 1.25rem;
+  background-color: ${(props) => (props.isDark ? theme.dark.cardBackground : theme.light.cardBackground)};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
+  transition: background-color 0.3s ease, color 0.3s ease;
 `
 
-const ObjectCardHeader = styled(CardHeader)`
-  background-color: ${theme.primary};
+// Update ObjectCardHeader for better dark mode contrast
+const ObjectCardHeader = styled(CardHeader)<{ isDark: boolean }>`
+  background-color: ${(props) => (props.isDark ? theme.dark.primary : theme.light.primary)};
   padding: 1.25rem;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.4), ${(props) => (props.isDark ? "rgba(59, 130, 246, 0.9)" : "rgba(59, 130, 246, 0.9)")});
+    z-index: 1;
+  }
 `
 
 const ObjectCardTitle = styled(CardTitle)`
   color: white;
   font-size: 1.25rem;
   font-weight: 600;
+  position: relative;
+  z-index: 2;
 `
 
-const ObjectDetail = styled.div`
+const ObjectDetail = styled.div<{ isDark: boolean }>`
   display: flex;
   flex-direction: column;
   margin-bottom: 0.5rem;
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
 `
 
-const ObjectProperty = styled.span`
+const ObjectProperty = styled.span<{ isDark: boolean }>`
   font-weight: 600;
-  color: ${theme.text};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
   font-size: 0.875rem;
 `
 
-const ObjectValue = styled.span`
-  color: ${theme.textLight};
+const ObjectValue = styled.span<{ isDark: boolean }>`
+  color: ${(props) => (props.isDark ? theme.dark.textLight : theme.light.textLight)};
   font-size: 1rem;
 `
 
-const ObjectDetailSection = styled.div`
+const ObjectDetailSection = styled.div<{ isDark: boolean }>`
   margin-top: 0.75rem;
-  background-color: ${theme.cardBackground};
+  background-color: ${(props) => (props.isDark ? theme.dark.cardBackground : theme.light.cardBackground)};
   border-radius: 0.5rem;
   padding: 0.75rem;
-  box-shadow: 0 1px 2px ${theme.shadow};
+  box-shadow: 0 1px 2px ${(props) => (props.isDark ? theme.dark.shadow : theme.light.shadow)};
 `
 
-const ObjectDetailTitle = styled.h3`
+const ObjectDetailTitle = styled.h3<{ isDark: boolean }>`
   font-size: 1rem;
   font-weight: 600;
-  color: ${theme.text};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
   margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 `
 
-const ObjectDetailContainer = styled.div`
-  border: 1px solid ${theme.border};
+// Update ObjectDetailContainer for better dark mode contrast
+const ObjectDetailContainer = styled.div<{ isDark: boolean }>`
+  border: 1px solid ${(props) => (props.isDark ? theme.dark.border : theme.light.border)};
   border-radius: 0.5rem;
   padding: 0.75rem;
-  background-color: ${theme.background};
+  background-color: ${(props) => (props.isDark ? "rgba(15, 23, 42, 0.5)" : theme.light.background)};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 `
 
-const SensitiveInfoContainer = styled.div`
+// Update SensitiveInfoContainer for better dark mode contrast
+const SensitiveInfoContainer = styled.div<{ isDark: boolean }>`
   margin-top: 0.75rem;
-  background-color: ${theme.cardBackground};
+  background-color: ${(props) => (props.isDark ? "rgba(30, 41, 59, 0.7)" : theme.light.cardBackground)};
   border-radius: 0.5rem;
   padding: 0.75rem;
-  box-shadow: 0 1px 2px ${theme.shadow};
-  border-left: 4px solid ${theme.info};
+  box-shadow: 0 1px 2px ${(props) => (props.isDark ? theme.dark.shadow : theme.light.shadow)};
+  border-left: 4px solid ${(props) => (props.isDark ? theme.dark.info : theme.light.info)};
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 `
 
 const InfoGrid = styled.div`
@@ -473,9 +562,9 @@ const InfoGrid = styled.div`
   }
 `
 
-const InfoLabel = styled.div`
+const InfoLabel = styled.div<{ isDark: boolean }>`
   font-weight: 600;
-  color: ${theme.text};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -483,51 +572,61 @@ const InfoLabel = styled.div`
   font-size: 0.875rem;
 `
 
-const InfoValue = styled.span`
+const InfoValue = styled.span<{ isDark: boolean }>`
   font-weight: normal;
-  color: ${theme.textLight};
+  color: ${(props) => (props.isDark ? theme.dark.textLight : theme.light.textLight)};
   font-size: 0.875rem;
 `
 
-const TabsListStyled = styled(TabsList)`
-  background-color: ${theme.background};
+// Update TabsListStyled for better dark mode contrast
+const TabsListStyled = styled(TabsList)<{ isDark: boolean }>`
+  background-color: ${(props) => (props.isDark ? "rgba(15, 23, 42, 0.7)" : theme.light.background)};
   padding: 0.25rem;
   border-radius: 0.75rem;
   margin-bottom: 2rem;
+  transition: background-color 0.3s ease;
 `
 
-const TabsTriggerStyled = styled(TabsTrigger)`
+// Update TabsTriggerStyled for better dark mode contrast
+const TabsTriggerStyled = styled(TabsTrigger)<{ isDark: boolean }>`
   font-weight: 600;
   padding: 0.75rem 1.5rem;
   transition: all 0.2s ease;
-  border-radius: 9999px; // Adicionado para arredondar as bordas
+  border-radius: 9999px;
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
   
   &[data-state="active"] {
-    background-color: ${theme.primary};
+    background-color: ${(props) => (props.isDark ? theme.dark.primary : theme.light.primary)};
     color: white;
-    box-shadow: 0 4px 6px -1px ${theme.shadow};
+    box-shadow: 0 4px 6px -1px ${(props) => (props.isDark ? theme.dark.shadow : theme.light.shadow)};
   }
   
   &:hover:not([data-state="active"]) {
-    background-color: ${theme.border};
+    background-color: ${(props) => (props.isDark ? "rgba(55, 65, 81, 0.7)" : theme.light.border)};
   }
 `
 
-const DialogContentStyled = styled(DialogContent)`
-  max-width: 900px; // Aumentado de 800px para 900px
-  width: 95vw; // Mantido para responsividade
+// Update DialogContentStyled for better dark mode contrast
+const DialogContentStyled = styled(DialogContent)<{ isDark: boolean }>`
+  max-width: 900px;
+  width: 95vw;
   border-radius: 0.75rem;
   padding: 0;
   overflow: hidden;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+  background-color: ${(props) => (props.isDark ? theme.dark.cardBackground : theme.light.cardBackground)};
+  border: 1px solid ${(props) => (props.isDark ? theme.dark.border : theme.light.border)};
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 `
 
-const DialogHeaderStyled = styled(DialogHeader)`
-  background-color: ${theme.primary};
+// Update DialogHeaderStyled for better dark mode contrast
+const DialogHeaderStyled = styled(DialogHeader)<{ isDark: boolean }>`
+  background-color: ${(props) => (props.isDark ? theme.dark.primary : theme.light.primary)};
   padding: 1rem;
   color: white;
+  transition: background-color 0.3s ease;
 `
 
 const DialogTitleStyled = styled(DialogTitle)`
@@ -542,18 +641,24 @@ const DialogDescriptionStyled = styled(DialogDescription)`
   font-size: 0.875rem;
 `
 
-const DialogBodyStyled = styled.div`
+// Update DialogBodyStyled for better dark mode contrast
+const DialogBodyStyled = styled.div<{ isDark: boolean }>`
   padding: 1rem;
   overflow-y: auto;
   flex: 1;
   max-height: calc(90vh - 140px);
+  background-color: ${(props) => (props.isDark ? theme.dark.cardBackground : theme.light.cardBackground)};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
+  transition: background-color 0.3s ease, color 0.3s ease;
 `
 
-const DialogFooterStyled = styled(DialogFooter)`
+// Update DialogFooterStyled for better dark mode contrast
+const DialogFooterStyled = styled(DialogFooter)<{ isDark: boolean }>`
   padding: 0.75rem;
-  background-color: ${theme.background};
-  border-top: 1px solid ${theme.border};
+  background-color: ${(props) => (props.isDark ? "rgba(15, 23, 42, 0.8)" : theme.light.background)};
+  border-top: 1px solid ${(props) => (props.isDark ? theme.dark.border : theme.light.border)};
   gap: 0.5rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
   
   @media (max-width: 640px) {
     flex-direction: column;
@@ -568,7 +673,7 @@ const ActionButton = styled(Button)`
   padding: 0 1rem;
   height: 2.5rem;
   transition: all 0.2s ease;
-  border-radius: 9999px; // Adicionado para arredondar as bordas
+  border-radius: 9999px;
   
   &:hover {
     transform: translateY(-2px);
@@ -579,10 +684,52 @@ const ActionButton = styled(Button)`
   }
 `
 
-// ... (mantenha os outros estilos existentes)
+const HeaderImage = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`
 
-const CadastrarTab: React.FC = () => {
+// Update PriceExplanation for better dark mode contrast
+const PriceExplanation = styled.div<{ isDark: boolean }>`
+  background-color: ${(props) => (props.isDark ? "rgba(15, 23, 42, 0.7)" : theme.light.background)};
+  border-left: 3px solid ${(props) => (props.isDark ? theme.dark.info : theme.light.info)};
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: ${(props) => (props.isDark ? theme.dark.textLight : theme.light.textLight)};
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: fit-content;
+  margin-top: 1.5rem;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+`
+
+const ExplanatoryNote = styled.p<{ isDark: boolean }>`
+  font-size: 0.7rem;
+  color: ${(props) => (props.isDark ? theme.dark.textLight : theme.light.textLight)};
+  margin-top: 0.25rem;
+  font-style: italic;
+`
+
+interface CadastrarTabProps {
+  darkMode: boolean
+}
+
+// Modificar o CadastrarTab para usar o tema do ThemeProvider
+const CadastrarTab: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
   // ... (mantenha os estados existentes)
+  const { toast } = useToast()
   const [showConfirmCadastroDialog, setShowConfirmCadastroDialog] = useState(false)
   const [showConfirmEditDialog, setShowConfirmEditDialog] = useState(false)
   const [objectToConfirmCadastro, setObjectToConfirmCadastro] = useState<FormValues | null>(null)
@@ -602,8 +749,9 @@ const CadastrarTab: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [objectToConfirm, setObjectToConfirm] = useState<FormValues | null>(null)
-  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false)
   const [showDeleteImageConfirmDialog, setShowDeleteImageConfirmDialog] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false)
 
   const initialValues: FormValues = {
     categoria: "",
@@ -642,6 +790,7 @@ const CadastrarTab: React.FC = () => {
     }
 
     document.addEventListener("fullscreenchange", handleFullscreenChange)
+
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange)
     }
@@ -659,6 +808,50 @@ const CadastrarTab: React.FC = () => {
   const handleEditObject = (values: FormValues) => {
     setObjectToConfirmEdit(values)
     setShowConfirmEditDialog(true)
+  }
+
+  // Mock API call (replace with your actual API endpoint)
+  const api = {
+    post: async (url: string, formData: FormData, config: any) => {
+      // Simulate an API call
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          console.log("Simulating API call to", url, "with data", formData)
+          resolve({ status: 200, message: "Object created successfully" })
+        }, 1000)
+      })
+    },
+  }
+
+  async function createObject(values: FormValues) {
+    try {
+      setIsSubmitting(true)
+
+      const formData = new FormData()
+
+      Object.entries(values).forEach(([key, value]) => {
+        formData.append(key, value)
+      })
+
+      await api.post("/objects", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
+      toast({
+        title: "Objeto cadastrado com sucesso!",
+      })
+    } catch (error: any) {
+      console.error(error)
+      toast({
+        title: "Erro ao cadastrar objeto!",
+        description: error.message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleSubmit = (
@@ -848,872 +1041,1220 @@ const CadastrarTab: React.FC = () => {
     }
   }
 
+  // Modifique o retorno para usar o tema diretamente
   return (
-    <Container>
-      <Tabs
-        defaultValue={objectsData.length > 0 ? "list" : "form"}
-        onValueChange={(val) => setShowObjectList(val === "list")}
-      >
-        <TabsListStyled className="grid w-full max-w-md mx-auto grid-cols-2">
-          <TabsTriggerStyled value="list">Objetos Cadastrados</TabsTriggerStyled>
-          <TabsTriggerStyled value="form">Cadastrar Novo</TabsTriggerStyled>
-        </TabsListStyled>
+    <ThemeProvider theme={{ mode: darkMode ? "dark" : "light" }}>
+      <Container>
+        <Tabs
+          defaultValue={objectsData.length > 0 ? "list" : "form"}
+          onValueChange={(val) => setShowObjectList(val === "list")}
+        >
+          <TabsListStyled className="grid w-full max-w-md mx-auto grid-cols-2" isDark={darkMode}>
+            <TabsTriggerStyled value="list" isDark={darkMode}>
+              Objetos Cadastrados
+            </TabsTriggerStyled>
+            <TabsTriggerStyled value="form" isDark={darkMode}>
+              Cadastrar Novo
+            </TabsTriggerStyled>
+          </TabsListStyled>
 
-        <TabsContent value="list">
-          <FormCard>
-            <CardHeader>
-              <CardTitleStyled>Objetos Cadastrados</CardTitleStyled>
-            </CardHeader>
-            <CardContent>
-              <SearchContainer>
-                <SearchInput type="text" placeholder="Buscar por nome..." value={searchTerm} onChange={handleSearch} />
-                <Button variant="outline">
-                  <Search className="h-4 w-4" />
-                </Button>
-              </SearchContainer>
-              <ObjectListContainer>
-                {filteredObjects.map((object) => (
-                  <ObjectCard key={object.id} onClick={() => viewObjectDetails(object)}>
-                    <ObjectCardHeader>
-                      <ObjectCardTitle>{object.nome}</ObjectCardTitle>
-                    </ObjectCardHeader>
-                    <ObjectCardContent>
-                      <CategoryBadge>
-                        {categories.find((c) => c.value === object.categoria)?.label || object.categoria}
-                      </CategoryBadge>
-
-                      <ObjectDetail>
-                        <ObjectProperty>Marca / Modelo:</ObjectProperty>
-                        <ObjectValue>
-                          {object.marca} / {object.modelo}
-                        </ObjectValue>
-                      </ObjectDetail>
-
-                      <ObjectDetail>
-                        <ObjectProperty>Data de Aquisição:</ObjectProperty>
-                        <ObjectValue>{formatDate(object.dataAquisicao)}</ObjectValue>
-                      </ObjectDetail>
-
-                      <SituationBadge situation={object.situacao}>{getSituationLabel(object.situacao)}</SituationBadge>
-                    </ObjectCardContent>
-                  </ObjectCard>
-                ))}
-              </ObjectListContainer>
-            </CardContent>
-          </FormCard>
-        </TabsContent>
-
-        <TabsContent value="form">
-          <FormCard>
-            <CardHeader>
-              <CardTitleStyled>Cadastrar Novo Objeto</CardTitleStyled>
-            </CardHeader>
-            <CardContent>
-              <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
-                {({ values, isSubmitting, setFieldValue }) => (
-                  <FormContainer>
-                    <FormGrid>
-                      <FormSection>
-                        <FormField>
-                          <LabelStyled htmlFor="categoria">
-                            <Package size={18} />
-                            Categoria
-                          </LabelStyled>
-                          <Select name="categoria" onValueChange={(value) => setFieldValue("categoria", value)}>
-                            <SelectTriggerStyled>
-                              <SelectValue placeholder="Selecione uma categoria" />
-                            </SelectTriggerStyled>
-                            <SelectContentStyled>
-                              {categories.map((category) => (
-                                <SelectItem key={category.value} value={category.value}>
-                                  {category.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContentStyled>
-                          </Select>
-                          <ErrorMessage name="categoria" component={ErrorText} />
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="nome">Nome do Objeto</LabelStyled>
-                          <Field as={InputStyled} type="text" id="nome" name="nome" />
-                          <ErrorMessage name="nome" component={ErrorText} />
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="descricao">Descrição</LabelStyled>
-                          <Field as={TextareaStyled} id="descricao" name="descricao" />
-                          <ErrorMessage name="descricao" component={ErrorText} />
-                        </FormField>
-                        <FormRow>
-                          <FormField>
-                            <LabelStyled htmlFor="marca">Marca</LabelStyled>
-                            <Field as={InputStyled} type="text" id="marca" name="marca" />
-                            <ErrorMessage name="marca" component={ErrorText} />
-                          </FormField>
-                          <FormField>
-                            <LabelStyled htmlFor="modelo">Modelo</LabelStyled>
-                            <Field as={InputStyled} type="text" id="modelo" name="modelo" />
-                            <ErrorMessage name="modelo" component={ErrorText} />
-                          </FormField>
-                        </FormRow>
-                      </FormSection>
-                      <FormSection>
-                        <FormField>
-                          <LabelStyled htmlFor="dataAquisicao">
-                            <Calendar size={18} />
-                            Data de Aquisição
-                          </LabelStyled>
-                          <Field as={InputStyled} type="date" id="dataAquisicao" name="dataAquisicao" />
-                          <ErrorMessage name="dataAquisicao" component={ErrorText} />
-                        </FormField>
-                        {values.categoria === "eletronico" && (
-                          <>
-                            <FormField>
-                              <LabelStyled htmlFor="numeroSerie">Número de Série</LabelStyled>
-                              <Field as={InputStyled} type="text" id="numeroSerie" name="numeroSerie" />
-                              <ErrorMessage name="numeroSerie" component={ErrorText} />
-                            </FormField>
-                            <FormField>
-                              <LabelStyled htmlFor="imei">IMEI (para telefones e notebooks)</LabelStyled>
-                              <Field as={InputStyled} type="text" id="imei" name="imei" />
-                              <ErrorMessage name="imei" component={ErrorText} />
-                            </FormField>
-                          </>
-                        )}
-                        {values.categoria === "veiculo" && (
-                          <FormField>
-                            <LabelStyled htmlFor="chassi">
-                              <Truck size={18} />
-                              Chassi
-                            </LabelStyled>
-                            <Field as={InputStyled} type="text" id="chassi" name="chassi" />
-                            <ErrorMessage name="chassi" component={ErrorText} />
-                          </FormField>
-                        )}
-                        <FormField>
-                          <LabelStyled htmlFor="situacao">Situação</LabelStyled>
-                          <Select name="situacao" onValueChange={(value) => setFieldValue("situacao", value)}>
-                            <SelectTriggerStyled>
-                              <SelectValue placeholder="Selecione a situação" />
-                            </SelectTriggerStyled>
-                            <SelectContentStyled>
-                              <SelectItem value="novo">Novo</SelectItem>
-                              <SelectItem value="usado">Usado</SelectItem>
-                              <SelectItem value="danificado">Danificado</SelectItem>
-                            </SelectContentStyled>
-                          </Select>
-                          <ErrorMessage name="situacao" component={ErrorText} />
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="notaFiscal">
-                            <FileText size={18} />
-                            Nota Fiscal (arquivo)
-                          </LabelStyled>
-                          <FileInputWrapper>
-                            <FileInputLabel htmlFor="notaFiscal">Escolher arquivo</FileInputLabel>
-                            <FileInput
-                              type="file"
-                              id="notaFiscal"
-                              name="notaFiscal"
-                              onChange={(event) => {
-                                setFieldValue("notaFiscal", event.currentTarget.files?.[0])
-                              }}
-                            />
-                          </FileInputWrapper>
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="imagens">
-                            <Camera size={18} />
-                            Imagens
-                          </LabelStyled>
-                          <FileInputWrapper>
-                            <FileInputLabel htmlFor="imagens">Escolher imagens</FileInputLabel>
-                            <FileInput
-                              type="file"
-                              id="imagens"
-                              name="imagens"
-                              multiple
-                              onChange={(event) => {
-                                setFieldValue("imagens", event.currentTarget.files)
-                              }}
-                            />
-                          </FileInputWrapper>
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="preco">
-                            <DollarSign size={18} />
-                            Preço
-                          </LabelStyled>
-                          <Field as={InputStyled} type="text" id="preco" name="preco" placeholder="0.00" />
-                          <ErrorMessage name="preco" component={ErrorText} />
-                          <ExplanatoryNote>
-                            O valor informado será utilizado para análises preditivas de risco e estimativas de danos
-                            potenciais, contribuindo para uma gestão mais eficaz e precisa do patrimônio.
-                          </ExplanatoryNote>
-                        </FormField>
-                      </FormSection>
-                    </FormGrid>
-                    <SubmitButton type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Cadastrando..." : "Cadastrar Objeto"}
-                    </SubmitButton>
-                  </FormContainer>
-                )}
-              </Formik>
-            </CardContent>
-          </FormCard>
-        </TabsContent>
-      </Tabs>
-
-      {/* Object Details Dialog */}
-      <Dialog open={showObjectDialog} onOpenChange={setShowObjectDialog}>
-        <DialogContentStyled>
-          <DialogHeaderStyled>
-            <DialogTitleStyled>{currentObject?.nome}</DialogTitleStyled>
-            <DialogDescriptionStyled>Detalhes do objeto cadastrado</DialogDescriptionStyled>
-          </DialogHeaderStyled>
-
-          <DialogBodyStyled>
-            {currentObject && (
-              <>
-                <ObjectDetailSection>
-                  <ObjectDetailTitle>
-                    <Info size={16} />
-                    Informações Básicas
-                  </ObjectDetailTitle>
-                  <ObjectDetailContainer>
-                    <InfoGrid>
-                      <ObjectDetail>
-                        <ObjectProperty>Categoria:</ObjectProperty>
-                        <ObjectValue>
-                          {categories.find((c) => c.value === currentObject.categoria)?.label ||
-                            currentObject.categoria}
-                        </ObjectValue>
-                      </ObjectDetail>
-                      <ObjectDetail>
-                        <ObjectProperty>Situação:</ObjectProperty>
-                        <ObjectValue>{getSituationLabel(currentObject.situacao)}</ObjectValue>
-                      </ObjectDetail>
-                      <ObjectDetail>
-                        <ObjectProperty>Marca:</ObjectProperty>
-                        <ObjectValue>{currentObject.marca}</ObjectValue>
-                      </ObjectDetail>
-                      <ObjectDetail>
-                        <ObjectProperty>Modelo:</ObjectProperty>
-                        <ObjectValue>{currentObject.modelo}</ObjectValue>
-                      </ObjectDetail>
-                      <ObjectDetail>
-                        <ObjectProperty>Data de Aquisição:</ObjectProperty>
-                        <ObjectValue>{formatDate(currentObject.dataAquisicao)}</ObjectValue>
-                      </ObjectDetail>
-                      <ObjectDetail>
-                        <ObjectProperty>Data de Cadastro:</ObjectProperty>
-                        <ObjectValue>{formatDate(currentObject.dataCadastro)}</ObjectValue>
-                      </ObjectDetail>
-                    </InfoGrid>
-                  </ObjectDetailContainer>
-                </ObjectDetailSection>
-
-                <SensitiveInfoContainer>
-                  <ObjectDetailTitle>Informações Sensíveis</ObjectDetailTitle>
-                  <InfoGrid>
-                    {currentObject.categoria === "eletronico" && (
-                      <>
-                        <InfoLabel>
-                          Número de Série: <InfoValue>{currentObject.numeroSerie}</InfoValue>
-                        </InfoLabel>
-                        <InfoLabel>
-                          IMEI: <InfoValue>{currentObject.imei}</InfoValue>
-                        </InfoLabel>
-                      </>
-                    )}
-
-                    {currentObject.categoria === "veiculo" && (
-                      <InfoLabel>
-                        Chassi: <InfoValue>{currentObject.chassi}</InfoValue>
-                      </InfoLabel>
-                    )}
-
-                    <InfoLabel>
-                      CPF do Proprietário: <InfoValue>{currentObject.cpfDono}</InfoValue>
-                    </InfoLabel>
-                    <InfoLabel>
-                      Email do Proprietário: <InfoValue>{currentObject.emailDono}</InfoValue>
-                    </InfoLabel>
-                    <InfoLabel>
-                      Preço: <InfoValue>R$ {Number.parseFloat(currentObject.preco).toFixed(2)}</InfoValue>
-                    </InfoLabel>
-                    <InfoLabel>
-                      Informações Adicionais: <InfoValue>{currentObject.descricao}</InfoValue>
-                    </InfoLabel>
-                  </InfoGrid>
-                </SensitiveInfoContainer>
-              </>
-            )}
-          </DialogBodyStyled>
-
-          <DialogFooterStyled>
-            {currentObject?.imagensUrls && currentObject.imagensUrls.length > 0 && (
-              <ImagesButton type="button" onClick={showImages}>
-                <Image className="h-5 w-5" />
-                Ver Imagens
-              </ImagesButton>
-            )}
-            {currentObject?.notaFiscalUrl && (
-              <ReceiptButton type="button" onClick={showReceipt}>
-                <FileImage className="h-5 w-5" />
-                Ver Nota Fiscal
-              </ReceiptButton>
-            )}
-            <QRCodeButton type="button" onClick={showQRCode}>
-              <QrCode className="h-5 w-5" />
-              Gerar QR Code
-            </QRCodeButton>
-            <EditButton type="button" onClick={showEditForm}>
-              <Edit className="h-5 w-5" />
-              Editar
-            </EditButton>
-            <DeleteButton type="button" onClick={() => setShowDeleteConfirmDialog(true)}>
-              <Trash2 className="h-5 w-5" />
-              Deletar
-            </DeleteButton>
-            <CloseButton type="button" variant="secondary" onClick={() => setShowObjectDialog(false)}>
-              <X className="h-5 w-5" />
-              Fechar
-            </CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
-
-      {/* Edit Object Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContentStyled>
-          <DialogHeaderStyled>
-            <DialogTitleStyled>Editar {currentObject?.nome}</DialogTitleStyled>
-            <DialogDescriptionStyled>Atualize as informações do objeto</DialogDescriptionStyled>
-          </DialogHeaderStyled>
-
-          <DialogBodyStyled>
-            {currentObject && (
-              <Formik
-                initialValues={{
-                  ...currentObject,
-                  notaFiscal: null,
-                  imagens: null,
-                }}
-                validationSchema={validationSchema}
-                onSubmit={handleEditObject}
-              >
-                {({ values, isSubmitting, setFieldValue }) => (
-                  <FormContainer>
-                    <FormGrid>
-                      <FormSection>
-                        <FormField>
-                          <LabelStyled htmlFor="categoria">
-                            <Package size={18} />
-                            Categoria
-                          </LabelStyled>
-                          <Select name="categoria" onValueChange={(value) => setFieldValue("categoria", value)}>
-                            <SelectTriggerStyled>
-                              <SelectValue placeholder="Selecione uma categoria" />
-                            </SelectTriggerStyled>
-                            <SelectContentStyled>
-                              {categories.map((category) => (
-                                <SelectItem key={category.value} value={category.value}>
-                                  {category.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContentStyled>
-                          </Select>
-                          <ErrorMessage name="categoria" component={ErrorText} />
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="nome">Nome do Objeto</LabelStyled>
-                          <Field as={InputStyled} type="text" id="nome" name="nome" />
-                          <ErrorMessage name="nome" component={ErrorText} />
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="descricao">Descrição</LabelStyled>
-                          <Field as={TextareaStyled} id="descricao" name="descricao" />
-                          <ErrorMessage name="descricao" component={ErrorText} />
-                        </FormField>
-                        <FormRow>
-                          <FormField>
-                            <LabelStyled htmlFor="marca">Marca</LabelStyled>
-                            <Field as={InputStyled} type="text" id="marca" name="marca" />
-                            <ErrorMessage name="marca" component={ErrorText} />
-                          </FormField>
-                          <FormField>
-                            <LabelStyled htmlFor="modelo">Modelo</LabelStyled>
-                            <Field as={InputStyled} type="text" id="modelo" name="modelo" />
-                            <ErrorMessage name="modelo" component={ErrorText} />
-                          </FormField>
-                        </FormRow>
-                      </FormSection>
-                      <FormSection>
-                        <FormField>
-                          <LabelStyled htmlFor="dataAquisicao">
-                            <Calendar size={18} />
-                            Data de Aquisição
-                          </LabelStyled>
-                          <Field as={InputStyled} type="date" id="dataAquisicao" name="dataAquisicao" />
-                          <ErrorMessage name="dataAquisicao" component={ErrorText} />
-                        </FormField>
-                        {values.categoria === "eletronico" && (
-                          <>
-                            <FormField>
-                              <LabelStyled htmlFor="numeroSerie">Número de Série</LabelStyled>
-                              <Field as={InputStyled} type="text" id="numeroSerie" name="numeroSerie" />
-                              <ErrorMessage name="numeroSerie" component={ErrorText} />
-                            </FormField>
-                            <FormField>
-                              <LabelStyled htmlFor="imei">IMEI (para telefones e notebooks)</LabelStyled>
-                              <Field as={InputStyled} type="text" id="imei" name="imei" />
-                              <ErrorMessage name="imei" component={ErrorText} />
-                            </FormField>
-                          </>
-                        )}
-                        {values.categoria === "veiculo" && (
-                          <FormField>
-                            <LabelStyled htmlFor="chassi">
-                              <Truck size={18} />
-                              Chassi
-                            </LabelStyled>
-                            <Field as={InputStyled} type="text" id="chassi" name="chassi" />
-                            <ErrorMessage name="chassi" component={ErrorText} />
-                          </FormField>
-                        )}
-                        <FormField>
-                          <LabelStyled htmlFor="situacao">Situação</LabelStyled>
-                          <Select name="situacao" onValueChange={(value) => setFieldValue("situacao", value)}>
-                            <SelectTriggerStyled>
-                              <SelectValue placeholder="Selecione a situação" />
-                            </SelectTriggerStyled>
-                            <SelectContentStyled>
-                              <SelectItem value="novo">Novo</SelectItem>
-                              <SelectItem value="usado">Usado</SelectItem>
-                              <SelectItem value="danificado">Danificado</SelectItem>
-                            </SelectContentStyled>
-                          </Select>
-                          <ErrorMessage name="situacao" component={ErrorText} />
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="notaFiscal">
-                            <FileText size={18} />
-                            Nota Fiscal (arquivo)
-                          </LabelStyled>
-                          <FileInputWrapper>
-                            <FileInputLabel htmlFor="notaFiscal">Escolher arquivo</FileInputLabel>
-                            <FileInput
-                              type="file"
-                              id="notaFiscal"
-                              name="notaFiscal"
-                              onChange={(event) => {
-                                setFieldValue("notaFiscal", event.currentTarget.files?.[0])
-                              }}
-                            />
-                          </FileInputWrapper>
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="imagens">
-                            <Camera size={18} />
-                            Imagens
-                          </LabelStyled>
-                          <FileInputWrapper>
-                            <FileInputLabel htmlFor="imagens">Escolher imagens</FileInputLabel>
-                            <FileInput
-                              type="file"
-                              id="imagens"
-                              name="imagens"
-                              multiple
-                              onChange={(event) => {
-                                setFieldValue("imagens", event.currentTarget.files)
-                              }}
-                            />
-                          </FileInputWrapper>
-                        </FormField>
-                        <FormField>
-                          <LabelStyled htmlFor="preco">
-                            <DollarSign size={18} />
-                            Preço
-                          </LabelStyled>
-                          <Field as={InputStyled} type="text" id="preco" name="preco" placeholder="0.00" />
-                          <ErrorMessage name="preco" component={ErrorText} />
-                          <ExplanatoryNote>
-                            O valor informado será utilizado para análises preditivas de risco e estimativas de danos
-                            potenciais, contribuindo para uma gestão mais eficaz e precisa do patrimônio.
-                          </ExplanatoryNote>
-                        </FormField>
-                      </FormSection>
-                    </FormGrid>
-                  </FormContainer>
-                )}
-              </Formik>
-            )}
-          </DialogBodyStyled>
-
-          <DialogFooterStyled>
-            <ActionButton type="submit" form="edit-form">
-              Salvar Alterações
-            </ActionButton>
-            <CloseButton type="button" variant="secondary" onClick={() => setShowEditDialog(false)}>
-              <X className="h-5 w-5" />
-              Cancelar
-            </CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
-
-      {/* QR Code Dialog */}
-      <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
-        <DialogContentStyled className="sm:max-w-md">
-          <DialogHeaderStyled>
-            <DialogTitleStyled>QR Code para {currentObject?.nome}</DialogTitleStyled>
-            <DialogDescriptionStyled>
-              Escaneie este QR Code para visualizar as informações do objeto.
-            </DialogDescriptionStyled>
-          </DialogHeaderStyled>
-
-          <DialogBodyStyled>
-            {currentObject && (
-              <QRCodeContainer>
-                <QRCode
-                  id="qr-code"
-                  value={`https://seusite.com.br/objeto/${currentObject.id}`}
-                  size={200}
-                  level="H"
-                  includeMargin={true}
-                />
-                <p className="mt-3 text-xs text-center text-gray-500">
-                  Este QR Code contém um link para informações detalhadas sobre o objeto.
-                </p>
-              </QRCodeContainer>
-            )}
-          </DialogBodyStyled>
-
-          <DialogFooterStyled className="sm:justify-center">
-            <DownloadButton type="button" onClick={downloadQRCode}>
-              <Download className="h-4 w-4" />
-              Download QR Code
-            </DownloadButton>
-            <CloseButton type="button" variant="secondary" onClick={() => setShowQRDialog(false)}>
-              <X className="h-4 w-4" />
-              Fechar
-            </CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
-
-      {/* Images Dialog */}
-      <Dialog open={showImagesDialog} onOpenChange={setShowImagesDialog}>
-        <DialogContentStyled className="sm:max-w-3xl">
-          <DialogHeaderStyled>
-            <DialogTitleStyled>Imagens de {currentObject?.nome}</DialogTitleStyled>
-            <DialogDescriptionStyled>Visualize as imagens do objeto cadastrado.</DialogDescriptionStyled>
-          </DialogHeaderStyled>
-
-          <DialogBodyStyled>
-            {currentObject && currentObject.imagensUrls && currentObject.imagensUrls.length > 0 ? (
-              <ImageGalleryContainer>
-                <ImageContainer id="image-container">
-                  <StyledImage
-                    src={currentObject.imagensUrls[currentImageIndex] || "/placeholder.svg"}
-                    alt={`Imagem ${currentImageIndex + 1} de ${currentObject.nome}`}
-                    zoom={zoom}
+          <TabsContent value="list">
+            <FormCard isDark={darkMode}>
+              <CardHeader>
+                <CardTitleStyled isDark={darkMode}>Objetos Cadastrados</CardTitleStyled>
+              </CardHeader>
+              <CardContent>
+                <SearchContainer>
+                  <SearchInput
+                    type="text"
+                    placeholder="Buscar por nome..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    isDark={darkMode}
                   />
-                  <ImageCounter>
-                    {currentImageIndex + 1} / {currentObject.imagensUrls.length}
-                  </ImageCounter>
-                  <ImageActionButton onClick={() => setShowDeleteImageConfirmDialog(true)}>
-                    <Trash2 size={16} />
-                  </ImageActionButton>
-                </ImageContainer>
+                  <Button variant="outline">
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </SearchContainer>
+                <ObjectListContainer>
+                  {filteredObjects.map((object) => (
+                    <ObjectCard key={object.id} onClick={() => viewObjectDetails(object)} isDark={darkMode}>
+                      <ObjectCardHeader isDark={darkMode}>
+                        <HeaderImage>
+                          <img
+                            src={object.imagensUrls?.[0] || "/placeholder.svg?height=200&width=300&text=No+Image"}
+                            alt={object.nome}
+                          />
+                        </HeaderImage>
+                        <ObjectCardTitle>{object.nome}</ObjectCardTitle>
+                      </ObjectCardHeader>
+                      <ObjectCardContent isDark={darkMode}>
+                        <CategoryBadge isDark={darkMode}>
+                          {categories.find((c) => c.value === object.categoria)?.label || object.categoria}
+                        </CategoryBadge>
 
-                <ImageControls>
-                  <NavigationControls>
-                    <ControlButton onClick={prevImage} disabled={currentObject.imagensUrls.length <= 1}>
-                      <ChevronLeft size={20} />
-                    </ControlButton>
-                    <ControlButton onClick={nextImage} disabled={currentObject.imagensUrls.length <= 1}>
-                      <ChevronRight size={20} />
-                    </ControlButton>
-                  </NavigationControls>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Marca / Modelo:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>
+                            {object.marca} / {object.modelo}
+                          </ObjectValue>
+                        </ObjectDetail>
 
-                  <ZoomControls>
-                    <ControlButton onClick={zoomOut} disabled={zoom <= 0.5}>
-                      <ZoomOut size={20} />
-                    </ControlButton>
-                    <ControlButton onClick={resetZoom}>
-                      <Image size={20} />
-                    </ControlButton>
-                    <ControlButton onClick={zoomIn} disabled={zoom >= 3}>
-                      <ZoomIn size={20} />
-                    </ControlButton>
-                    <ControlButton onClick={toggleFullscreen}>
-                      {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-                    </ControlButton>
-                  </ZoomControls>
-                </ImageControls>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Data de Aquisição:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{formatDate(object.dataAquisicao)}</ObjectValue>
+                        </ObjectDetail>
 
-                {currentObject.imagensUrls.length > 1 && (
+                        <SituationBadge situation={object.situacao} isDark={darkMode}>
+                          {getSituationLabel(object.situacao)}
+                        </SituationBadge>
+                      </ObjectCardContent>
+                    </ObjectCard>
+                  ))}
+                </ObjectListContainer>
+              </CardContent>
+            </FormCard>
+          </TabsContent>
+
+          <TabsContent value="form">
+            <FormCard isDark={darkMode}>
+              <CardHeader>
+                <CardTitleStyled isDark={darkMode}>Cadastrar Novo Objeto</CardTitleStyled>
+              </CardHeader>
+              <CardContent>
+                <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+                  {({ values, isSubmitting, setFieldValue }) => (
+                    <FormContainer>
+                      <FormGrid>
+                        <FormSection>
+                          <FormField>
+                            <LabelStyled htmlFor="categoria" isDark={darkMode}>
+                              <Package size={18} />
+                              Categoria
+                            </LabelStyled>
+                            <Select name="categoria" onValueChange={(value) => setFieldValue("categoria", value)}>
+                              <SelectTriggerStyled isDark={darkMode}>
+                                <SelectValue placeholder="Selecione uma categoria" />
+                              </SelectTriggerStyled>
+                              <SelectContentStyled isDark={darkMode}>
+                                {categories.map((category) => (
+                                  <SelectItem key={category.value} value={category.value}>
+                                    {category.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContentStyled>
+                            </Select>
+                            <ErrorMessage name="categoria" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          <FormField>
+                            <LabelStyled htmlFor="nome" isDark={darkMode}>
+                              Nome do Objeto
+                            </LabelStyled>
+                            <Field as={InputStyled} type="text" id="nome" name="nome" isDark={darkMode} />
+                            <ErrorMessage name="nome" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          <FormField>
+                            <LabelStyled htmlFor="descricao" isDark={darkMode}>
+                              Descrição
+                            </LabelStyled>
+                            <Field as={TextareaStyled} id="descricao" name="descricao" isDark={darkMode} />
+                            <ErrorMessage name="descricao" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          <FormRow>
+                            <FormField>
+                              <LabelStyled htmlFor="marca" isDark={darkMode}>
+                                Marca
+                              </LabelStyled>
+                              <Field as={InputStyled} type="text" id="marca" name="marca" isDark={darkMode} />
+                              <ErrorMessage name="marca" component={ErrorText} isDark={darkMode} />
+                            </FormField>
+                            <FormField>
+                              <LabelStyled htmlFor="modelo" isDark={darkMode}>
+                                Modelo
+                              </LabelStyled>
+                              <Field as={InputStyled} type="text" id="modelo" name="modelo" isDark={darkMode} />
+                              <ErrorMessage name="modelo" component={ErrorText} isDark={darkMode} />
+                            </FormField>
+                          </FormRow>
+                          <FormField>
+                            <LabelStyled htmlFor="preco" isDark={darkMode}>
+                              <DollarSign size={18} />
+                              Preço
+                            </LabelStyled>
+                            <Field
+                              as={InputStyled}
+                              type="text"
+                              id="preco"
+                              name="preco"
+                              placeholder="0.00"
+                              isDark={darkMode}
+                            />
+                            <ErrorMessage name="preco" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                        </FormSection>
+                        <FormSection>
+                          <FormField>
+                            <LabelStyled htmlFor="dataAquisicao" isDark={darkMode}>
+                              <Calendar size={18} />
+                              Data de Aquisição
+                            </LabelStyled>
+                            <Field
+                              as={InputStyled}
+                              type="date"
+                              id="dataAquisicao"
+                              name="dataAquisicao"
+                              isDark={darkMode}
+                            />
+                            <ErrorMessage name="dataAquisicao" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          {values.categoria === "eletronico" && (
+                            <>
+                              <FormField>
+                                <LabelStyled htmlFor="numeroSerie" isDark={darkMode}>
+                                  Número de Série
+                                </LabelStyled>
+                                <Field
+                                  as={InputStyled}
+                                  type="text"
+                                  id="numeroSerie"
+                                  name="numeroSerie"
+                                  isDark={darkMode}
+                                />
+                                <ErrorMessage name="numeroSerie" component={ErrorText} isDark={darkMode} />
+                              </FormField>
+                              <FormField>
+                                <LabelStyled htmlFor="imei" isDark={darkMode}>
+                                  IMEI (para telefones e notebooks)
+                                </LabelStyled>
+                                <Field as={InputStyled} type="text" id="imei" name="imei" isDark={darkMode} />
+                                <ErrorMessage name="imei" component={ErrorText} isDark={darkMode} />
+                              </FormField>
+                            </>
+                          )}
+                          {values.categoria === "veiculo" && (
+                            <FormField>
+                              <LabelStyled htmlFor="chassi" isDark={darkMode}>
+                                <Truck size={18} />
+                                Chassi
+                              </LabelStyled>
+                              <Field as={InputStyled} type="text" id="chassi" name="chassi" isDark={darkMode} />
+                              <ErrorMessage name="chassi" component={ErrorText} isDark={darkMode} />
+                            </FormField>
+                          )}
+                          <FormField>
+                            <LabelStyled htmlFor="situacao" isDark={darkMode}>
+                              Situação
+                            </LabelStyled>
+                            <Select name="situacao" onValueChange={(value) => setFieldValue("situacao", value)}>
+                              <SelectTriggerStyled isDark={darkMode}>
+                                <SelectValue placeholder="Selecione a situação" />
+                              </SelectTriggerStyled>
+                              <SelectContentStyled isDark={darkMode}>
+                                <SelectItem value="novo">Novo</SelectItem>
+                                <SelectItem value="usado">Usado</SelectItem>
+                                <SelectItem value="danificado">Danificado</SelectItem>
+                              </SelectContentStyled>
+                            </Select>
+                            <ErrorMessage name="situacao" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          <FormField>
+                            <LabelStyled htmlFor="notaFiscal" isDark={darkMode}>
+                              <FileText size={18} />
+                              Nota Fiscal (arquivo)
+                            </LabelStyled>
+                            <FileInputWrapper>
+                              <FileInputLabel htmlFor="notaFiscal" isDark={darkMode}>
+                                Escolher arquivo
+                              </FileInputLabel>
+                              <FileInput
+                                type="file"
+                                id="notaFiscal"
+                                name="notaFiscal"
+                                onChange={(event) => {
+                                  setFieldValue("notaFiscal", event.currentTarget.files?.[0])
+                                }}
+                              />
+                            </FileInputWrapper>
+                          </FormField>
+                          <FormField>
+                            <LabelStyled htmlFor="imagens" isDark={darkMode}>
+                              <Camera size={18} />
+                              Imagens
+                            </LabelStyled>
+                            <FileInputWrapper>
+                              <FileInputLabel htmlFor="imagens" isDark={darkMode}>
+                                Escolher imagens
+                              </FileInputLabel>
+                              <FileInput
+                                type="file"
+                                id="imagens"
+                                name="imagens"
+                                multiple
+                                onChange={(event) => {
+                                  setFieldValue("imagens", event.currentTarget.files)
+                                }}
+                              />
+                            </FileInputWrapper>
+                          </FormField>
+                          <PriceExplanation isDark={darkMode}>
+                            <div className="flex items-center gap-2">
+                              <Info size={16} className="text-blue-500" />
+                              <span className="font-semibold">Sobre o preço</span>
+                            </div>
+                            <p>
+                              O valor informado será utilizado para análises preditivas de risco e estimativas de danos
+                              potenciais, contribuindo para uma gestão mais eficaz e precisa do patrimônio.
+                            </p>
+                          </PriceExplanation>
+                        </FormSection>
+                      </FormGrid>
+                      <SubmitButton type="submit" disabled={isSubmitting} isDark={darkMode}>
+                        {isSubmitting ? "Cadastrando..." : "Cadastrar Objeto"}
+                      </SubmitButton>
+                    </FormContainer>
+                  )}
+                </Formik>
+              </CardContent>
+            </FormCard>
+          </TabsContent>
+        </Tabs>
+
+        {/* Object Details Dialog */}
+        <Dialog open={showObjectDialog} onOpenChange={setShowObjectDialog}>
+          <DialogContentStyled isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>{currentObject?.nome}</DialogTitleStyled>
+              <DialogDescriptionStyled>Detalhes do objeto cadastrado</DialogDescriptionStyled>
+            </DialogHeaderStyled>
+
+            <DialogBodyStyled isDark={darkMode}>
+              {currentObject && (
+                <>
+                  <ObjectDetailSection isDark={darkMode}>
+                    <ObjectDetailTitle isDark={darkMode}>
+                      <Info size={16} />
+                      Informações Básicas
+                    </ObjectDetailTitle>
+                    <ObjectDetailContainer isDark={darkMode}>
+                      <InfoGrid>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Categoria:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>
+                            {categories.find((c) => c.value === currentObject.categoria)?.label ||
+                              currentObject.categoria}
+                          </ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Situação:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{getSituationLabel(currentObject.situacao)}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Marca:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{currentObject.marca}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Modelo:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{currentObject.modelo}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Data de Aquisição:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{formatDate(currentObject.dataAquisicao)}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Data de Cadastro:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{formatDate(currentObject.dataCadastro)}</ObjectValue>
+                        </ObjectDetail>
+                      </InfoGrid>
+                    </ObjectDetailContainer>
+                  </ObjectDetailSection>
+
+                  <SensitiveInfoContainer isDark={darkMode}>
+                    <ObjectDetailTitle isDark={darkMode}>Informações Sensíveis</ObjectDetailTitle>
+                    <InfoGrid>
+                      {currentObject.categoria === "eletronico" && (
+                        <>
+                          <InfoLabel isDark={darkMode}>
+                            Número de Série: <InfoValue isDark={darkMode}>{currentObject.numeroSerie}</InfoValue>
+                          </InfoLabel>
+                          <InfoLabel isDark={darkMode}>
+                            IMEI: <InfoValue isDark={darkMode}>{currentObject.imei}</InfoValue>
+                          </InfoLabel>
+                        </>
+                      )}
+
+                      {currentObject.categoria === "veiculo" && (
+                        <InfoLabel isDark={darkMode}>
+                          Chassi: <InfoValue isDark={darkMode}>{currentObject.chassi}</InfoValue>
+                        </InfoLabel>
+                      )}
+
+                      <InfoLabel isDark={darkMode}>
+                        CPF do Proprietário: <InfoValue isDark={darkMode}>{currentObject.cpfDono}</InfoValue>
+                      </InfoLabel>
+                      <InfoLabel isDark={darkMode}>
+                        Email do Proprietário: <InfoValue isDark={darkMode}>{currentObject.emailDono}</InfoValue>
+                      </InfoLabel>
+                      <InfoLabel isDark={darkMode}>
+                        Preço:{" "}
+                        <InfoValue isDark={darkMode}>R$ {Number.parseFloat(currentObject.preco).toFixed(2)}</InfoValue>
+                      </InfoLabel>
+                      <InfoLabel isDark={darkMode}>
+                        Informações Adicionais: <InfoValue isDark={darkMode}>{currentObject.descricao}</InfoValue>
+                      </InfoLabel>
+                    </InfoGrid>
+                  </SensitiveInfoContainer>
+                </>
+              )}
+            </DialogBodyStyled>
+
+            <DialogFooterStyled isDark={darkMode}>
+              {currentObject?.imagensUrls && currentObject.imagensUrls.length > 0 && (
+                <ImagesButton type="button" onClick={showImages}>
+                  <Image className="h-5 w-5" />
+                  Ver Imagens
+                </ImagesButton>
+              )}
+              {currentObject?.notaFiscalUrl && (
+                <ReceiptButton type="button" onClick={showReceipt}>
+                  <FileImage className="h-5 w-5" />
+                  Ver Nota Fiscal
+                </ReceiptButton>
+              )}
+              <QRCodeButton type="button" onClick={showQRCode}>
+                <QrCode className="h-5 w-5" />
+                Gerar QR Code
+              </QRCodeButton>
+              <EditButton type="button" onClick={showEditForm}>
+                <Edit className="h-5 w-5" />
+                Editar
+              </EditButton>
+              <DeleteButton type="button" onClick={() => setShowDeleteConfirmDialog(true)}>
+                <Trash2 className="h-5 w-5" />
+                Deletar
+              </DeleteButton>
+              <CloseButton type="button" variant="secondary" onClick={() => setShowObjectDialog(false)}>
+                <X className="h-5 w-5" />
+                Fechar
+              </CloseButton>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
+
+        {/* QR Code Dialog */}
+        <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
+          <DialogContentStyled className="sm:max-w-md" isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>QR Code para {currentObject?.nome}</DialogTitleStyled>
+              <DialogDescriptionStyled>
+                Escaneie este QR Code para visualizar as informações do objeto.
+              </DialogDescriptionStyled>
+            </DialogHeaderStyled>
+
+            <DialogBodyStyled isDark={darkMode}>
+              {currentObject && (
+                <QRCodeContainer isDark={darkMode}>
+                  <QRCode
+                    id="qr-code"
+                    value={`https://seusite.com.br/objeto/${currentObject.id}`}
+                    size={200}
+                    level="H"
+                    includeMargin={true}
+                  />
+                  <p className="mt-3 text-xs text-center text-gray-500">
+                    Este QR Code contém um link para informações detalhadas sobre o objeto.
+                  </p>
+                </QRCodeContainer>
+              )}
+            </DialogBodyStyled>
+
+            <DialogFooterStyled className="sm:justify-center" isDark={darkMode}>
+              <DownloadButton type="button" onClick={downloadQRCode}>
+                <Download className="h-4 w-4" />
+                Download QR Code
+              </DownloadButton>
+              <CloseButton type="button" variant="secondary" onClick={() => setShowQRDialog(false)}>
+                <X className="h-4 w-4" />
+                Fechar
+              </CloseButton>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
+
+        {/* Other dialogs remain the same structure but with isDark prop added */}
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
+          <DialogContentStyled className="sm:max-w-md" isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>Confirmar Exclusão</DialogTitleStyled>
+              <DialogDescriptionStyled>
+                Tem certeza de que deseja excluir este objeto? Esta ação não pode ser desfeita.
+              </DialogDescriptionStyled>
+            </DialogHeaderStyled>
+
+            <DialogFooterStyled className="sm:justify-end" isDark={darkMode}>
+              <Button type="button" variant="secondary" onClick={() => setShowDeleteConfirmDialog(false)}>
+                Cancelar
+              </Button>
+              <Button type="button" variant="destructive" onClick={handleDeleteObject}>
+                Excluir
+              </Button>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
+
+        {/* Delete Image Confirmation Dialog */}
+        <Dialog open={showDeleteImageConfirmDialog} onOpenChange={setShowDeleteImageConfirmDialog}>
+          <DialogContentStyled className="sm:max-w-md" isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>Confirmar Exclusão da Imagem</DialogTitleStyled>
+              <DialogDescriptionStyled>
+                Tem certeza de que deseja excluir esta imagem? Esta ação não pode ser desfeita.
+              </DialogDescriptionStyled>
+            </DialogHeaderStyled>
+
+            <DialogFooterStyled className="sm:justify-end" isDark={darkMode}>
+              <Button type="button" variant="secondary" onClick={() => setShowDeleteImageConfirmDialog(false)}>
+                Cancelar
+              </Button>
+              <Button type="button" variant="destructive" onClick={handleDeleteImage}>
+                Excluir Imagem
+              </Button>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
+
+        {/* Edit Object Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContentStyled isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>Editar Objeto</DialogTitleStyled>
+              <DialogDescriptionStyled>Edite as informações do objeto.</DialogDescriptionStyled>
+            </DialogHeaderStyled>
+
+            <DialogBodyStyled isDark={darkMode}>
+              {currentObject && (
+                <Formik initialValues={currentObject} validationSchema={validationSchema} onSubmit={handleEdit}>
+                  {({ values, isSubmitting, setFieldValue }) => (
+                    <FormContainer>
+                      <FormGrid>
+                        <FormSection>
+                          <FormField>
+                            <LabelStyled htmlFor="categoria" isDark={darkMode}>
+                              <Package size={18} />
+                              Categoria
+                            </LabelStyled>
+                            <Select
+                              name="categoria"
+                              onValueChange={(value) => setFieldValue("categoria", value)}
+                              defaultValue={values.categoria}
+                            >
+                              <SelectTriggerStyled isDark={darkMode}>
+                                <SelectValue placeholder="Selecione uma categoria" />
+                              </SelectTriggerStyled>
+                              <SelectContentStyled isDark={darkMode}>
+                                {categories.map((category) => (
+                                  <SelectItem key={category.value} value={category.value}>
+                                    {category.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContentStyled>
+                            </Select>
+                            <ErrorMessage name="categoria" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          <FormField>
+                            <LabelStyled htmlFor="nome" isDark={darkMode}>
+                              Nome do Objeto
+                            </LabelStyled>
+                            <Field as={InputStyled} type="text" id="nome" name="nome" isDark={darkMode} />
+                            <ErrorMessage name="nome" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          <FormField>
+                            <LabelStyled htmlFor="descricao" isDark={darkMode}>
+                              Descrição
+                            </LabelStyled>
+                            <Field as={TextareaStyled} id="descricao" name="descricao" isDark={darkMode} />
+                            <ErrorMessage name="descricao" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          <FormRow>
+                            <FormField>
+                              <LabelStyled htmlFor="marca" isDark={darkMode}>
+                                Marca
+                              </LabelStyled>
+                              <Field as={InputStyled} type="text" id="marca" name="marca" isDark={darkMode} />
+                              <ErrorMessage name="marca" component={ErrorText} isDark={darkMode} />
+                            </FormField>
+                            <FormField>
+                              <LabelStyled htmlFor="modelo" isDark={darkMode}>
+                                Modelo
+                              </LabelStyled>
+                              <Field as={InputStyled} type="text" id="modelo" name="modelo" isDark={darkMode} />
+                              <ErrorMessage name="modelo" component={ErrorText} isDark={darkMode} />
+                            </FormField>
+                          </FormRow>
+                          <FormField>
+                            <LabelStyled htmlFor="preco" isDark={darkMode}>
+                              <DollarSign size={18} />
+                              Preço
+                            </LabelStyled>
+                            <Field
+                              as={InputStyled}
+                              type="text"
+                              id="preco"
+                              name="preco"
+                              placeholder="0.00"
+                              isDark={darkMode}
+                            />
+                            <ErrorMessage name="preco" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                        </FormSection>
+                        <FormSection>
+                          <FormField>
+                            <LabelStyled htmlFor="dataAquisicao" isDark={darkMode}>
+                              <Calendar size={18} />
+                              Data de Aquisição
+                            </LabelStyled>
+                            <Field
+                              as={InputStyled}
+                              type="date"
+                              id="dataAquisicao"
+                              name="dataAquisicao"
+                              isDark={darkMode}
+                            />
+                            <ErrorMessage name="dataAquisicao" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          {values.categoria === "eletronico" && (
+                            <>
+                              <FormField>
+                                <LabelStyled htmlFor="numeroSerie" isDark={darkMode}>
+                                  Número de Série
+                                </LabelStyled>
+                                <Field
+                                  as={InputStyled}
+                                  type="text"
+                                  id="numeroSerie"
+                                  name="numeroSerie"
+                                  isDark={darkMode}
+                                />
+                                <ErrorMessage name="numeroSerie" component={ErrorText} isDark={darkMode} />
+                              </FormField>
+                              <FormField>
+                                <LabelStyled htmlFor="imei" isDark={darkMode}>
+                                  IMEI (para telefones e notebooks)
+                                </LabelStyled>
+                                <Field as={InputStyled} type="text" id="imei" name="imei" isDark={darkMode} />
+                                <ErrorMessage name="imei" component={ErrorText} isDark={darkMode} />
+                              </FormField>
+                            </>
+                          )}
+                          {values.categoria === "veiculo" && (
+                            <FormField>
+                              <LabelStyled htmlFor="chassi" isDark={darkMode}>
+                                <Truck size={18} />
+                                Chassi
+                              </LabelStyled>
+                              <Field as={InputStyled} type="text" id="chassi" name="chassi" isDark={darkMode} />
+                              <ErrorMessage name="chassi" component={ErrorText} isDark={darkMode} />
+                            </FormField>
+                          )}
+                          <FormField>
+                            <LabelStyled htmlFor="situacao" isDark={darkMode}>
+                              Situação
+                            </LabelStyled>
+                            <Select
+                              name="situacao"
+                              onValueChange={(value) => setFieldValue("situacao", value)}
+                              defaultValue={values.situacao}
+                            >
+                              <SelectTriggerStyled isDark={darkMode}>
+                                <SelectValue placeholder="Selecione a situação" />
+                              </SelectTriggerStyled>
+                              <SelectContentStyled isDark={darkMode}>
+                                <SelectItem value="novo">Novo</SelectItem>
+                                <SelectItem value="usado">Usado</SelectItem>
+                                <SelectItem value="danificado">Danificado</SelectItem>
+                              </SelectContentStyled>
+                            </Select>
+                            <ErrorMessage name="situacao" component={ErrorText} isDark={darkMode} />
+                          </FormField>
+                          <PriceExplanation isDark={darkMode}>
+                            <div className="flex items-center gap-2">
+                              <Info size={16} className="text-blue-500" />
+                              <span className="font-semibold">Sobre o preço</span>
+                            </div>
+                            <p>
+                              O valor informado será utilizado para análises preditivas de risco e estimativas de danos
+                              potenciais, contribuindo para uma gestão mais eficaz e precisa do patrimônio.
+                            </p>
+                          </PriceExplanation>
+                        </FormSection>
+                      </FormGrid>
+                      <SubmitButton type="submit" disabled={isSubmitting} isDark={darkMode}>
+                        {isSubmitting ? "Editando..." : "Salvar Edições"}
+                      </SubmitButton>
+                    </FormContainer>
+                  )}
+                </Formik>
+              )}
+            </DialogBodyStyled>
+
+            <DialogFooterStyled isDark={darkMode}>
+              <Button type="button" variant="secondary" onClick={() => setShowEditDialog(false)}>
+                Cancelar
+              </Button>
+              <Button type="button" onClick={() => handleEditObject(initialValues)}>
+                Salvar
+              </Button>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
+
+        {/* Confirm Cadastro Dialog */}
+        <Dialog open={showConfirmCadastroDialog} onOpenChange={setShowConfirmCadastroDialog}>
+          <DialogContentStyled className="sm:max-w-md" isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>Confirmar Cadastro</DialogTitleStyled>
+              <DialogDescriptionStyled>Confirme os dados do objeto antes de cadastrar.</DialogDescriptionStyled>
+            </DialogHeaderStyled>
+
+            <DialogBodyStyled isDark={darkMode}>
+              {objectToConfirmCadastro && (
+                <>
+                  <ObjectDetailSection isDark={darkMode}>
+                    <ObjectDetailTitle isDark={darkMode}>
+                      <Info size={16} />
+                      Informações Básicas
+                    </ObjectDetailTitle>
+                    <ObjectDetailContainer isDark={darkMode}>
+                      <InfoGrid>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Categoria:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>
+                            {categories.find((c) => c.value === objectToConfirmCadastro.categoria)?.label ||
+                              objectToConfirmCadastro.categoria}
+                          </ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Nome:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{objectToConfirmCadastro.nome}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Marca:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{objectToConfirmCadastro.marca}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Modelo:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{objectToConfirmCadastro.modelo}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Preço:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>
+                            R$ {Number.parseFloat(objectToConfirmCadastro.preco).toFixed(2)}
+                          </ObjectValue>
+                        </ObjectDetail>
+                      </InfoGrid>
+                    </ObjectDetailContainer>
+                  </ObjectDetailSection>
+
+                  <SensitiveInfoContainer isDark={darkMode}>
+                    <ObjectDetailTitle isDark={darkMode}>Informações Adicionais</ObjectDetailTitle>
+                    <InfoGrid>
+                      <InfoLabel isDark={darkMode}>
+                        Data de Aquisição:{" "}
+                        <InfoValue isDark={darkMode}>{objectToConfirmCadastro.dataAquisicao}</InfoValue>
+                      </InfoLabel>
+                      <InfoLabel isDark={darkMode}>
+                        Situação: <InfoValue isDark={darkMode}>{objectToConfirmCadastro.situacao}</InfoValue>
+                      </InfoLabel>
+                      <InfoLabel isDark={darkMode}>
+                        Descrição: <InfoValue isDark={darkMode}>{objectToConfirmCadastro.descricao}</InfoValue>
+                      </InfoLabel>
+                    </InfoGrid>
+                  </SensitiveInfoContainer>
+                </>
+              )}
+            </DialogBodyStyled>
+
+            <DialogFooterStyled className="sm:justify-end" isDark={darkMode}>
+              <Button type="button" variant="secondary" onClick={() => setShowConfirmCadastroDialog(false)}>
+                Cancelar
+              </Button>
+              <Button type="button" onClick={confirmObjectCreation}>
+                Confirmar Cadastro
+              </Button>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
+
+        {/* Confirm Edit Dialog */}
+        <Dialog open={showConfirmEditDialog} onOpenChange={setShowConfirmEditDialog}>
+          <DialogContentStyled className="sm:max-w-md" isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>Confirmar Edição</DialogTitleStyled>
+              <DialogDescriptionStyled>Confirme as alterações do objeto antes de salvar.</DialogDescriptionStyled>
+            </DialogHeaderStyled>
+
+            <DialogBodyStyled isDark={darkMode}>
+              {objectToConfirmEdit && (
+                <>
+                  <ObjectDetailSection isDark={darkMode}>
+                    <ObjectDetailTitle isDark={darkMode}>
+                      <Info size={16} />
+                      Informações Editadas
+                    </ObjectDetailTitle>
+                    <ObjectDetailContainer isDark={darkMode}>
+                      <InfoGrid>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Categoria:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>
+                            {categories.find((c) => c.value === objectToConfirmEdit.categoria)?.label ||
+                              objectToConfirmEdit.categoria}
+                          </ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Nome:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{objectToConfirmEdit.nome}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Marca:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{objectToConfirmEdit.marca}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Modelo:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>{objectToConfirmEdit.modelo}</ObjectValue>
+                        </ObjectDetail>
+                        <ObjectDetail isDark={darkMode}>
+                          <ObjectProperty isDark={darkMode}>Preço:</ObjectProperty>
+                          <ObjectValue isDark={darkMode}>
+                            R$ {Number.parseFloat(objectToConfirmEdit.preco).toFixed(2)}
+                          </ObjectValue>
+                        </ObjectDetail>
+                      </InfoGrid>
+                    </ObjectDetailContainer>
+                  </ObjectDetailSection>
+
+                  <SensitiveInfoContainer isDark={darkMode}>
+                    <ObjectDetailTitle isDark={darkMode}>Informações Adicionais</ObjectDetailTitle>
+                    <InfoGrid>
+                      <InfoLabel isDark={darkMode}>
+                        Data de Aquisição: <InfoValue isDark={darkMode}>{objectToConfirmEdit.dataAquisicao}</InfoValue>
+                      </InfoLabel>
+                      <InfoLabel isDark={darkMode}>
+                        Situação: <InfoValue isDark={darkMode}>{objectToConfirmEdit.situacao}</InfoValue>
+                      </InfoLabel>
+                      <InfoLabel isDark={darkMode}>
+                        Descrição: <InfoValue isDark={darkMode}>{objectToConfirmEdit.descricao}</InfoValue>
+                      </InfoLabel>
+                    </InfoGrid>
+                  </SensitiveInfoContainer>
+                </>
+              )}
+            </DialogBodyStyled>
+
+            <DialogFooterStyled className="sm:justify-end" isDark={darkMode}>
+              <Button type="button" variant="secondary" onClick={() => setShowConfirmEditDialog(false)}>
+                Cancelar
+              </Button>
+              <Button type="button" onClick={confirmObjectEdit}>
+                Confirmar Edição
+              </Button>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
+
+        {/* Image Gallery Dialog */}
+        <Dialog open={showImagesDialog} onOpenChange={setShowImagesDialog}>
+          <DialogContentStyled className="sm:max-w-4xl" isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>Galeria de Imagens</DialogTitleStyled>
+              <DialogDescriptionStyled>Visualize e gerencie as imagens do objeto.</DialogDescriptionStyled>
+            </DialogHeaderStyled>
+
+            <DialogBodyStyled isDark={darkMode}>
+              {currentObject && currentObject.imagensUrls && currentObject.imagensUrls.length > 0 ? (
+                <ImageGalleryContainer>
+                  <ImageContainer id="image-container">
+                    <StyledImage
+                      src={currentObject.imagensUrls[currentImageIndex] || "/placeholder.svg"}
+                      alt={`Imagem ${currentImageIndex + 1}`}
+                      zoom={zoom}
+                    />
+                    <ImageCounter>
+                      {currentImageIndex + 1} / {currentObject.imagensUrls.length}
+                    </ImageCounter>
+                    <ImageActionButton type="button" onClick={() => setShowDeleteImageConfirmDialog(true)}>
+                      <Trash2 className="h-4 w-4" />
+                    </ImageActionButton>
+                  </ImageContainer>
+
+                  <ImageControls>
+                    <NavigationControls>
+                      <ControlButton onClick={prevImage} disabled={currentImageIndex === 0} isDark={darkMode}>
+                        <ChevronLeft className="h-5 w-5" />
+                      </ControlButton>
+                      <ControlButton
+                        onClick={nextImage}
+                        disabled={currentImageIndex === currentObject.imagensUrls.length - 1}
+                        isDark={darkMode}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </ControlButton>
+                    </NavigationControls>
+
+                    <ZoomControls>
+                      <ControlButton onClick={zoomIn} isDark={darkMode}>
+                        <ZoomIn className="h-5 w-5" />
+                      </ControlButton>
+                      <ControlButton onClick={zoomOut} isDark={darkMode}>
+                        <ZoomOut className="h-5 w-5" />
+                      </ControlButton>
+                      <ControlButton onClick={resetZoom} isDark={darkMode}>
+                        <RotateCw className="h-5 w-5" />
+                      </ControlButton>
+                      <ControlButton onClick={toggleFullscreen} isDark={darkMode}>
+                        {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+                      </ControlButton>
+                    </ZoomControls>
+                  </ImageControls>
+
                   <ThumbnailsContainer>
                     {currentObject.imagensUrls.map((url, index) => (
                       <Thumbnail
                         key={index}
                         active={index === currentImageIndex}
                         onClick={() => setCurrentImageIndex(index)}
+                        isDark={darkMode}
                       >
                         <img src={url || "/placeholder.svg"} alt={`Thumbnail ${index + 1}`} />
                       </Thumbnail>
                     ))}
                   </ThumbnailsContainer>
-                )}
-              </ImageGalleryContainer>
-            ) : (
-              <NoImagesMessage>
-                <Image size={48} />
-                <p>Não há imagens disponíveis para este objeto.</p>
-              </NoImagesMessage>
-            )}
-          </DialogBodyStyled>
+                </ImageGalleryContainer>
+              ) : (
+                <NoImagesMessage isDark={darkMode}>
+                  <ImageIcon className="h-12 w-12 text-gray-500" />
+                  <span>Nenhuma imagem cadastrada para este objeto.</span>
+                </NoImagesMessage>
+              )}
+            </DialogBodyStyled>
 
-          <DialogFooterStyled>
-            <AddImageButtonLabel as="label" htmlFor="add-images">
-              <Plus className="h-5 w-5" />
-              Adicionar Imagens
-              <input
-                type="file"
-                id="add-images"
-                multiple
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={handleAddImages}
-              />
-            </AddImageButtonLabel>
-            <CloseButton type="button" variant="secondary" onClick={() => setShowImagesDialog(false)}>
-              <X className="h-4 w-4" />
-              Fechar
-            </CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
+            <DialogFooterStyled className="sm:justify-between" isDark={darkMode}>
+              <FileInputWrapper>
+                <FileInput
+                  type="file"
+                  id="addImage"
+                  name="addImage"
+                  multiple
+                  onChange={handleAddImages}
+                  style={{ display: "none" }}
+                />
+                <AddImageButtonLabel htmlFor="addImage">Adicionar Imagens</AddImageButtonLabel>
+              </FileInputWrapper>
+              <CloseButton type="button" variant="secondary" onClick={() => setShowImagesDialog(false)}>
+                Fechar
+              </CloseButton>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
 
-      {/* Receipt Dialog */}
-      <Dialog open={showReceiptDialog} onOpenChange={setShowReceiptDialog}>
-        <DialogContentStyled className="sm:max-w-2xl">
-          <DialogHeaderStyled>
-            <DialogTitleStyled>Nota Fiscal de {currentObject?.nome}</DialogTitleStyled>
-            <DialogDescriptionStyled>Visualize a nota fiscal do objeto cadastrado.</DialogDescriptionStyled>
-          </DialogHeaderStyled>
+        {/* Receipt Dialog */}
+        <Dialog open={showReceiptDialog} onOpenChange={setShowReceiptDialog}>
+          <DialogContentStyled className="sm:max-w-4xl" isDark={darkMode}>
+            <DialogHeaderStyled isDark={darkMode}>
+              <DialogTitleStyled>Nota Fiscal</DialogTitleStyled>
+              <DialogDescriptionStyled>Visualize a nota fiscal do objeto.</DialogDescriptionStyled>
+            </DialogHeaderStyled>
 
-          <DialogBodyStyled>
-            <AlertBox>
-              <AlertTriangle size={20} />
-              <span>
-                Importante: Mantenha a nota fiscal original em um local seguro. Esta visualização digital não substitui
-                o documento original para fins legais ou de garantia.
-              </span>
-            </AlertBox>
-            {currentObject && currentObject.notaFiscalUrl ? (
-              <ImageGalleryContainer>
-                <ImageContainer id="receipt-container">
-                  <StyledImage
-                    src={currentObject.notaFiscalUrl || "/placeholder.svg"}
-                    alt={`Nota fiscal de ${currentObject.nome}`}
-                    zoom={zoom}
-                  />
-                </ImageContainer>
+            <DialogBodyStyled isDark={darkMode}>
+              {currentObject && currentObject.notaFiscalUrl ? (
+                <img
+                  src={currentObject.notaFiscalUrl || "/placeholder.svg"}
+                  alt="Nota Fiscal"
+                  style={{ maxWidth: "100%" }}
+                />
+              ) : (
+                <AlertBox isDark={darkMode}>
+                  <AlertTriangle className="h-5 w-5" />
+                  <span>Nenhuma nota fiscal cadastrada para este objeto.</span>
+                </AlertBox>
+              )}
+            </DialogBodyStyled>
 
-                <ImageControls>
-                  <ZoomControls>
-                    <ControlButton onClick={zoomOut} disabled={zoom <= 0.5}>
-                      <ZoomOut size={20} />
-                    </ControlButton>
-                    <ControlButton onClick={resetZoom}>
-                      <Image size={20} />
-                    </ControlButton>
-                    <ControlButton onClick={zoomIn} disabled={zoom >= 3}>
-                      <ZoomIn size={20} />
-                    </ControlButton>
-                    <ControlButton onClick={toggleFullscreen}>
-                      {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-                    </ControlButton>
-                  </ZoomControls>
-                </ImageControls>
-              </ImageGalleryContainer>
-            ) : (
-              <NoImagesMessage>
-                <FileText size={48} />
-                <p>Não há nota fiscal disponível para este objeto.</p>
-              </NoImagesMessage>
-            )}
-          </DialogBodyStyled>
-
-          <DialogFooterStyled>
-            <CloseButton type="button" variant="secondary" onClick={() => setShowReceiptDialog(false)}>
-              <X className="h-4 w-4" />
-              Fechar
-            </CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
-
-      {/* Delete Confirm Dialog */}
-      <Dialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
-        <DialogContentStyled>
-          <DialogHeaderStyled>
-            <DialogTitleStyled>Confirmar Exclusão</DialogTitleStyled>
-            <DialogDescriptionStyled>Tem certeza que deseja excluir este objeto?</DialogDescriptionStyled>
-          </DialogHeaderStyled>
-
-          <DialogBodyStyled>
-            <p>Esta ação não pode ser desfeita. O objeto será permanentemente removido do sistema.</p>
-          </DialogBodyStyled>
-
-          <DialogFooterStyled>
-            <DeleteButton type="button" onClick={handleDeleteObject}>
-              Confirmar Exclusão
-            </DeleteButton>
-            <CloseButton type="button" variant="secondary" onClick={() => setShowDeleteConfirmDialog(false)}>
-              Cancelar
-            </CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
-
-      {/* Delete Image Confirm Dialog */}
-      <Dialog open={showDeleteImageConfirmDialog} onOpenChange={setShowDeleteImageConfirmDialog}>
-        <DialogContentStyled>
-          <DialogHeaderStyled>
-            <DialogTitleStyled>Confirmar Exclusão de Imagem</DialogTitleStyled>
-            <DialogDescriptionStyled>Tem certeza que deseja excluir esta imagem?</DialogDescriptionStyled>
-          </DialogHeaderStyled>
-
-          <DialogBodyStyled>
-            <p>Esta ação não pode ser desfeita. A imagem será permanentemente removida do objeto.</p>
-          </DialogBodyStyled>
-
-          <DialogFooterStyled>
-            <DeleteButton type="button" onClick={handleDeleteImage}>
-              Confirmar Exclusão
-            </DeleteButton>
-            <CloseButton type="button" variant="secondary" onClick={() => setShowDeleteImageConfirmDialog(false)}>
-              Cancelar
-            </CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
-
-      {/* Confirm Cadastro Dialog */}
-      <Dialog open={showConfirmCadastroDialog} onOpenChange={setShowConfirmCadastroDialog}>
-        <DialogContentStyled>
-          <DialogHeaderStyled>
-            <DialogTitleStyled>Confirmar Cadastro</DialogTitleStyled>
-            <DialogDescriptionStyled>Verifique as informações antes de cadastrar o objeto</DialogDescriptionStyled>
-          </DialogHeaderStyled>
-
-          <DialogBodyStyled>
-            {objectToConfirmCadastro && (
-              <ObjectDetailContainer>
-                <InfoGrid>
-                  <ObjectDetail>
-                    <ObjectProperty>Nome:</ObjectProperty>
-                    <ObjectValue>{objectToConfirmCadastro.nome}</ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Categoria:</ObjectProperty>
-                    <ObjectValue>
-                      {categories.find((c) => c.value === objectToConfirmCadastro.categoria)?.label ||
-                        objectToConfirmCadastro.categoria}
-                    </ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Marca:</ObjectProperty>
-                    <ObjectValue>{objectToConfirmCadastro.marca}</ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Modelo:</ObjectProperty>
-                    <ObjectValue>{objectToConfirmCadastro.modelo}</ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Preço:</ObjectProperty>
-                    <ObjectValue>R$ {Number.parseFloat(objectToConfirmCadastro.preco).toFixed(2)}</ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Situação:</ObjectProperty>
-                    <ObjectValue>{getSituationLabel(objectToConfirmCadastro.situacao)}</ObjectValue>
-                  </ObjectDetail>
-                </InfoGrid>
-                <ObjectDetail>
-                  <ObjectProperty>Informações Adicionais:</ObjectProperty>
-                  <ObjectValue>{objectToConfirmCadastro.descricao}</ObjectValue>
-                </ObjectDetail>
-              </ObjectDetailContainer>
-            )}
-          </DialogBodyStyled>
-
-          <DialogFooterStyled>
-            <ActionButton onClick={confirmObjectCreation}>Confirmar Cadastro</ActionButton>
-            <CloseButton onClick={() => setShowConfirmCadastroDialog(false)}>Cancelar</CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
-
-      {/* Confirm Edit Dialog */}
-      <Dialog open={showConfirmEditDialog} onOpenChange={setShowConfirmEditDialog}>
-        <DialogContentStyled>
-          <DialogHeaderStyled>
-            <DialogTitleStyled>Confirmar Edição</DialogTitleStyled>
-            <DialogDescriptionStyled>Verifique as informações antes de salvar as alterações</DialogDescriptionStyled>
-          </DialogHeaderStyled>
-
-          <DialogBodyStyled>
-            {objectToConfirmEdit && (
-              <ObjectDetailContainer>
-                <InfoGrid>
-                  <ObjectDetail>
-                    <ObjectProperty>Nome:</ObjectProperty>
-                    <ObjectValue>{objectToConfirmEdit.nome}</ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Categoria:</ObjectProperty>
-                    <ObjectValue>
-                      {categories.find((c) => c.value === objectToConfirmEdit.categoria)?.label ||
-                        objectToConfirmEdit.categoria}
-                    </ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Marca:</ObjectProperty>
-                    <ObjectValue>{objectToConfirmEdit.marca}</ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Modelo:</ObjectProperty>
-                    <ObjectValue>{objectToConfirmEdit.modelo}</ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Preço:</ObjectProperty>
-                    <ObjectValue>R$ {Number.parseFloat(objectToConfirmEdit.preco).toFixed(2)}</ObjectValue>
-                  </ObjectDetail>
-                  <ObjectDetail>
-                    <ObjectProperty>Situação:</ObjectProperty>
-                    <ObjectValue>{getSituationLabel(objectToConfirmEdit.situacao)}</ObjectValue>
-                  </ObjectDetail>
-                </InfoGrid>
-                <ObjectDetail>
-                  <ObjectProperty>Informações Adicionais:</ObjectProperty>
-                  <ObjectValue>{objectToConfirmEdit.descricao}</ObjectValue>
-                </ObjectDetail>
-              </ObjectDetailContainer>
-            )}
-          </DialogBodyStyled>
-
-          <DialogFooterStyled>
-            <ActionButton onClick={confirmObjectEdit}>Confirmar Edição</ActionButton>
-            <CloseButton onClick={() => setShowConfirmEditDialog(false)}>Cancelar</CloseButton>
-          </DialogFooterStyled>
-        </DialogContentStyled>
-      </Dialog>
-    </Container>
+            <DialogFooterStyled className="sm:justify-end" isDark={darkMode}>
+              <CloseButton type="button" variant="secondary" onClick={() => setShowReceiptDialog(false)}>
+                Fechar
+              </CloseButton>
+            </DialogFooterStyled>
+          </DialogContentStyled>
+        </Dialog>
+      </Container>
+    </ThemeProvider>
   )
 }
+
+// Additional styled components with dark mode support
+const SearchContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`
+
+const SearchInput = styled(Input)<{ isDark: boolean }>`
+  ${inputStyles}
+`
+
+const CategoryBadge = styled.span<{ isDark: boolean }>`
+  background-color: ${(props) => (props.isDark ? "rgba(59, 130, 246, 0.2)" : "#e0e7ff")};
+  color: ${(props) => (props.isDark ? "#60a5fa" : "#3b82f6")};
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+`
+
+const SituationBadge = styled.span<{ situation: string; isDark: boolean }>`
+  background-color: ${({ situation, isDark }) =>
+    situation === "novo"
+      ? isDark
+        ? "rgba(16, 185, 129, 0.2)"
+        : "#dcfce7"
+      : situation === "usado"
+        ? isDark
+          ? "rgba(245, 158, 11, 0.2)"
+          : "#ffedd5"
+        : isDark
+          ? "rgba(239, 68, 68, 0.2)"
+          : "#fee2e2"};
+  color: ${({ situation, isDark }) =>
+    situation === "novo"
+      ? isDark
+        ? "#34d399"
+        : "#16a34a"
+      : situation === "usado"
+        ? isDark
+          ? "#fbbf24"
+          : "#ea580c"
+        : isDark
+          ? "#f87171"
+          : "#b91c1c"};
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+`
+
+const QRCodeButton = styled(ActionButton)`
+  background-color: ${theme.light.secondary};
+  color: white;
+  &:hover {
+    background-color: ${theme.light.secondaryHover};
+  }
+`
+
+const ImagesButton = styled(ActionButton)`
+  background-color: ${theme.light.info};
+  color: white;
+  &:hover {
+    background-color: ${theme.light.primaryHover};
+  }
+`
+
+const ReceiptButton = styled(ActionButton)`
+  background-color: ${theme.light.warning};
+  color: ${theme.light.text};
+  &:hover {
+    background-color: #fcd34d;
+  }
+`
+
+const EditButton = styled(ActionButton)`
+  background-color: #a78bfa;
+  color: white;
+  &:hover {
+    background-color: #7c3aed;
+  }
+`
+
+const DeleteButton = styled(ActionButton)`
+  background-color: #f87171;
+  color: white;
+  &:hover {
+    background-color: #dc2626;
+  }
+`
+
+const CloseButton = styled(ActionButton)`
+  background-color: ${(props) => (props.theme.mode === "dark" ? theme.dark.border : theme.light.border)};
+  color: ${(props) => (props.theme.mode === "dark" ? theme.dark.text : theme.light.text)};
+  &:hover {
+    background-color: ${(props) => (props.theme.mode === "dark" ? theme.dark.borderHover : theme.light.borderHover)};
+  }
+`
+
+const DownloadButton = styled(ActionButton)`
+  background-color: ${theme.light.success};
+  color: white;
+  &:hover {
+    background-color: ${theme.light.secondaryHover};
+  }
+`
+
+const AddImageButtonLabel = styled(Button)`
+  background-color: ${theme.light.secondary};
+  color: white;
+  &:hover {
+    background-color: ${theme.light.secondaryHover};
+  }
+`
+
+const ImageGalleryContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`
+
+const ImageContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  max-height: 600px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: ${(props) => (props.theme.mode === "dark" ? theme.dark.background : theme.light.background)};
+`
+
+const StyledImage = styled.img<{ zoom: number }>`
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  transform: scale(${({ zoom }) => zoom});
+`
+
+const ImageControls = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 0.5rem;
+`
+
+const NavigationControls = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`
+
+const ZoomControls = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`
+
+// Update ControlButton for better dark mode contrast
+const ControlButton = styled(Button)<{ isDark?: boolean }>`
+  padding: 0.5rem;
+  border-radius: 9999px;
+  background-color: ${(props) => (props.isDark ? "rgba(30, 41, 59, 0.8)" : theme.light.background)};
+  color: ${(props) => (props.isDark ? theme.dark.text : theme.light.text)};
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: ${(props) => (props.isDark ? "rgba(55, 65, 81, 0.8)" : theme.light.border)};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`
+
+const ThumbnailsContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+`
+
+// Update Thumbnail for better dark mode contrast
+const Thumbnail = styled.div<{ active: boolean; isDark?: boolean }>`
+  width: 80px;
+  height: 60px;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: ${({ active }) => (active ? 1 : 0.6)};
+  transition: opacity 0.2s ease-in-out, border-color 0.3s ease;
+  border: 2px solid ${({ active, isDark }) => (active ? (isDark ? theme.dark.primary : theme.light.primary) : "transparent")};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+`
+
+// Update NoImagesMessage for better dark mode contrast
+const NoImagesMessage = styled.div<{ isDark?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: ${(props) => (props.isDark ? "rgba(15, 23, 42, 0.5)" : theme.light.background)};
+  border-radius: 0.5rem;
+  color: ${(props) => (props.isDark ? theme.dark.textLight : theme.light.textLight)};
+  gap: 1rem;
+  text-align: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+`
+
+const ImageCounter = styled.div`
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+`
+
+const ImageActionButton = styled(Button)`
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(220, 38, 38, 0.7);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+
+  &:hover {
+    background-color: rgba(220, 38, 38, 1);
+  }
+`
+
+// Update AlertBox for better dark mode contrast
+const AlertBox = styled.div<{ isDark?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: ${(props) => (props.isDark ? "rgba(245, 158, 11, 0.1)" : "#fff7ed")};
+  border-radius: 0.5rem;
+  color: ${(props) => (props.isDark ? "#fbbf24" : "#a16207")};
+  border: 1px solid ${(props) => (props.isDark ? "rgba(245, 158, 11, 0.2)" : "#f9e6c9")};
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+
+  span {
+    font-size: 0.875rem;
+  }
+`
 
 export default CadastrarTab
 
@@ -1773,248 +2314,4 @@ const mockObjects: ObjectItemProps[] = [
     preco: "300.00",
   },
 ]
-
-const SearchContainer = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-`
-
-const SearchInput = styled(Input)`
-  ${inputStyles}
-`
-
-const CategoryBadge = styled.span`
-  background-color: #e0e7ff;
-  color: #3b82f6;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-`
-
-const SituationBadge = styled.span<{ situation: string }>`
-  background-color: ${({ situation }) =>
-    situation === "novo" ? "#dcfce7" : situation === "usado" ? "#ffedd5" : "#fee2e2"};
-  color: ${({ situation }) => (situation === "novo" ? "#16a34a" : situation === "usado" ? "#ea580c" : "#b91c1c")};
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-`
-
-const ExplanatoryNote = styled.p`
-  font-size: 0.75rem;
-  color: ${theme.textLight};
-  margin-top: 0.5rem;
-  font-style: italic;
-`
-
-const QRCodeButton = styled(ActionButton)`
-  background-color: ${theme.secondary};
-  color: white;
-  &:hover {
-    background-color: ${theme.secondaryHover};
-  }
-`
-
-const ImagesButton = styled(ActionButton)`
-  background-color: ${theme.info};
-  color: white;
-  &:hover {
-    background-color: ${theme.primaryHover};
-  }
-`
-
-const ReceiptButton = styled(ActionButton)`
-  background-color: ${theme.warning};
-  color: ${theme.text};
-  &:hover {
-    background-color: #fcd34d;
-  }
-`
-
-const EditButton = styled(ActionButton)`
-  background-color: #a78bfa;
-  color: white;
-  &:hover {
-    background-color: #7c3aed;
-  }
-`
-
-const DeleteButton = styled(ActionButton)`
-  background-color: #f87171;
-  color: white;
-  &:hover {
-    background-color: #dc2626;
-  }
-`
-
-const CloseButton = styled(ActionButton)`
-  background-color: ${theme.border};
-  color: ${theme.text};
-  &:hover {
-    background-color: ${theme.borderHover};
-  }
-`
-
-const DownloadButton = styled(ActionButton)`
-  background-color: ${theme.success};
-  color: white;
-  &:hover {
-    background-color: ${theme.secondaryHover};
-  }
-`
-
-const AddImageButtonLabel = styled(Button)`
-  background-color: ${theme.secondary};
-  color: white;
-  &:hover {
-    background-color: ${theme.secondaryHover};
-  }
-`
-
-const ImageGalleryContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`
-
-const ImageContainer = styled.div`
-  position: relative;
-  width: 100%;
-  max-height: 600px;
-  overflow: hidden;
-  border-radius: 0.5rem;
-  background-color: ${theme.background};
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`
-
-const StyledImage = styled.img<{ zoom: number }>`
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transition: transform 0.3s ease;
-  transform: scale(${({ zoom }) => zoom});
-`
-
-const ImageControls = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 0 0.5rem;
-`
-
-const NavigationControls = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`
-
-const ZoomControls = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`
-
-const ControlButton = styled(Button)`
-  padding: 0.5rem;
-  border-radius: 9999px;
-  background-color: ${theme.background};
-  color: ${theme.text};
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: ${theme.border};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`
-
-const ThumbnailsContainer = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-`
-
-const Thumbnail = styled.div<{ active: boolean }>`
-  width: 80px;
-  height: 60px;
-  border-radius: 0.375rem;
-  overflow: hidden;
-  cursor: pointer;
-  opacity: ${({ active }) => (active ? 1 : 0.6)};
-  transition: opacity 0.2s ease-in-out;
-  border: 2px solid ${({ active }) => (active ? theme.primary : "transparent")};
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  &:hover {
-    opacity: 1;
-  }
-`
-
-const NoImagesMessage = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background-color: ${theme.background};
-  border-radius: 0.5rem;
-  color: ${theme.textLight};
-  gap: 1rem;
-  text-align: center;
-`
-
-const ImageCounter = styled.div`
-  position: absolute;
-  bottom: 0.5rem;
-  right: 0.5rem;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-`
-
-const ImageActionButton = styled(Button)`
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background-color: rgba(220, 38, 38, 0.7);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-
-  &:hover {
-    background-color: rgba(220, 38, 38, 1);
-  }
-`
-
-const AlertBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background-color: #fff7ed;
-  border-radius: 0.5rem;
-  color: #a16207;
-  border: 1px solid #f9e6c9;
-
-  span {
-    font-size: 0.875rem;
-  }
-`
 

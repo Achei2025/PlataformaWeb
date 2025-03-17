@@ -1,25 +1,24 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
-
+ */
 
 "use client"
 
@@ -53,10 +52,10 @@ const fadeIn = keyframes`
 const Container = styled.div`
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   height: 100vh;
   background: linear-gradient(135deg, ${colors.green} 0%, ${colors.blue} 100%);
-  padding: 100px 20px 20px 20px;
+  padding: 20px;
   overflow-y: auto;
 `
 
@@ -346,6 +345,7 @@ export default function LoginPage() {
   const [userType, setUserType] = useState<"citizen" | "police">("citizen")
   const [showPassword, setShowPassword] = useState(false)
   const [cpf, setCpf] = useState("")
+  const [matricula, setMatricula] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [errors, setErrors] = useState({ cpf: "", password: "" })
@@ -356,12 +356,23 @@ export default function LoginPage() {
     const newErrors = { cpf: "", password: "" }
     let isValid = true
 
-    if (!cpf) {
-      newErrors.cpf = "CPF é obrigatório"
-      isValid = false
-    } else if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf)) {
-      newErrors.cpf = "CPF inválido"
-      isValid = false
+    if (userType === "citizen") {
+      if (!cpf) {
+        newErrors.cpf = "CPF é obrigatório"
+        isValid = false
+      } else if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf)) {
+        newErrors.cpf = "CPF inválido"
+        isValid = false
+      }
+    } else {
+      if (!matricula) {
+        newErrors.cpf = "Matrícula é obrigatória"
+        isValid = false
+      } else if (matricula.length < 5) {
+        // Assuming police registration numbers are at least 5 digits
+        newErrors.cpf = "Matrícula inválida"
+        isValid = false
+      }
     }
 
     if (!password) {
@@ -415,10 +426,24 @@ export default function LoginPage() {
             </StyledLinkText>
 
             <UserTypeContainer>
-              <UserTypeButton type="button" $active={userType === "citizen"} onClick={() => setUserType("citizen")}>
+              <UserTypeButton
+                type="button"
+                $active={userType === "citizen"}
+                onClick={() => {
+                  setUserType("citizen")
+                  setMatricula("") // Clear matrícula when switching to citizen
+                }}
+              >
                 Cidadão
               </UserTypeButton>
-              <UserTypeButton type="button" $active={userType === "police"} onClick={() => setUserType("police")}>
+              <UserTypeButton
+                type="button"
+                $active={userType === "police"}
+                onClick={() => {
+                  setUserType("police")
+                  setCpf("") // Clear CPF when switching to police
+                }}
+              >
                 Policial
               </UserTypeButton>
             </UserTypeContainer>
@@ -428,26 +453,37 @@ export default function LoginPage() {
                 <Icon>
                   <User size={20} />
                 </Icon>
-                <Input
-                  type="text"
-                  placeholder="CPF"
-                  value={cpf}
-                  onChange={(e) => {
-                    // Format CPF as user types (000.000.000-00)
-                    const value = e.target.value.replace(/\D/g, "") // Remove non-digits
-                    let formattedValue = ""
+                {userType === "citizen" ? (
+                  <Input
+                    type="text"
+                    placeholder="CPF"
+                    value={cpf}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "") // Remove non-digits
+                      let formattedValue = ""
 
-                    if (value.length <= 11) {
-                      // Format as CPF
-                      formattedValue = value
-                        .replace(/(\d{3})(?=\d)/, "$1.")
-                        .replace(/(\d{3})(?=\d)/, "$1.")
-                        .replace(/(\d{3})(?=\d)/, "$1-")
+                      // Format as CPF (000.000.000-00)
+                      if (value.length <= 11) {
+                        formattedValue = value
+                          .replace(/(\d{3})(?=\d)/, "$1.")
+                          .replace(/(\d{3})(?=\d)/, "$1.")
+                          .replace(/(\d{3})(?=\d)/, "$1-")
 
-                      setCpf(formattedValue)
-                    }
-                  }}
-                />
+                        setCpf(formattedValue)
+                      }
+                    }}
+                  />
+                ) : (
+                  <Input
+                    type="text"
+                    placeholder="Matrícula"
+                    value={matricula}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "") // Remove non-digits
+                      setMatricula(value)
+                    }}
+                  />
+                )}
                 {errors.cpf && <ErrorMessage>{errors.cpf}</ErrorMessage>}
               </InputGroup>
 

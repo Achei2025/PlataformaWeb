@@ -1,24 +1,24 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
+ */
 
 "use client"
 
@@ -313,6 +313,8 @@ const CardList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
 `
 
 const Card = styled.div`
@@ -673,6 +675,9 @@ const Alert = styled.div`
   background-color: #f3f4f6;
   color: #374151;
   margin-bottom: 1.5rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
   
   .dark & {
     background-color: #374151;
@@ -682,7 +687,7 @@ const Alert = styled.div`
 
 // Detalhes do caso
 const DetailContainer = styled.div`
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 1.5rem;
 `
@@ -821,6 +826,23 @@ const WarningBox = styled.div`
   .dark & {
     background-color: rgba(245, 158, 11, 0.2);
     color: #fbbf24;
+  }
+`
+
+// Adicionar um novo componente styled para o aviso de documentos necessários
+const InfoBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  background-color: #dbeafe;
+  color: #1e40af;
+  margin-top: 1rem;
+  
+  .dark & {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
   }
 `
 
@@ -1000,7 +1022,7 @@ const MessageTime = styled.span<{ isUser: boolean }>`
   color: ${(props) => (props.isUser ? "rgba(255, 255, 255, 0.7)" : "#6b7280")};
   
   .dark & {
-    color: ${(props) => (props.isUser ? "rgba(255, 255, 255, 0.7)" : "#9ca3af")};
+    color: ${(props) => (props.isUser ? "rgba(255, 255, 255, 0.7)" : "#6b7280")};
   }
 `
 
@@ -1032,6 +1054,8 @@ const LoadingContainer = styled.div`
   min-height: 50vh;
   flex-direction: column;
   gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
 `
 
 const Spinner = styled.div`
@@ -1065,6 +1089,8 @@ const LoadingText = styled.p`
 const ErrorCard = styled(Card)`
   text-align: center;
   padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
 `
 
 const ErrorIcon = styled.div`
@@ -1484,6 +1510,16 @@ export default function CasosPage() {
                   </WarningBox>
                 )}
 
+                {casoAtual.status === "Localizado" && (
+                  <InfoBox>
+                    <AlertCircle size={20} />
+                    <span>
+                      Objeto localizado! Para retirada, é necessário apresentar documentos de identificação e
+                      comprovante de propriedade no local indicado pelo agente.
+                    </span>
+                  </InfoBox>
+                )}
+
                 <div style={{ marginTop: "1rem" }}>
                   <Button
                     onClick={() => {
@@ -1859,96 +1895,152 @@ export default function CasosPage() {
                 >
                   Ver Detalhes
                 </Button>
-
-                {caso.status === "Em análise" && (
-                  <Button
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setShowConfirmationDialog(true)
-                      setCasoIdToUpdate(caso.id)
-                    }}
-                  >
-                    Marcar como Recuperado
-                  </Button>
-                )}
-
-                {caso.status === "Localizado" && (
-                  <Button
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setShowRecoveredConfirmationDialog(true)
-                      setCasoIdToUpdate(caso.id)
-                    }}
-                  >
-                    Marcar como Recuperado
-                  </Button>
-                )}
               </CardFooter>
             </Card>
           ))}
         </CardList>
       )}
 
-      {showConfirmationDialog && (
+      {showDialog && (
         <Dialog>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Confirmar Recuperação</DialogTitle>
+              <DialogTitle>Registrar Novo Caso</DialogTitle>
             </DialogHeader>
             <DialogBody>
-              <p>
-                Ao marcar o objeto como recuperado, você estará dizendo que você recuperou o objeto e não é necessário o
-                B.O. estar aberto.
-              </p>
+              <FormGroup>
+                <Label htmlFor="objeto">Objeto Roubado</Label>
+                <Select id="objeto" value={novoObjeto} onChange={(e) => setNovoObjeto(e.target.value)}>
+                  <option value="">Selecione um objeto...</option>
+                  {objetosDisponiveis.map((objeto, index) => (
+                    <option key={index} value={objeto}>
+                      {objeto}
+                    </option>
+                  ))}
+                </Select>
+              </FormGroup>
+              <FormGroup>
+                <Label htmlFor="categoria">Categoria</Label>
+                <Select
+                  id="categoria"
+                  value={novaCategoria}
+                  onChange={(e) =>
+                    setNovaCategoria(e.target.value as "Armado" | "Moto" | "Furto" | "Distração" | "Outros")
+                  }
+                >
+                  <option value="Armado">Armado</option>
+                  <option value="Moto">Moto</option>
+                  <option value="Furto">Furto</option>
+                  <option value="Distração">Distração</option>
+                  <option value="Outros">Outros</option>
+                </Select>
+              </FormGroup>
+              <FormGroup>
+                <Label htmlFor="dataHora">Data e Hora do Roubo</Label>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <Input
+                    type="date"
+                    id="dataRoubo"
+                    style={{ flex: 1 }}
+                    defaultValue={new Date().toISOString().split("T")[0]}
+                  />
+                  <Input
+                    type="time"
+                    id="horarioRoubo"
+                    style={{ flex: 1 }}
+                    value={horarioRoubo}
+                    onChange={(e) => setHorarioRoubo(e.target.value)}
+                  />
+                </div>
+              </FormGroup>
+              <FormGroup>
+                <Label htmlFor="localizacao">Local do Roubo</Label>
+                <InputGroup>
+                  <InputWithButton>
+                    <Input
+                      id="localizacao"
+                      placeholder="Ex: Av. Paulista, Estação Sé..."
+                      value={novaLocalizacao}
+                      onChange={(e) => setNovaLocalizacao(e.target.value)}
+                      style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                    />
+                    <Button
+                      variant="secondary"
+                      style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                      onClick={() => setShowMapModal(true)}
+                    >
+                      <Map size={16} />
+                    </Button>
+                  </InputWithButton>
+                </InputGroup>
+                {selectedCoordinates && (
+                  <div style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "#6b7280" }}>
+                    Localização selecionada no mapa: {selectedCoordinates.lat.toFixed(6)},{" "}
+                    {selectedCoordinates.lng.toFixed(6)}
+                  </div>
+                )}
+              </FormGroup>
+              <FormGroup>
+                <Label htmlFor="descricao">Descreva o acontecido ou coloque mais informações</Label>
+                <Textarea
+                  id="descricao"
+                  placeholder="Descreva como ocorreu o roubo, características do ladrão, etc..."
+                  value={novaDescricao}
+                  onChange={(e) => setNovaDescricao(e.target.value)}
+                />
+              </FormGroup>
             </DialogBody>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowConfirmationDialog(false)}>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>
                 Cancelar
               </Button>
-              <Button
-                onClick={() => {
-                  if (casoIdToUpdate) {
-                    atualizarStatus(casoIdToUpdate, "Recuperado")
-                    setShowConfirmationDialog(false)
-                    setCasoIdToUpdate(null)
-                  }
-                }}
-              >
-                Confirmar
+              <Button onClick={adicionarCaso} disabled={!novoObjeto.trim()}>
+                Registrar
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
-      {showRecoveredConfirmationDialog && (
-        <Dialog>
+
+      {showMapModal && (
+        <MapModal>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Confirmar Recuperação</DialogTitle>
+              <DialogTitle>Selecione a Localização</DialogTitle>
             </DialogHeader>
             <DialogBody>
-              <p>Você já recuperou mesmo o objeto? Ao confirmar, o status será alterado para "Recuperado".</p>
+              <MapContainer>
+                <MapPlaceholder>
+                  <Map size={48} color="#6b7280" />
+                  <p style={{ marginTop: "1rem" }}>Mapa interativo seria carregado aqui</p>
+                  <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
+                    Clique no mapa para marcar a localização exata do roubo
+                  </p>
+                </MapPlaceholder>
+                <Button
+                  onClick={() => {
+                    // Simular seleção de coordenadas (São Paulo)
+                    const randomLat = -23.55 - Math.random() * 0.1
+                    const randomLng = -46.63 - Math.random() * 0.1
+                    setSelectedCoordinates({ lat: randomLat, lng: randomLng })
+                    setNovaLocalizacao(novaLocalizacao || "Localização selecionada no mapa")
+                    setShowMapModal(false)
+                  }}
+                >
+                  Simular Seleção de Localização
+                </Button>
+              </MapContainer>
             </DialogBody>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowRecoveredConfirmationDialog(false)}>
+              <Button variant="outline" onClick={() => setShowMapModal(false)}>
                 Cancelar
               </Button>
-              <Button
-                onClick={() => {
-                  if (casoIdToUpdate) {
-                    atualizarStatus(casoIdToUpdate, "Recuperado")
-                    setShowRecoveredConfirmationDialog(false)
-                    setCasoIdToUpdate(null)
-                  }
-                }}
-              >
-                Confirmar
+              <Button onClick={() => setShowMapModal(false)} disabled={!selectedCoordinates}>
+                Confirmar Localização
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </MapModal>
       )}
     </Container>
   )

@@ -1,25 +1,3 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- * 
- * This file is part of Achei.
- * 
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
- * Contact information: teamachei.2024@gmail.com
-*/
-
 "use client"
 
 import type React from "react"
@@ -103,6 +81,9 @@ const Section = styled.div<{ isLast?: boolean }>`
     border-bottom: none;
     border-right: ${(props) => (props.isLast ? "none" : "1px solid #e1e1e1")};
     padding-right: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 `
 
@@ -154,6 +135,12 @@ const Icon = styled.div`
   top: 50%;
   transform: translateY(-50%);
   color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  z-index: 1;
 `
 
 const PasswordIcon = styled.div`
@@ -295,6 +282,44 @@ const CheckboxLabel = styled.label`
   }
 `
 
+const Select = styled.select`
+  width: 100%;
+  padding: 15px 20px;
+  padding-left: 45px;
+  border: 2px solid #e1e1e1;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: white;
+
+  &:focus {
+    border-color: ${colors.green};
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 156, 59, 0.2);
+  }
+`
+
+const RadioGroup = styled.div`
+  display: flex;
+  gap: 20px;
+  margin-top: 5px;
+`
+
+const RadioOption = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`
+
+const RadioInput = styled.input`
+  cursor: pointer;
+`
+
+const RadioLabel = styled.label`
+  cursor: pointer;
+  color: #666;
+`
+
 const LinkText = styled.p`
   text-align: center;
   margin-top: 20px;
@@ -415,12 +440,18 @@ const BackButton = styled(Button)`
   }
 `
 
+const InputWithLabel = styled.div`
+  position: relative;
+`
+
 interface FormData {
   fullName: string
   email: string
   cpf: string
   phone: string
   birthDate: string
+  gender: string
+  occupation: string
   cep: string
   state: string
   city: string
@@ -456,6 +487,8 @@ export default function RegisterPage() {
     cpf: "",
     phone: "",
     birthDate: "",
+    gender: "",
+    occupation: "",
     cep: "",
     state: "",
     city: "",
@@ -603,6 +636,11 @@ export default function RegisterPage() {
       isValid = false
     }
 
+    if (!formData.occupation) {
+      newErrors.occupation = "Ocupação é obrigatória"
+      isValid = false
+    }
+
     if (!formData.cep) {
       newErrors.cep = "CEP é obrigatório"
       isValid = false
@@ -677,8 +715,8 @@ export default function RegisterPage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -754,6 +792,10 @@ export default function RegisterPage() {
               <ConfirmationItem>
                 <ConfirmationLabel>Data de Nascimento:</ConfirmationLabel>
                 <ConfirmationValue>{formatDate(formData.birthDate)}</ConfirmationValue>
+              </ConfirmationItem>
+              <ConfirmationItem>
+                <ConfirmationLabel>Ocupação:</ConfirmationLabel>
+                <ConfirmationValue>{formData.occupation}</ConfirmationValue>
               </ConfirmationItem>
             </ConfirmationSection>
 
@@ -871,140 +913,23 @@ export default function RegisterPage() {
                     <Info size={16} />
                   </InfoIcon>
                 </FieldLabel>
-                <Icon>
-                  <Calendar size={20} />
-                </Icon>
-                <Input
-                  id="birthDate"
-                  type="date"
-                  name="birthDate"
-                  placeholder="Data de Nascimento"
-                  value={formData.birthDate}
-                  onChange={handleChange}
-                />
+                <InputWithLabel>
+                  <Icon>
+                    <Calendar size={20} />
+                  </Icon>
+                  <Input
+                    id="birthDate"
+                    type="date"
+                    name="birthDate"
+                    placeholder="Data de Nascimento"
+                    value={formData.birthDate}
+                    onChange={handleChange}
+                  />
+                </InputWithLabel>
                 {errors.birthDate && <ErrorMessage>{errors.birthDate}</ErrorMessage>}
               </InputGroup>
 
-              <AddressSection>
-                <SectionTitle>Endereço</SectionTitle>
-                <InputGroup>
-                  <Icon>
-                    <MapPin size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="cep"
-                    placeholder="CEP"
-                    value={formData.cep}
-                    onChange={(e) => {
-                      const formatted = formatCEP(e.target.value)
-                      setFormData((prev) => ({ ...prev, cep: formatted }))
-                    }}
-                    maxLength={9}
-                  />
-                  {isFetchingCep && (
-                    <LoadingIcon>
-                      <Loader2 size={20} />
-                    </LoadingIcon>
-                  )}
-                  {errors.cep && <ErrorMessage>{errors.cep}</ErrorMessage>}
-                </InputGroup>
-
-                <InputRow>
-                  <InputGroup>
-                    <Icon>
-                      <MapPin size={20} />
-                    </Icon>
-                    <Input
-                      type="text"
-                      name="state"
-                      placeholder="Estado"
-                      value={formData.state}
-                      onChange={handleChange}
-                      disabled={isFetchingCep}
-                    />
-                    {errors.state && <ErrorMessage>{errors.state}</ErrorMessage>}
-                  </InputGroup>
-
-                  <InputGroup>
-                    <Icon>
-                      <MapPin size={20} />
-                    </Icon>
-                    <Input
-                      type="text"
-                      name="city"
-                      placeholder="Cidade"
-                      value={formData.city}
-                      onChange={handleChange}
-                      disabled={isFetchingCep}
-                    />
-                    {errors.city && <ErrorMessage>{errors.city}</ErrorMessage>}
-                  </InputGroup>
-                </InputRow>
-
-                <InputGroup>
-                  <Icon>
-                    <MapPin size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="neighborhood"
-                    placeholder="Bairro"
-                    value={formData.neighborhood}
-                    onChange={handleChange}
-                    disabled={isFetchingCep}
-                  />
-                  {errors.neighborhood && <ErrorMessage>{errors.neighborhood}</ErrorMessage>}
-                </InputGroup>
-
-                <InputGroup>
-                  <Icon>
-                    <MapPin size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="street"
-                    placeholder="Rua"
-                    value={formData.street}
-                    onChange={handleChange}
-                    disabled={isFetchingCep}
-                  />
-                  {errors.street && <ErrorMessage>{errors.street}</ErrorMessage>}
-                </InputGroup>
-
-                <InputRow>
-                  <InputGroup>
-                    <Icon>
-                      <MapPin size={20} />
-                    </Icon>
-                    <Input
-                      type="text"
-                      name="number"
-                      placeholder="Número"
-                      value={formData.number}
-                      onChange={handleChange}
-                    />
-                    {errors.number && <ErrorMessage>{errors.number}</ErrorMessage>}
-                  </InputGroup>
-
-                  <InputGroup>
-                    <Icon>
-                      <MapPin size={20} />
-                    </Icon>
-                    <Input
-                      type="text"
-                      name="complement"
-                      placeholder="Complemento"
-                      value={formData.complement}
-                      onChange={handleChange}
-                    />
-                  </InputGroup>
-                </InputRow>
-              </AddressSection>
-            </Section>
-
-            <Section isLast>
-              <SectionTitle>Senha</SectionTitle>
+              <SectionTitle style={{ marginTop: "20px" }}>Senha</SectionTitle>
               <InputGroup>
                 <Icon>
                   <Lock size={20} />
@@ -1054,8 +979,187 @@ export default function RegisterPage() {
                   </div>
                 )}
               </div>
+            </Section>
 
-              <Button type="submit" isLoading={isLoading} style={{ marginTop: "20px" }}>
+            <Section isLast>
+              <InputGroup>
+                <FieldLabel>
+                  <label>Gênero</label>
+                </FieldLabel>
+                <RadioGroup>
+                  <RadioOption>
+                    <RadioInput
+                      type="radio"
+                      id="gender-male"
+                      name="gender"
+                      value="Masculino"
+                      checked={formData.gender === "Masculino"}
+                      onChange={handleChange}
+                    />
+                    <RadioLabel htmlFor="gender-male">Masculino</RadioLabel>
+                  </RadioOption>
+                  <RadioOption>
+                    <RadioInput
+                      type="radio"
+                      id="gender-female"
+                      name="gender"
+                      value="Feminino"
+                      checked={formData.gender === "Feminino"}
+                      onChange={handleChange}
+                    />
+                    <RadioLabel htmlFor="gender-female">Feminino</RadioLabel>
+                  </RadioOption>
+                  <RadioOption>
+                    <RadioInput
+                      type="radio"
+                      id="gender-other"
+                      name="gender"
+                      value="Outro"
+                      checked={formData.gender === "Outro"}
+                      onChange={handleChange}
+                    />
+                    <RadioLabel htmlFor="gender-other">Outro</RadioLabel>
+                  </RadioOption>
+                </RadioGroup>
+                {errors.gender && <ErrorMessage>{errors.gender}</ErrorMessage>}
+              </InputGroup>
+
+              <InputGroup>
+                <FieldLabel>
+                  <label htmlFor="occupation">Ocupação</label>
+                </FieldLabel>
+                <InputWithLabel>
+                  <Icon>
+                    <Landmark size={20} />
+                  </Icon>
+                  <Select id="occupation" name="occupation" value={formData.occupation} onChange={handleChange}>
+                    <option value="">Selecione sua ocupação</option>
+                    <option value="Estudante">Estudante</option>
+                    <option value="Profissional">Profissional</option>
+                    <option value="Autônomo">Autônomo</option>
+                    <option value="Outro">Outro</option>
+                  </Select>
+                </InputWithLabel>
+                {errors.occupation && <ErrorMessage>{errors.occupation}</ErrorMessage>}
+              </InputGroup>
+
+              <SectionTitle style={{ marginTop: "20px" }}>Endereço</SectionTitle>
+
+              <InputGroup>
+                <Icon>
+                  <MapPin size={20} />
+                </Icon>
+                <Input
+                  type="text"
+                  name="cep"
+                  placeholder="CEP"
+                  value={formData.cep}
+                  onChange={(e) => {
+                    const formatted = formatCEP(e.target.value)
+                    setFormData((prev) => ({ ...prev, cep: formatted }))
+                  }}
+                  maxLength={9}
+                />
+                {isFetchingCep && (
+                  <LoadingIcon>
+                    <Loader2 size={20} />
+                  </LoadingIcon>
+                )}
+                {errors.cep && <ErrorMessage>{errors.cep}</ErrorMessage>}
+              </InputGroup>
+
+              <InputRow>
+                <InputGroup>
+                  <Icon>
+                    <MapPin size={20} />
+                  </Icon>
+                  <Input
+                    type="text"
+                    name="state"
+                    placeholder="Estado"
+                    value={formData.state}
+                    onChange={handleChange}
+                    disabled={isFetchingCep}
+                  />
+                  {errors.state && <ErrorMessage>{errors.state}</ErrorMessage>}
+                </InputGroup>
+
+                <InputGroup>
+                  <Icon>
+                    <MapPin size={20} />
+                  </Icon>
+                  <Input
+                    type="text"
+                    name="city"
+                    placeholder="Cidade"
+                    value={formData.city}
+                    onChange={handleChange}
+                    disabled={isFetchingCep}
+                  />
+                  {errors.city && <ErrorMessage>{errors.city}</ErrorMessage>}
+                </InputGroup>
+              </InputRow>
+
+              <InputGroup>
+                <Icon>
+                  <MapPin size={20} />
+                </Icon>
+                <Input
+                  type="text"
+                  name="neighborhood"
+                  placeholder="Bairro"
+                  value={formData.neighborhood}
+                  onChange={handleChange}
+                  disabled={isFetchingCep}
+                />
+                {errors.neighborhood && <ErrorMessage>{errors.neighborhood}</ErrorMessage>}
+              </InputGroup>
+
+              <InputGroup>
+                <Icon>
+                  <MapPin size={20} />
+                </Icon>
+                <Input
+                  type="text"
+                  name="street"
+                  placeholder="Rua"
+                  value={formData.street}
+                  onChange={handleChange}
+                  disabled={isFetchingCep}
+                />
+                {errors.street && <ErrorMessage>{errors.street}</ErrorMessage>}
+              </InputGroup>
+
+              <InputRow>
+                <InputGroup>
+                  <Icon>
+                    <MapPin size={20} />
+                  </Icon>
+                  <Input
+                    type="text"
+                    name="number"
+                    placeholder="Número"
+                    value={formData.number}
+                    onChange={handleChange}
+                  />
+                  {errors.number && <ErrorMessage>{errors.number}</ErrorMessage>}
+                </InputGroup>
+
+                <InputGroup>
+                  <Icon>
+                    <MapPin size={20} />
+                  </Icon>
+                  <Input
+                    type="text"
+                    name="complement"
+                    placeholder="Complemento"
+                    value={formData.complement}
+                    onChange={handleChange}
+                  />
+                </InputGroup>
+              </InputRow>
+
+              <Button type="submit" isLoading={isLoading} style={{ marginTop: "auto" }}>
                 {isLoading ? "Registrando..." : "Criar Conta"}
               </Button>
 

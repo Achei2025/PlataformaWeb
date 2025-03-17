@@ -28,7 +28,7 @@ import Sidebar from "./components/Sidebar"
 import Content from "./components/Content"
 
 const UserPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("cadastrar")
+  const [activeTab, setActiveTab] = useState("dashboard")
   const [darkMode, setDarkMode] = useState(false)
 
   return (
