@@ -24,7 +24,9 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { Formik, Form as FormikForm, Field, ErrorMessage as FormikError, type FormikHelpers } from "formik"
+import * as Yup from "yup"
 import DefaultLayout from "../layouts/layout"
 import styled from "styled-components"
 import {
@@ -84,7 +86,7 @@ const Subtitle = styled.p`
   margin-bottom: 30px;
 `
 
-const Form = styled.form`
+const StyledForm = styled(FormikForm)`
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -131,7 +133,7 @@ const InputRow = styled.div`
   }
 `
 
-const Input = styled.input`
+const Input = styled(Field)`
   width: 100%;
   padding: 15px 20px;
   padding-left: 45px;
@@ -287,7 +289,7 @@ const CheckboxGroup = styled.div`
   gap: 10px;
 `
 
-const Checkbox = styled.input`
+const Checkbox = styled(Field)`
   margin-top: 4px;
 `
 
@@ -305,7 +307,7 @@ const CheckboxLabel = styled.label`
   }
 `
 
-const Select = styled.select`
+const StyledSelect = styled(Field)`
   width: 100%;
   padding: 15px 20px;
   padding-left: 45px;
@@ -334,7 +336,7 @@ const RadioOption = styled.div`
   gap: 5px;
 `
 
-const RadioInput = styled.input`
+const RadioInput = styled(Field)`
   cursor: pointer;
 `
 
@@ -368,6 +370,12 @@ const ErrorMessage = styled.span`
   right: 0;
 `
 
+const FormikErrorMessage = styled.div`
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 5px;
+`
+
 const SuccessMessage = styled.div`
   background: #d4edda;
   color: ${colors.green};
@@ -375,6 +383,17 @@ const SuccessMessage = styled.div`
   border-radius: 10px;
   margin-bottom: 20px;
   text-align: center;
+`
+
+const WarningMessage = styled.div`
+  background: #fff3cd;
+  color: #856404;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 `
 
 const AddressSection = styled.div`
@@ -467,7 +486,7 @@ const InputWithLabel = styled.div`
   position: relative;
 `
 
-interface FormData {
+interface FormValues {
   fullName: string
   email: string
   cpf: string
@@ -497,24 +516,6 @@ interface ViaCepResponse {
   erro?: boolean
 }
 
-interface FormErrors {
-  fullName?: string
-  email?: string
-  cpf?: string
-  phone?: string
-  birthDate?: string
-  cep?: string
-  state?: string
-  city?: string
-  neighborhood?: string
-  street?: string
-  number?: string
-  complement?: string
-  password?: string
-  confirmPassword?: string
-  terms?: string // Changed from boolean to string to allow error messages
-}
-
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -522,7 +523,12 @@ export default function RegisterPage() {
   const [isFetchingCep, setIsFetchingCep] = useState(false)
   const [success, setSuccess] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
-  const [formData, setFormData] = useState<FormData>({
+  const [confirmationValues, setConfirmationValues] = useState<FormValues | null>(null)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [passwordStrength, setPasswordStrength] = useState(0)
+  const API_URL = "http://26.190.233.3:8080/api/citizens"
+
+  const initialValues: FormValues = {
     fullName: "",
     email: "",
     cpf: "",
@@ -540,8 +546,33 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     terms: false,
+  }
+
+  const validationSchema = Yup.object({
+    fullName: Yup.string().required("Nome completo é obrigatório"),
+    email: Yup.string().email("Email inválido").required("Email é obrigatório"),
+    cpf: Yup.string().required("CPF é obrigatório").test("valid-cpf", "CPF inválido", validateCPF),
+    phone: Yup.string().required("Telefone é obrigatório"),
+    birthDate: Yup.string().required("Data de nascimento é obrigatória"),
+    gender: Yup.string(),
+    occupation: Yup.string()
+      .required("Ocupação é obrigatória")
+      .test("not-empty", "Selecione uma ocupação", (value) => value !== ""),
+    cep: Yup.string().required("CEP é obrigatório"),
+    state: Yup.string().required("Estado é obrigatório"),
+    city: Yup.string().required("Cidade é obrigatória"),
+    neighborhood: Yup.string().required("Bairro é obrigatório"),
+    street: Yup.string().required("Rua é obrigatória"),
+    number: Yup.string().required("Número é obrigatório"),
+    complement: Yup.string(),
+    password: Yup.string().min(8, "Senha deve ter no mínimo 8 caracteres").required("Senha é obrigatória"),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password")], "As senhas não coincidem")
+      .required("Confirmação de senha é obrigatória"),
+    terms: Yup.boolean()
+      .oneOf([true], "Você deve aceitar os termos e condições")
+      .required("Você deve aceitar os termos e condições"),
   })
-  const [errors, setErrors] = useState<FormErrors>({})
 
   const calculatePasswordStrength = (password: string): number => {
     if (!password) return 0
@@ -553,7 +584,7 @@ export default function RegisterPage() {
     return strength
   }
 
-  const validateCPF = (cpf: string): boolean => {
+  function validateCPF(cpf: string): boolean {
     // Remove non-numeric characters
     cpf = cpf.replace(/\D/g, "")
 
@@ -589,179 +620,37 @@ export default function RegisterPage() {
     return true
   }
 
-  const fetchAddressByCep = async (cep: string) => {
+  const fetchAddressByCep = async (cep: string, setFieldValue: any) => {
     // Remove non-numeric characters
     const cleanCep = cep.replace(/\D/g, "")
 
     // Check if CEP has 8 digits
     if (cleanCep.length !== 8) {
-      setErrors((prev) => ({ ...prev, cep: "CEP deve ter 8 dígitos" }))
       return
     }
 
     setIsFetchingCep(true)
-    setErrors((prev) => ({ ...prev, cep: undefined }))
 
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`)
       const data: ViaCepResponse = await response.json()
 
       if (data.erro) {
-        setErrors((prev) => ({ ...prev, cep: "CEP não encontrado" }))
         return
       }
 
-      setFormData((prev) => ({
-        ...prev,
-        state: data.uf,
-        city: data.localidade,
-        neighborhood: data.bairro,
-        street: data.logradouro,
-        complement: data.complemento || prev.complement,
-      }))
+      setFieldValue("state", data.uf)
+      setFieldValue("city", data.localidade)
+      setFieldValue("neighborhood", data.bairro)
+      setFieldValue("street", data.logradouro)
+      if (data.complemento) {
+        setFieldValue("complement", data.complemento)
+      }
     } catch (error) {
       console.error("Erro ao buscar CEP:", error)
-      setErrors((prev) => ({ ...prev, cep: "Erro ao buscar CEP" }))
     } finally {
       setIsFetchingCep(false)
     }
-  }
-
-  // Debounce function for CEP lookup
-  useEffect(() => {
-    const cep = formData.cep.replace(/\D/g, "")
-    if (cep.length === 8) {
-      const timer = setTimeout(() => {
-        fetchAddressByCep(cep)
-      }, 500)
-
-      return () => clearTimeout(timer)
-    }
-  }, [formData.cep])
-
-  const validateForm = () => {
-    const newErrors: FormErrors = {}
-    let isValid = true
-
-    if (!formData.fullName) {
-      newErrors.fullName = "Nome completo é obrigatório"
-      isValid = false
-    }
-
-    if (!formData.email) {
-      newErrors.email = "Email é obrigatório"
-      isValid = false
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email inválido"
-      isValid = false
-    }
-
-    if (!formData.cpf) {
-      newErrors.cpf = "CPF é obrigatório"
-      isValid = false
-    } else if (!validateCPF(formData.cpf)) {
-      newErrors.cpf = "CPF inválido"
-      isValid = false
-    }
-
-    if (!formData.phone) {
-      newErrors.phone = "Telefone é obrigatório"
-      isValid = false
-    } else if (!/^$$\d{2}$$ \d{5}-\d{4}$/.test(formData.phone)) {
-      newErrors.phone = "Formato inválido. Use (99) 99999-9999"
-      isValid = false
-    }
-
-    if (!formData.birthDate) {
-      newErrors.birthDate = "Data de nascimento é obrigatória"
-      isValid = false
-    }
-
-    if (!formData.occupation) {
-      newErrors.occupation = "Ocupação é obrigatória"
-      isValid = false
-    }
-
-    if (!formData.cep) {
-      newErrors.cep = "CEP é obrigatório"
-      isValid = false
-    }
-
-    if (!formData.state) {
-      newErrors.state = "Estado é obrigatório"
-      isValid = false
-    }
-
-    if (!formData.city) {
-      newErrors.city = "Cidade é obrigatória"
-      isValid = false
-    }
-
-    if (!formData.street) {
-      newErrors.street = "Rua é obrigatória"
-      isValid = false
-    }
-
-    if (!formData.number) {
-      newErrors.number = "Número é obrigatório"
-      isValid = false
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Senha é obrigatória"
-      isValid = false
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Senha deve ter no mínimo 8 caracteres"
-      isValid = false
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Confirmação de senha é obrigatória"
-      isValid = false
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "As senhas não coincidem"
-      isValid = false
-    }
-
-    if (!formData.terms) {
-      newErrors.terms = "Você deve aceitar os termos e condições"
-      isValid = false
-    }
-
-    setErrors(newErrors)
-    return isValid
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (validateForm()) {
-      if (!showConfirmation) {
-        setShowConfirmation(true)
-        window.scrollTo(0, 0)
-        return
-      }
-
-      setIsLoading(true)
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-        setSuccess(true)
-        setShowConfirmation(false)
-        // Reset form or redirect
-      } catch (error) {
-        console.error("Registration failed:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }))
   }
 
   const formatPhone = (value: string) => {
@@ -798,6 +687,87 @@ export default function RegisterPage() {
     setShowConfirmation(false)
   }
 
+  const submitToApi = async (values: FormValues) => {
+    setIsLoading(true)
+    setApiError(null)
+
+    try {
+      // Preparar os dados para envio
+      const userData = {
+        cpf: values.cpf.replace(/\D/g, ""), // Remove caracteres não numéricos
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone.replace(/\D/g, ""), // Remove caracteres não numéricos
+        user: {
+          password: values.password,
+        },
+        birthDate: values.birthDate,
+        gender: values.gender,
+        occupation: values.occupation,
+        address: {
+          zipCode: values.cep.replace(/\D/g, ""),
+          stateName: values.state,
+          stateCode: values.state.substring(0, 2).toUpperCase(), // Assuming state is in the format "XX - State Name" or just "XX"
+          city: values.city,
+          neighborhood: values.neighborhood,
+          street: values.street,
+          complement: values.complement,
+          complementNumber: values.number,
+        },
+      }
+
+      console.log("Enviando dados para API:", userData)
+
+      // Make the API call
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      }).catch((error) => {
+        console.error("Erro de rede:", error)
+        throw new Error("Falha na conexão com o servidor. Verifique se o servidor está acessível.")
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.message || `Falha ao registrar usuário (Status: ${response.status})`)
+      }
+
+      const result = await response.json()
+
+      console.log("Registro realizado com sucesso:", result)
+
+      setSuccess(true)
+      setShowConfirmation(false)
+
+      // Redirecionar após registro bem-sucedido
+      setTimeout(() => {
+        window.location.href = "/login"
+      }, 2000)
+    } catch (error) {
+      console.error("Falha no registro:", error)
+      setApiError(error instanceof Error ? error.message : "Erro ao registrar. Por favor, tente novamente.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSubmit = async (values: FormValues, { setSubmitting }: FormikHelpers<FormValues>) => {
+    console.log("Valores do formulário:", values) // Adicione esta linha
+    if (!showConfirmation) {
+      setConfirmationValues(values)
+      setShowConfirmation(true)
+      window.scrollTo(0, 0)
+      setSubmitting(false)
+      return
+    }
+
+    await submitToApi(values)
+    setSubmitting(false)
+  }
+
   return (
     <DefaultLayout>
       <Container>
@@ -809,7 +779,7 @@ export default function RegisterPage() {
             <SuccessMessage>Registro realizado com sucesso! Redirecionando para a página de login...</SuccessMessage>
           )}
 
-          {showConfirmation && (
+          {showConfirmation && confirmationValues && (
             <ConfirmationContainer>
               <SectionTitle>Confirme seus dados</SectionTitle>
 
@@ -817,27 +787,27 @@ export default function RegisterPage() {
                 <ConfirmationTitle>Informações Pessoais</ConfirmationTitle>
                 <ConfirmationItem>
                   <ConfirmationLabel>Nome Completo:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.fullName}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.fullName}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Email:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.email}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.email}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>CPF:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.cpf}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.cpf}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Telefone:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.phone}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.phone}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Data de Nascimento:</ConfirmationLabel>
-                  <ConfirmationValue>{formatDate(formData.birthDate)}</ConfirmationValue>
+                  <ConfirmationValue>{formatDate(confirmationValues.birthDate)}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Ocupação:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.occupation}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.occupation}</ConfirmationValue>
                 </ConfirmationItem>
               </ConfirmationSection>
 
@@ -845,32 +815,32 @@ export default function RegisterPage() {
                 <ConfirmationTitle>Endereço</ConfirmationTitle>
                 <ConfirmationItem>
                   <ConfirmationLabel>CEP:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.cep}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.cep}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Estado:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.state}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.state}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Cidade:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.city}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.city}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Bairro:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.neighborhood}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.neighborhood}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Rua:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.street}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.street}</ConfirmationValue>
                 </ConfirmationItem>
                 <ConfirmationItem>
                   <ConfirmationLabel>Número:</ConfirmationLabel>
-                  <ConfirmationValue>{formData.number}</ConfirmationValue>
+                  <ConfirmationValue>{confirmationValues.number}</ConfirmationValue>
                 </ConfirmationItem>
-                {formData.complement && (
+                {confirmationValues.complement && (
                   <ConfirmationItem>
                     <ConfirmationLabel>Complemento:</ConfirmationLabel>
-                    <ConfirmationValue>{formData.complement}</ConfirmationValue>
+                    <ConfirmationValue>{confirmationValues.complement}</ConfirmationValue>
                   </ConfirmationItem>
                 )}
               </ConfirmationSection>
@@ -879,349 +849,358 @@ export default function RegisterPage() {
                 <BackButton type="button" onClick={goBackToForm}>
                   <ArrowLeft size={16} style={{ marginRight: "5px" }} /> Voltar e editar
                 </BackButton>
-                <Button type="button" onClick={handleSubmit} disabled={isLoading}>
+                <Button
+                  type="button"
+                  onClick={() => submitToApi(confirmationValues)}
+                  disabled={isLoading}
+                  isLoading={isLoading}
+                >
                   {isLoading ? "Registrando..." : "Confirmar e criar conta"}{" "}
                   {!isLoading && <Check size={16} style={{ marginLeft: "5px" }} />}
                 </Button>
               </ButtonGroup>
+
+              {apiError && <div style={{ color: "#e74c3c", marginTop: "15px", textAlign: "center" }}>{apiError}</div>}
             </ConfirmationContainer>
           )}
 
           {!showConfirmation && (
-            <Form onSubmit={handleSubmit}>
-              <Section>
-                <SectionTitle>Informações Pessoais</SectionTitle>
-                <InputGroup>
-                  <Icon>
-                    <User size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="fullName"
-                    placeholder="Nome Completo"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                  />
-                  {errors.fullName && <ErrorMessage>{errors.fullName}</ErrorMessage>}
-                </InputGroup>
+            <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+              {({ values, errors, touched, setFieldValue, isSubmitting }) => (
+                <StyledForm>
+                  <Section>
+                    <SectionTitle>Informações Pessoais</SectionTitle>
+                    <InputGroup>
+                      <Icon>
+                        <User size={20} />
+                      </Icon>
+                      <Input type="text" name="fullName" placeholder="Nome Completo" />
+                      {errors.fullName && touched.fullName && (
+                        <FormikErrorMessage>
+                          <FormikError name="fullName" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <InputGroup>
-                  <Icon>
-                    <Mail size={20} />
-                  </Icon>
-                  <Input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
-                  {errors.email && <ErrorMessage>{errors.email}</ErrorMessage>}
-                </InputGroup>
+                    <InputGroup>
+                      <Icon>
+                        <Mail size={20} />
+                      </Icon>
+                      <Input type="email" name="email" placeholder="Email" />
+                      {errors.email && touched.email && (
+                        <FormikErrorMessage>
+                          <FormikError name="email" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <InputGroup>
-                  <Icon>
-                    <User size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="cpf"
-                    placeholder="CPF"
-                    value={formData.cpf}
-                    onChange={(e) => {
-                      const formatted = formatCPF(e.target.value)
-                      setFormData((prev) => ({ ...prev, cpf: formatted }))
-                    }}
-                    maxLength={14}
-                  />
-                  {errors.cpf && <ErrorMessage>{errors.cpf}</ErrorMessage>}
-                </InputGroup>
+                    <InputGroup>
+                      <Icon>
+                        <User size={20} />
+                      </Icon>
+                      <Input
+                        type="text"
+                        name="cpf"
+                        placeholder="CPF"
+                        maxLength={14}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const formatted = formatCPF(e.target.value)
+                          setFieldValue("cpf", formatted)
+                        }}
+                      />
+                      {errors.cpf && touched.cpf && (
+                        <FormikErrorMessage>
+                          <FormikError name="cpf" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <InputGroup style={{ gridColumn: "1 / -1" }}>
-                  <Icon>
-                    <Phone size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="phone"
-                    placeholder="Telefone"
-                    value={formData.phone}
-                    onChange={(e) => {
-                      const formatted = formatPhone(e.target.value)
-                      setFormData((prev) => ({ ...prev, phone: formatted }))
-                    }}
-                  />
-                  {errors.phone && <ErrorMessage>{errors.phone}</ErrorMessage>}
-                </InputGroup>
+                    <InputGroup style={{ gridColumn: "1 / -1" }}>
+                      <Icon>
+                        <Phone size={20} />
+                      </Icon>
+                      <Input
+                        type="text"
+                        name="phone"
+                        placeholder="Telefone"
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const formatted = formatPhone(e.target.value)
+                          setFieldValue("phone", formatted)
+                        }}
+                      />
+                      {errors.phone && touched.phone && (
+                        <FormikErrorMessage>
+                          <FormikError name="phone" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <InputGroup>
-                  <FieldLabel>
-                    <label htmlFor="birthDate">Data de Nascimento</label>
-                    <InfoIcon title="Informe sua data de nascimento">
-                      <Info size={16} />
-                    </InfoIcon>
-                  </FieldLabel>
-                  <InputWithLabel>
-                    <Icon>
-                      <Calendar size={20} />
-                    </Icon>
-                    <Input
-                      id="birthDate"
-                      type="date"
-                      name="birthDate"
-                      placeholder="Data de Nascimento"
-                      value={formData.birthDate}
-                      onChange={handleChange}
-                    />
-                  </InputWithLabel>
-                  {errors.birthDate && <ErrorMessage>{errors.birthDate}</ErrorMessage>}
-                </InputGroup>
+                    <InputGroup>
+                      <FieldLabel>
+                        <label htmlFor="birthDate">Data de Nascimento</label>
+                        <InfoIcon title="Informe sua data de nascimento">
+                          <Info size={16} />
+                        </InfoIcon>
+                      </FieldLabel>
+                      <InputWithLabel>
+                        <Icon>
+                          <Calendar size={20} />
+                        </Icon>
+                        <Input id="birthDate" type="date" name="birthDate" placeholder="Data de Nascimento" />
+                      </InputWithLabel>
+                      {errors.birthDate && touched.birthDate && (
+                        <FormikErrorMessage>
+                          <FormikError name="birthDate" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <SectionTitle style={{ marginTop: "20px" }}>Senha</SectionTitle>
-                <InputGroup>
-                  <Icon>
-                    <Lock size={20} />
-                  </Icon>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Senha"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                  <PasswordIcon onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </PasswordIcon>
-                  <PasswordStrength strength={calculatePasswordStrength(formData.password)} />
-                  {errors.password && <ErrorMessage>{errors.password}</ErrorMessage>}
-                </InputGroup>
+                    <SectionTitle style={{ marginTop: "20px" }}>Senha</SectionTitle>
+                    <InputGroup>
+                      <Icon>
+                        <Lock size={20} />
+                      </Icon>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        placeholder="Senha"
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          setFieldValue("password", e.target.value)
+                          setPasswordStrength(calculatePasswordStrength(e.target.value))
+                        }}
+                      />
+                      <PasswordIcon onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </PasswordIcon>
+                      <PasswordStrength strength={passwordStrength} />
+                      {errors.password && touched.password && (
+                        <FormikErrorMessage>
+                          <FormikError name="password" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <InputGroup>
-                  <Icon>
-                    <Lock size={20} />
-                  </Icon>
-                  <Input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    placeholder="Confirmar senha"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                  />
-                  <PasswordIcon onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </PasswordIcon>
-                  {errors.confirmPassword && <ErrorMessage>{errors.confirmPassword}</ErrorMessage>}
-                </InputGroup>
+                    <InputGroup>
+                      <Icon>
+                        <Lock size={20} />
+                      </Icon>
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        placeholder="Confirmar senha"
+                      />
+                      <PasswordIcon onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </PasswordIcon>
+                      {errors.confirmPassword && touched.confirmPassword && (
+                        <FormikErrorMessage>
+                          <FormikError name="confirmPassword" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <div>
-                  <CheckboxGroup>
-                    <Checkbox type="checkbox" name="terms" checked={formData.terms} onChange={handleChange} />
-                    <CheckboxLabel>
-                      Li e aceito os <Link href="/terms">Termos e Condições</Link> e a{" "}
-                      <Link href="/privacy">Política de Privacidade</Link>
-                    </CheckboxLabel>
-                  </CheckboxGroup>
-                  {errors.terms && (
-                    <div style={{ color: "#e74c3c", fontSize: "0.875rem", marginTop: "5px", marginLeft: "25px" }}>
-                      {errors.terms}
+                    <div>
+                      <CheckboxGroup>
+                        <Checkbox type="checkbox" name="terms" id="terms" />
+                        <CheckboxLabel htmlFor="terms">
+                          Li e aceito os <Link href="/terms">Termos e Condições</Link> e a{" "}
+                          <Link href="/privacy">Política de Privacidade</Link>
+                        </CheckboxLabel>
+                      </CheckboxGroup>
+                      {errors.terms && touched.terms && (
+                        <div style={{ color: "#e74c3c", fontSize: "0.875rem", marginTop: "5px", marginLeft: "25px" }}>
+                          <FormikError name="terms" component="div" />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </Section>
+                  </Section>
 
-              <Section isLast>
-                <InputGroup>
-                  <FieldLabel>
-                    <label>Gênero</label>
-                  </FieldLabel>
-                  <RadioGroup>
-                    <RadioOption>
-                      <RadioInput
-                        type="radio"
-                        id="gender-male"
-                        name="gender"
-                        value="Masculino"
-                        checked={formData.gender === "Masculino"}
-                        onChange={handleChange}
+                  <Section isLast>
+                    <InputGroup>
+                      <FieldLabel>
+                        <label>Gênero</label>
+                      </FieldLabel>
+                      <RadioGroup role="group" aria-labelledby="gender-group">
+                        <RadioOption>
+                          <RadioInput type="radio" id="gender-male" name="gender" value="Masculino" />
+                          <RadioLabel htmlFor="gender-male">Masculino</RadioLabel>
+                        </RadioOption>
+                        <RadioOption>
+                          <RadioInput type="radio" id="gender-female" name="gender" value="Feminino" />
+                          <RadioLabel htmlFor="gender-female">Feminino</RadioLabel>
+                        </RadioOption>
+                        <RadioOption>
+                          <RadioInput type="radio" id="gender-other" name="gender" value="Outro" />
+                          <RadioLabel htmlFor="gender-other">Outro</RadioLabel>
+                        </RadioOption>
+                      </RadioGroup>
+                    </InputGroup>
+
+                    <InputGroup>
+                      <FieldLabel>
+                        <label htmlFor="occupation">Ocupação</label>
+                      </FieldLabel>
+                      <InputWithLabel>
+                        <Icon>
+                          <Landmark size={20} />
+                        </Icon>
+                        <StyledSelect
+                          as="select"
+                          id="occupation"
+                          name="occupation"
+                          value={values.occupation}
+                          onChange={(e) => {
+                            setFieldValue("occupation", e.target.value)
+                          }}
+                        >
+                          <option value="">Selecione sua ocupação</option>
+                          <option value="Estudante">Estudante</option>
+                          <option value="Profissional">Profissional</option>
+                          <option value="Autônomo">Autônomo</option>
+                          <option value="Outro">Outro</option>
+                        </StyledSelect>
+                      </InputWithLabel>
+                      {errors.occupation && touched.occupation && (
+                        <FormikErrorMessage>
+                          <FormikError name="occupation" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
+
+                    <SectionTitle style={{ marginTop: "20px" }}>Endereço</SectionTitle>
+
+                    <InputGroup>
+                      <Icon>
+                        <MapPin size={20} />
+                      </Icon>
+                      <Input
+                        type="text"
+                        name="cep"
+                        placeholder="CEP"
+                        maxLength={9}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const formatted = formatCEP(e.target.value)
+                          setFieldValue("cep", formatted)
+
+                          // Buscar endereço quando CEP tiver 8 dígitos
+                          const cleanCep = formatted.replace(/\D/g, "")
+                          if (cleanCep.length === 8) {
+                            fetchAddressByCep(cleanCep, setFieldValue)
+                          }
+                        }}
                       />
-                      <RadioLabel htmlFor="gender-male">Masculino</RadioLabel>
-                    </RadioOption>
-                    <RadioOption>
-                      <RadioInput
-                        type="radio"
-                        id="gender-female"
-                        name="gender"
-                        value="Feminino"
-                        checked={formData.gender === "Feminino"}
-                        onChange={handleChange}
-                      />
-                      <RadioLabel htmlFor="gender-female">Feminino</RadioLabel>
-                    </RadioOption>
-                    <RadioOption>
-                      <RadioInput
-                        type="radio"
-                        id="gender-other"
-                        name="gender"
-                        value="Outro"
-                        checked={formData.gender === "Outro"}
-                        onChange={handleChange}
-                      />
-                      <RadioLabel htmlFor="gender-other">Outro</RadioLabel>
-                    </RadioOption>
-                  </RadioGroup>
-                  {errors.gender && <ErrorMessage>{errors.gender}</ErrorMessage>}
-                </InputGroup>
+                      {isFetchingCep && (
+                        <LoadingIcon>
+                          <Loader2 size={20} />
+                        </LoadingIcon>
+                      )}
+                      {errors.cep && touched.cep && (
+                        <FormikErrorMessage>
+                          <FormikError name="cep" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <InputGroup>
-                  <FieldLabel>
-                    <label htmlFor="occupation">Ocupação</label>
-                  </FieldLabel>
-                  <InputWithLabel>
-                    <Icon>
-                      <Landmark size={20} />
-                    </Icon>
-                    <Select id="occupation" name="occupation" value={formData.occupation} onChange={handleChange}>
-                      <option value="">Selecione sua ocupação</option>
-                      <option value="Estudante">Estudante</option>
-                      <option value="Profissional">Profissional</option>
-                      <option value="Autônomo">Autônomo</option>
-                      <option value="Outro">Outro</option>
-                    </Select>
-                  </InputWithLabel>
-                  {errors.occupation && <ErrorMessage>{errors.occupation}</ErrorMessage>}
-                </InputGroup>
+                    <InputRow>
+                      <InputGroup>
+                        <Icon>
+                          <MapPin size={20} />
+                        </Icon>
+                        <Input type="text" name="state" placeholder="Estado" disabled={isFetchingCep} />
+                        {errors.state && touched.state && (
+                          <FormikErrorMessage>
+                            <FormikError name="state" component="div" />
+                          </FormikErrorMessage>
+                        )}
+                      </InputGroup>
 
-                <SectionTitle style={{ marginTop: "20px" }}>Endereço</SectionTitle>
+                      <InputGroup>
+                        <Icon>
+                          <MapPin size={20} />
+                        </Icon>
+                        <Input type="text" name="city" placeholder="Cidade" disabled={isFetchingCep} />
+                        {errors.city && touched.city && (
+                          <FormikErrorMessage>
+                            <FormikError name="city" component="div" />
+                          </FormikErrorMessage>
+                        )}
+                      </InputGroup>
+                    </InputRow>
 
-                <InputGroup>
-                  <Icon>
-                    <MapPin size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="cep"
-                    placeholder="CEP"
-                    value={formData.cep}
-                    onChange={(e) => {
-                      const formatted = formatCEP(e.target.value)
-                      setFormData((prev) => ({ ...prev, cep: formatted }))
-                    }}
-                    maxLength={9}
-                  />
-                  {isFetchingCep && (
-                    <LoadingIcon>
-                      <Loader2 size={20} />
-                    </LoadingIcon>
-                  )}
-                  {errors.cep && <ErrorMessage>{errors.cep}</ErrorMessage>}
-                </InputGroup>
+                    <InputGroup>
+                      <Icon>
+                        <MapPin size={20} />
+                      </Icon>
+                      <Input type="text" name="neighborhood" placeholder="Bairro" disabled={isFetchingCep} />
+                      {errors.neighborhood && touched.neighborhood && (
+                        <FormikErrorMessage>
+                          <FormikError name="neighborhood" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                <InputRow>
-                  <InputGroup>
-                    <Icon>
-                      <MapPin size={20} />
-                    </Icon>
-                    <Input
-                      type="text"
-                      name="state"
-                      placeholder="Estado"
-                      value={formData.state}
-                      onChange={handleChange}
-                      disabled={isFetchingCep}
-                    />
-                    {errors.state && <ErrorMessage>{errors.state}</ErrorMessage>}
-                  </InputGroup>
+                    <InputGroup>
+                      <Icon>
+                        <MapPin size={20} />
+                      </Icon>
+                      <Input type="text" name="street" placeholder="Rua" disabled={isFetchingCep} />
+                      {errors.street && touched.street && (
+                        <FormikErrorMessage>
+                          <FormikError name="street" component="div" />
+                        </FormikErrorMessage>
+                      )}
+                    </InputGroup>
 
-                  <InputGroup>
-                    <Icon>
-                      <MapPin size={20} />
-                    </Icon>
-                    <Input
-                      type="text"
-                      name="city"
-                      placeholder="Cidade"
-                      value={formData.city}
-                      onChange={handleChange}
-                      disabled={isFetchingCep}
-                    />
-                    {errors.city && <ErrorMessage>{errors.city}</ErrorMessage>}
-                  </InputGroup>
-                </InputRow>
+                    <InputRow>
+                      <InputGroup>
+                        <Icon>
+                          <MapPin size={20} />
+                        </Icon>
+                        <Input type="text" name="number" placeholder="Número" />
+                        {errors.number && touched.number && (
+                          <FormikErrorMessage>
+                            <FormikError name="number" component="div" />
+                          </FormikErrorMessage>
+                        )}
+                      </InputGroup>
 
-                <InputGroup>
-                  <Icon>
-                    <MapPin size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="neighborhood"
-                    placeholder="Bairro"
-                    value={formData.neighborhood}
-                    onChange={handleChange}
-                    disabled={isFetchingCep}
-                  />
-                  {errors.neighborhood && <ErrorMessage>{errors.neighborhood}</ErrorMessage>}
-                </InputGroup>
+                      <InputGroup>
+                        <Icon>
+                          <MapPin size={20} />
+                        </Icon>
+                        <Input type="text" name="complement" placeholder="Complemento" />
+                      </InputGroup>
+                    </InputRow>
 
-                <InputGroup>
-                  <Icon>
-                    <MapPin size={20} />
-                  </Icon>
-                  <Input
-                    type="text"
-                    name="street"
-                    placeholder="Rua"
-                    value={formData.street}
-                    onChange={handleChange}
-                    disabled={isFetchingCep}
-                  />
-                  {errors.street && <ErrorMessage>{errors.street}</ErrorMessage>}
-                </InputGroup>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      isLoading={isSubmitting}
+                      style={{ marginTop: "auto" }}
+                    >
+                      {isSubmitting ? "Registrando..." : "Criar Conta"}
+                    </Button>
 
-                <InputRow>
-                  <InputGroup>
-                    <Icon>
-                      <MapPin size={20} />
-                    </Icon>
-                    <Input
-                      type="text"
-                      name="number"
-                      placeholder="Número"
-                      value={formData.number}
-                      onChange={handleChange}
-                    />
-                    {errors.number && <ErrorMessage>{errors.number}</ErrorMessage>}
-                  </InputGroup>
+                    <Divider>ou continue com</Divider>
 
-                  <InputGroup>
-                    <Icon>
-                      <MapPin size={20} />
-                    </Icon>
-                    <Input
-                      type="text"
-                      name="complement"
-                      placeholder="Complemento"
-                      value={formData.complement}
-                      onChange={handleChange}
-                    />
-                  </InputGroup>
-                </InputRow>
-
-                <Button type="submit" disabled={isLoading} style={{ marginTop: "auto" }}>
-                  {isLoading ? "Registrando..." : "Criar Conta"}
-                </Button>
-
-                <Divider>ou continue com</Divider>
-
-                <SocialButtonsContainer>
-                  <SocialButton type="button" onClick={() => console.log("Google login")}>
-                    <Google size={20} /> Google
-                  </SocialButton>
-                  <SocialButton type="button" onClick={() => console.log("GOV login")}>
-                    <Landmark size={20} /> GOV
-                  </SocialButton>
-                </SocialButtonsContainer>
-              </Section>
-            </Form>
+                    <SocialButtonsContainer>
+                      <SocialButton type="button" onClick={() => console.log("Google login")}>
+                        <Google size={20} /> Google
+                      </SocialButton>
+                      <SocialButton type="button" onClick={() => console.log("GOV login")}>
+                        <Landmark size={20} /> GOV
+                      </SocialButton>
+                    </SocialButtonsContainer>
+                  </Section>
+                </StyledForm>
+              )}
+            </Formik>
           )}
 
           <LinkText>
             Já tem uma conta? <Link href="/Login">Faça login</Link>
           </LinkText>
+          {apiError && <div style={{ color: "#e74c3c", textAlign: "center", marginTop: "10px" }}>{apiError}</div>}
         </FormCard>
       </Container>
     </DefaultLayout>

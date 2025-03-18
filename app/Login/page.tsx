@@ -273,6 +273,16 @@ const SuccessMessage = styled.div`
   animation: ${fadeIn} 0.3s ease-out;
 `
 
+const ErrorAlert = styled.div`
+  background: #f8d7da;
+  color: #721c24;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  animation: ${fadeIn} 0.3s ease-out;
+`
+
 const rotate = keyframes`
   from {
     transform: rotate(0deg);
@@ -352,6 +362,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({ cpf: "", password: "" })
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
 
   const validateForm = () => {
     const newErrors = { cpf: "", password: "" }
@@ -392,14 +403,72 @@ export default function LoginPage() {
     e.preventDefault()
     if (validateForm()) {
       setIsLoading(true)
+      setApiError(null)
+
       try {
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-        setSuccess(true)
-        if (userType === "citizen") {
-          router.push("/System-Citizen")
+        // Preparar os dados para envio
+        const loginData =
+          userType === "citizen"
+            ? {
+                cpf: cpf.replace(/\D/g, ""), // Remove caracteres não numéricos
+                password: password,
+              }
+            : {
+                matricula: matricula,
+                password: password,
+              }
+
+        // Determinar a URL da API com base no tipo de usuário
+        const apiUrl =
+          userType === "citizen"
+            ? "http://26.190.233.3:8080/api/citizens/login"
+            : "http://26.190.233.3:8080/api/police/login"
+
+        // Fazer a chamada para a API
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(loginData),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null)
+          throw new Error(errorData?.message || "Falha ao realizar login")
         }
+
+        const result = await response.json()
+        console.log("Login realizado com sucesso:", result)
+
+        // Armazenar o token de autenticação se fornecido pela API
+        if (result.token) {
+          localStorage.setItem("authToken", result.token)
+
+          // Se o usuário marcou "lembrar-me", armazenar as credenciais
+          if (rememberMe) {
+            localStorage.setItem("userType", userType)
+            if (userType === "citizen") {
+              localStorage.setItem("cpf", cpf)
+            } else {
+              localStorage.setItem("matricula", matricula)
+            }
+          }
+        }
+
+        setSuccess(true)
+
+        // Redirecionar com base no tipo de usuário
+        setTimeout(() => {
+          if (userType === "citizen") {
+            router.push("/System-Citizen")
+          } else {
+            router.push("/System-Police")
+          }
+        }, 1500)
       } catch (error) {
         console.error("Login failed:", error)
+        setApiError(error instanceof Error ? error.message : "Erro ao fazer login. Por favor, tente novamente.")
       } finally {
         setIsLoading(false)
       }
@@ -407,158 +476,160 @@ export default function LoginPage() {
   }
 
   const handleSocialLogin = (provider: string) => {
+    // Implementação futura para login social
     console.log(`Login with ${provider}`)
   }
 
   return (
-  <DefaultLayout>
-    <Container>
-      <FormCard>
-        {success && <SuccessMessage>Login realizado com sucesso! Redirecionando...</SuccessMessage>}
+    <DefaultLayout>
+      <Container>
+        <FormCard>
+          {success && <SuccessMessage>Login realizado com sucesso! Redirecionando...</SuccessMessage>}
+          {apiError && <ErrorAlert>{apiError}</ErrorAlert>}
 
-        <FormLayout>
-          <LeftColumn>
-            <LogoContainer>
-              <Image src="/placeholder.svg?height=60&width=60" alt="Logo" width={60} height={60} />
-            </LogoContainer>
-            <Title>Bem-vindo de volta</Title>
-            <Subtitle>Faça login para continuar</Subtitle>
-            <StyledLinkText>
-              Não tem uma conta? <Link href="/Register">Registre-se</Link>
-            </StyledLinkText>
+          <FormLayout>
+            <LeftColumn>
+              <LogoContainer>
+                <Image src="/placeholder.svg?height=60&width=60" alt="Logo" width={60} height={60} />
+              </LogoContainer>
+              <Title>Bem-vindo de volta</Title>
+              <Subtitle>Faça login para continuar</Subtitle>
+              <StyledLinkText>
+                Não tem uma conta? <Link href="/Register">Registre-se</Link>
+              </StyledLinkText>
 
-            <UserTypeContainer>
-              <UserTypeButton
-                type="button"
-                $active={userType === "citizen"}
-                onClick={() => {
-                  setUserType("citizen")
-                  setMatricula("") // Clear matrícula when switching to citizen
-                }}
-              >
-                Cidadão
-              </UserTypeButton>
-              <UserTypeButton
-                type="button"
-                $active={userType === "police"}
-                onClick={() => {
-                  setUserType("police")
-                  setCpf("") // Clear CPF when switching to police
-                }}
-              >
-                Policial
-              </UserTypeButton>
-            </UserTypeContainer>
+              <UserTypeContainer>
+                <UserTypeButton
+                  type="button"
+                  $active={userType === "citizen"}
+                  onClick={() => {
+                    setUserType("citizen")
+                    setMatricula("") // Clear matrícula when switching to citizen
+                  }}
+                >
+                  Cidadão
+                </UserTypeButton>
+                <UserTypeButton
+                  type="button"
+                  $active={userType === "police"}
+                  onClick={() => {
+                    setUserType("police")
+                    setCpf("") // Clear CPF when switching to police
+                  }}
+                >
+                  Policial
+                </UserTypeButton>
+              </UserTypeContainer>
 
-            <Form onSubmit={handleSubmit}>
-              <InputGroup>
-                <Icon>
-                  <User size={20} />
-                </Icon>
-                {userType === "citizen" ? (
+              <Form onSubmit={handleSubmit}>
+                <InputGroup>
+                  <Icon>
+                    <User size={20} />
+                  </Icon>
+                  {userType === "citizen" ? (
+                    <Input
+                      type="text"
+                      placeholder="CPF"
+                      value={cpf}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "") // Remove non-digits
+                        let formattedValue = ""
+
+                        // Format as CPF (000.000.000-00)
+                        if (value.length <= 11) {
+                          formattedValue = value
+                            .replace(/(\d{3})(?=\d)/, "$1.")
+                            .replace(/(\d{3})(?=\d)/, "$1.")
+                            .replace(/(\d{3})(?=\d)/, "$1-")
+
+                          setCpf(formattedValue)
+                        }
+                      }}
+                    />
+                  ) : (
+                    <Input
+                      type="text"
+                      placeholder="Matrícula"
+                      value={matricula}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "") // Remove non-digits
+                        setMatricula(value)
+                      }}
+                    />
+                  )}
+                  {errors.cpf && <ErrorMessage>{errors.cpf}</ErrorMessage>}
+                </InputGroup>
+
+                <InputGroup>
+                  <Icon>
+                    <Lock size={20} />
+                  </Icon>
                   <Input
-                    type="text"
-                    placeholder="CPF"
-                    value={cpf}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "") // Remove non-digits
-                      let formattedValue = ""
-
-                      // Format as CPF (000.000.000-00)
-                      if (value.length <= 11) {
-                        formattedValue = value
-                          .replace(/(\d{3})(?=\d)/, "$1.")
-                          .replace(/(\d{3})(?=\d)/, "$1.")
-                          .replace(/(\d{3})(?=\d)/, "$1-")
-
-                        setCpf(formattedValue)
-                      }
-                    }}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Senha"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
-                ) : (
-                  <Input
-                    type="text"
-                    placeholder="Matrícula"
-                    value={matricula}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "") // Remove non-digits
-                      setMatricula(value)
-                    }}
-                  />
-                )}
-                {errors.cpf && <ErrorMessage>{errors.cpf}</ErrorMessage>}
-              </InputGroup>
+                  <PasswordIcon onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </PasswordIcon>
+                  {errors.password && <ErrorMessage>{errors.password}</ErrorMessage>}
+                </InputGroup>
 
-              <InputGroup>
-                <Icon>
-                  <Lock size={20} />
-                </Icon>
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <PasswordIcon onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </PasswordIcon>
-                {errors.password && <ErrorMessage>{errors.password}</ErrorMessage>}
-              </InputGroup>
+                <RememberForgotRow>
+                  <CheckboxGroup>
+                    <Checkbox
+                      type="checkbox"
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                    <CheckboxLabel htmlFor="rememberMe">Lembrar-me</CheckboxLabel>
+                  </CheckboxGroup>
+                  <ForgotPassword href="/auth/forgot-password">Esqueceu a senha?</ForgotPassword>
+                </RememberForgotRow>
 
-              <RememberForgotRow>
-                <CheckboxGroup>
-                  <Checkbox
-                    type="checkbox"
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  />
-                  <CheckboxLabel htmlFor="rememberMe">Lembrar-me</CheckboxLabel>
-                </CheckboxGroup>
-                <ForgotPassword href="/auth/forgot-password">Esqueceu a senha?</ForgotPassword>
-              </RememberForgotRow>
+                <Button type="submit" $isLoading={isLoading} disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <LoadingSpinner size={20} />
+                      Entrando...
+                    </>
+                  ) : (
+                    "Entrar"
+                  )}
+                </Button>
+              </Form>
+            </LeftColumn>
 
-              <Button type="submit" $isLoading={isLoading} disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <LoadingSpinner size={20} />
-                    Entrando...
-                  </>
-                ) : (
-                  "Entrar"
-                )}
-              </Button>
-            </Form>
-          </LeftColumn>
+            <RightColumn>
+              <WelcomeSection>
+                <h2>Acesse sua conta</h2>
+                <p>
+                  Bem-vindo ao nosso sistema. Faça login para acessar todos os recursos disponíveis para você. Mantenha
+                  seus dados atualizados e aproveite nossa plataforma.
+                </p>
+                <p>Caso tenha problemas para acessar sua conta, entre em contato com nosso suporte técnico.</p>
+              </WelcomeSection>
 
-          <RightColumn>
-            <WelcomeSection>
-              <h2>Acesse sua conta</h2>
-              <p>
-                Bem-vindo ao nosso sistema. Faça login para acessar todos os recursos disponíveis para você. Mantenha
-                seus dados atualizados e aproveite nossa plataforma.
-              </p>
-              <p>Caso tenha problemas para acessar sua conta, entre em contato com nosso suporte técnico.</p>
-            </WelcomeSection>
-
-            <SideSection>
-              <SectionTitle>Você também pode entrar com:</SectionTitle>
-              <SocialButtonsContainer>
-                <SocialButton type="button" onClick={() => handleSocialLogin("google")}>
-                  <Google size={20} />
-                  Google
-                </SocialButton>
-                <SocialButton type="button" onClick={() => handleSocialLogin("gov")}>
-                  <Gov size={20} />
-                  GOV
-                </SocialButton>
-              </SocialButtonsContainer>
-            </SideSection>
-          </RightColumn>
-        </FormLayout>
-      </FormCard>
-    </Container>
-  </DefaultLayout>
+              <SideSection>
+                <SectionTitle>Você também pode entrar com:</SectionTitle>
+                <SocialButtonsContainer>
+                  <SocialButton type="button" onClick={() => handleSocialLogin("google")}>
+                    <Google size={20} />
+                    Google
+                  </SocialButton>
+                  <SocialButton type="button" onClick={() => handleSocialLogin("gov")}>
+                    <Gov size={20} />
+                    GOV
+                  </SocialButton>
+                </SocialButtonsContainer>
+              </SideSection>
+            </RightColumn>
+          </FormLayout>
+        </FormCard>
+      </Container>
+    </DefaultLayout>
   )
 }
 
