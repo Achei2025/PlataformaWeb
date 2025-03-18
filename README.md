@@ -20,12 +20,14 @@ Nosso objetivo é facilitar a recuperação de bens roubados e fornecer às auto
 
 ## 🛠 Tecnologias Utilizadas  
 
-- **React (Web)** – Interface do usuário  
-- **Context API** – Gerenciamento global de estado  
-- **Styled-Components** – Estilização dinâmica e modular  
-- **Formik + Yup** – Manipulação e validação de formulários  
-- **Leaflet** – Mapas interativos para exibição de registros  
-- **React Router** – Gerenciamento de rotas na versão Web  
+- **React (Web)** – Interface do usuário.  
+- **Context API** – Gerenciamento global de estado.  
+- **Styled-Components** – Estilização dinâmica e modular.  
+- **Formik + Yup** – Manipulação e validação de formulários.  
+- **Leaflet** – Mapas interativos para exibição de registros.  
+- **React Router** – Gerenciamento de rotas na versão Web.
+- **Material-ui** – Biblioteca de componentes de interface para o usuário.
+- **Shadow-ui** – Criação de sombras para criar sensação de profundidade e elevação.
 
 
 
@@ -36,7 +38,7 @@ Nosso objetivo é facilitar a recuperação de bens roubados e fornecer às auto
 1️⃣ **Clone o repositório:**  
 ```sh
 git clone https://github.com/Achei2025/PlataformaWeb.git
-cd achei-frontend
+cd PlataformaWeb
 ```
 
 2️⃣ **Instale as dependências:**  
@@ -44,12 +46,7 @@ cd achei-frontend
 npm install
 ```
 
-3️⃣ **Configure as variáveis de ambiente (`.env`):**  
-```
-REACT_APP_API_URL=http://localhost:8080
-```
-
-4️⃣ **Execute o projeto:**    
+3️⃣ **Execute o projeto:**    
 ```sh
 npm run dev
 ```
