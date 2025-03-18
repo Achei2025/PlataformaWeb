@@ -93,7 +93,7 @@ const PlatformSolution: React.FC = () => {
               Nossa Plataforma é Perfeita para
               <span className="bg-gradient-to-r from-green-600 via-yellow-500 to-blue-600 bg-clip-text text-transparent">
                 {" "}
-                Indivíduos, Startups e Empresas
+                Indivíduos
               </span>
             </h2>
           </motion.div>

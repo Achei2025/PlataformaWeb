@@ -21,7 +21,8 @@
 */
 
 import Link from "next/link"
-import { Mountain, Facebook, Instagram, Twitter, Download, HelpCircle, Info, Mail } from "lucide-react"
+import { Facebook, Instagram, Twitter, Download, HelpCircle, Info, Mail } from "lucide-react"
+import Image from "next/image"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -33,7 +34,13 @@ export default function Footer() {
           {/* Logo e descrição */}
           <div>
             <Link href="/" className="flex items-center space-x-2 mb-3">
-              <Mountain className="h-6 w-6" />
+              <Image
+                src="/image/Achei.png"
+                alt="Achei Logo"
+                width={70}
+                height={70}
+                className="h-[70px] w-[70px] object-contain"
+              />
               <span className="font-bold text-lg">Achei!</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">

@@ -1,24 +1,24 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
+ */
 
 "use client"
 
@@ -32,17 +32,16 @@ import ConfiguracoesTab from "@/app/System-Police/Components/police/configuracoe
 
 export default function PoliceSystem() {
   const [activeTab, setActiveTab] = useState("dashboard")
-  const [darkMode, setDarkMode] = useState(false)
 
   return (
-    <div className={`flex h-screen ${darkMode ? "dark" : ""}`}>
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} darkMode={darkMode} setDarkMode={setDarkMode} />
-      <main className="flex-1 p-6 bg-gray-100 dark:bg-gray-900 overflow-auto">
+    <div className="flex h-screen">
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <main className="flex-1 p-6 bg-gray-100 overflow-auto">
         {activeTab === "dashboard" && <DashboardTab />}
         {activeTab === "casos" && <CasosTab />}
         {activeTab === "mapa" && <MapaTab />}
         {activeTab === "relatorios" && <RelatoriosTab />}
-        {activeTab === "configuracoes" && <ConfiguracoesTab/>}
+        {activeTab === "configuracoes" && <ConfiguracoesTab />}
       </main>
     </div>
   )
