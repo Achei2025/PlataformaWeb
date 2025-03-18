@@ -1,26 +1,3 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- * 
- * This file is part of Achei.
- * 
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
- * Contact information: teamachei.2024@gmail.com
-*/
-
-
 "use client"
 
 import type React from "react"
@@ -81,6 +58,105 @@ const customMapStyle = `
   .leaflet-control-attribution a {
     color: #999 !important;
   }
+  
+  /* Estilos para os ícones interativos */
+  .custom-theft-marker {
+    transition: transform 0.2s ease;
+  }
+  .custom-theft-marker:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+  }
+  
+  /* Estilos para os diferentes tipos de roubo */
+  .marker-smartphone {
+    background-color: #e74c3c !important;
+  }
+  .marker-veiculo {
+    background-color: #3498db !important;
+  }
+  .marker-carteira {
+    background-color: #f39c12 !important;
+  }
+  .marker-notebook {
+    background-color: #9b59b6 !important;
+  }
+  .marker-bicicleta {
+    background-color: #2ecc71 !important;
+  }
+  
+  /* Estilo para o popup detalhado */
+  .detailed-popup {
+    padding: 10px;
+  }
+  .detailed-popup h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #fff;
+  }
+  .detailed-popup p {
+    margin: 5px 0;
+    color: #ddd;
+  }
+  .detailed-popup .status {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .status-investigacao {
+    background-color: #3498db;
+  }
+  .status-resolvido {
+    background-color: #2ecc71;
+  }
+  .status-arquivado {
+    background-color: #95a5a6;
+  }
+
+  /* Atualize o CSS para melhorar a aparência dos popups e ícones */
+  /* Adicione estas regras ao customMapStyle */
+
+  .leaflet-popup {
+    margin-bottom: 20px;
+  }
+
+  .leaflet-popup-content-wrapper {
+    border-radius: 8px !important;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .leaflet-popup-tip {
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .custom-theft-marker {
+    transition: transform 0.2s ease, z-index 0.2s ease;
+    z-index: 900;
+  }
+
+  .detailed-popup-container {
+    font-family: 'Arial', sans-serif;
+  }
+
+  .detailed-popup h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+
+  .detailed-popup p {
+    margin: 8px 0;
+    line-height: 1.4;
+  }
+
+  .detailed-popup .status {
+    margin-top: 12px;
+    padding: 4px 8px;
+    font-weight: bold;
+  }
 `
 
 // Definindo a interface HeatLayer que está faltando
@@ -108,10 +184,16 @@ declare module "leaflet" {
 interface Caso {
   id: string
   objeto: string
+  tipoObjeto: string
   dataRoubo: string
+  horaRoubo: string
   localizacao: string
   latitude: number
   longitude: number
+  status: string
+  vitima: string
+  descricao?: string
+  valorEstimado?: number
 }
 
 interface MapProps {
@@ -120,18 +202,425 @@ interface MapProps {
   onBack: () => void
   selectedCaso: Caso | null
   showHeatmap: boolean
-  // Mantendo showPatrulhas, mas marcando como opcional já que não é usado
   showPatrulhas?: boolean
 }
+
+// Dados de exemplo para casos em Brasília
+const casosBrasilia: Caso[] = [
+  {
+    id: "CASO-001",
+    objeto: "iPhone 13 Pro",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-15",
+    horaRoubo: "14:30",
+    localizacao: "Esplanada dos Ministérios",
+    latitude: -15.7992,
+    longitude: -47.8651,
+    status: "Em investigação",
+    vitima: "Carlos Oliveira",
+    descricao: "Vítima estava tirando fotos quando foi abordada por dois homens em uma motocicleta.",
+    valorEstimado: 6500,
+  },
+  {
+    id: "CASO-002",
+    objeto: "Honda Civic 2022",
+    tipoObjeto: "veiculo",
+    dataRoubo: "2023-11-10",
+    horaRoubo: "21:15",
+    localizacao: "Estacionamento do Shopping Conjunto Nacional",
+    latitude: -15.7905,
+    longitude: -47.883,
+    status: "Em investigação",
+    vitima: "Ana Paula Silva",
+    descricao: "Veículo foi levado do estacionamento enquanto a vítima estava no cinema.",
+    valorEstimado: 120000,
+  },
+  {
+    id: "CASO-003",
+    objeto: "Carteira com documentos",
+    tipoObjeto: "carteira",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "10:45",
+    localizacao: "Rodoviária do Plano Piloto",
+    latitude: -15.794,
+    longitude: -47.8828,
+    status: "Arquivado",
+    vitima: "Roberto Mendes",
+    descricao: "Vítima teve a carteira furtada enquanto aguardava o ônibus.",
+    valorEstimado: 300,
+  },
+  {
+    id: "CASO-004",
+    objeto: "MacBook Pro",
+    tipoObjeto: "notebook",
+    dataRoubo: "2023-11-05",
+    horaRoubo: "16:20",
+    localizacao: "Café na Asa Norte (CLN 201)",
+    latitude: -15.7662,
+    longitude: -47.8789,
+    status: "Resolvido",
+    vitima: "Juliana Costa",
+    descricao: "Notebook foi furtado enquanto a vítima foi ao banheiro. Câmeras de segurança identificaram o suspeito.",
+    valorEstimado: 12000,
+  },
+  {
+    id: "CASO-005",
+    objeto: "Bicicleta Mountain Bike",
+    tipoObjeto: "bicicleta",
+    dataRoubo: "2023-11-12",
+    horaRoubo: "17:30",
+    localizacao: "Parque da Cidade",
+    latitude: -15.8022,
+    longitude: -47.9122,
+    status: "Em investigação",
+    vitima: "Pedro Almeida",
+    descricao: "Bicicleta foi furtada enquanto a vítima fazia uma parada para descanso.",
+    valorEstimado: 4500,
+  },
+  {
+    id: "CASO-006",
+    objeto: "Samsung Galaxy S22",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-17",
+    horaRoubo: "19:45",
+    localizacao: "Praça dos Três Poderes",
+    latitude: -15.8002,
+    longitude: -47.8611,
+    status: "Em investigação",
+    vitima: "Mariana Santos",
+    descricao: "Celular foi roubado por um indivíduo em uma motocicleta.",
+    valorEstimado: 4800,
+  },
+  {
+    id: "CASO-007",
+    objeto: "Toyota Corolla 2021",
+    tipoObjeto: "veiculo",
+    dataRoubo: "2023-11-08",
+    horaRoubo: "22:30",
+    localizacao: "Estacionamento do Pontão do Lago Sul",
+    latitude: -15.8264,
+    longitude: -47.8739,
+    status: "Resolvido",
+    vitima: "Fernando Gomes",
+    descricao: "Veículo foi recuperado pela polícia em uma operação no Entorno.",
+    valorEstimado: 110000,
+  },
+  {
+    id: "CASO-008",
+    objeto: "Dell XPS 15",
+    tipoObjeto: "notebook",
+    dataRoubo: "2023-11-14",
+    horaRoubo: "15:10",
+    localizacao: "Biblioteca Nacional",
+    latitude: -15.7972,
+    longitude: -47.8774,
+    status: "Em investigação",
+    vitima: "Luciana Ferreira",
+    descricao: "Notebook foi furtado enquanto a vítima consultava livros.",
+    valorEstimado: 9800,
+  },
+]
+
+// Casos adicionais para criar hotspots no mapa de calor
+const casosHotspots: Caso[] = [
+  // Hotspot na região central - Setor Comercial Sul
+  {
+    id: "CASO-009",
+    objeto: "Samsung Galaxy S21",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-16",
+    horaRoubo: "12:30",
+    localizacao: "Setor Comercial Sul",
+    latitude: -15.7977,
+    longitude: -47.8919,
+    status: "Em investigação",
+    vitima: "Rodrigo Pereira",
+    descricao: "Celular furtado durante o horário de almoço em restaurante.",
+    valorEstimado: 3800,
+  },
+  {
+    id: "CASO-010",
+    objeto: "Carteira com documentos",
+    tipoObjeto: "carteira",
+    dataRoubo: "2023-11-16",
+    horaRoubo: "13:15",
+    localizacao: "Setor Comercial Sul",
+    latitude: -15.798,
+    longitude: -47.8925,
+    status: "Em investigação",
+    vitima: "Marcela Ribeiro",
+    descricao: "Carteira furtada em estabelecimento comercial.",
+    valorEstimado: 250,
+  },
+  {
+    id: "CASO-011",
+    objeto: "iPhone 12 Mini",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-17",
+    horaRoubo: "18:45",
+    localizacao: "Setor Comercial Sul",
+    latitude: -15.7975,
+    longitude: -47.8915,
+    status: "Em investigação",
+    vitima: "Gustavo Mendes",
+    descricao: "Celular roubado por indivíduo em motocicleta.",
+    valorEstimado: 4200,
+  },
+
+  // Hotspot na Rodoviária do Plano Piloto
+  {
+    id: "CASO-012",
+    objeto: "Mochila com notebook",
+    tipoObjeto: "notebook",
+    dataRoubo: "2023-11-15",
+    horaRoubo: "17:30",
+    localizacao: "Rodoviária do Plano Piloto",
+    latitude: -15.7942,
+    longitude: -47.8825,
+    status: "Em investigação",
+    vitima: "Carla Sousa",
+    descricao: "Mochila furtada enquanto aguardava ônibus.",
+    valorEstimado: 5600,
+  },
+  {
+    id: "CASO-013",
+    objeto: "Carteira com documentos",
+    tipoObjeto: "carteira",
+    dataRoubo: "2023-11-16",
+    horaRoubo: "08:20",
+    localizacao: "Rodoviária do Plano Piloto",
+    latitude: -15.7938,
+    longitude: -47.883,
+    status: "Arquivado",
+    vitima: "José Carlos",
+    descricao: "Carteira furtada em meio à multidão.",
+    valorEstimado: 180,
+  },
+  {
+    id: "CASO-014",
+    objeto: "Xiaomi Redmi Note 10",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-17",
+    horaRoubo: "19:10",
+    localizacao: "Rodoviária do Plano Piloto",
+    latitude: -15.7935,
+    longitude: -47.8832,
+    status: "Em investigação",
+    vitima: "Amanda Silva",
+    descricao: "Celular furtado durante embarque.",
+    valorEstimado: 1800,
+  },
+
+  // Hotspot no Shopping Conjunto Nacional
+  {
+    id: "CASO-015",
+    objeto: "MacBook Air",
+    tipoObjeto: "notebook",
+    dataRoubo: "2023-11-14",
+    horaRoubo: "16:45",
+    localizacao: "Shopping Conjunto Nacional",
+    latitude: -15.7908,
+    longitude: -47.8835,
+    status: "Em investigação",
+    vitima: "Bruno Costa",
+    descricao: "Notebook furtado na praça de alimentação.",
+    valorEstimado: 8500,
+  },
+  {
+    id: "CASO-016",
+    objeto: "iPhone 13",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-15",
+    horaRoubo: "20:30",
+    localizacao: "Shopping Conjunto Nacional",
+    latitude: -15.791,
+    longitude: -47.8832,
+    status: "Em investigação",
+    vitima: "Camila Ferreira",
+    descricao: "Celular furtado enquanto vítima experimentava roupas.",
+    valorEstimado: 5200,
+  },
+  {
+    id: "CASO-017",
+    objeto: "Fiat Argo 2022",
+    tipoObjeto: "veiculo",
+    dataRoubo: "2023-11-16",
+    horaRoubo: "21:15",
+    localizacao: "Estacionamento do Shopping Conjunto Nacional",
+    latitude: -15.7912,
+    longitude: -47.8825,
+    status: "Em investigação",
+    vitima: "Ricardo Oliveira",
+    descricao: "Veículo levado do estacionamento.",
+    valorEstimado: 75000,
+  },
+]
+
+// Adicione mais casos para criar um hotspot ainda mais intenso na Rodoviária
+const casosHotspotRodoviaria: Caso[] = [
+  {
+    id: "CASO-018",
+    objeto: "iPhone 11",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "08:15",
+    localizacao: "Rodoviária do Plano Piloto",
+    latitude: -15.7941,
+    longitude: -47.8827,
+    status: "Em investigação",
+    vitima: "Paulo Mendes",
+    descricao: "Celular furtado durante embarque.",
+    valorEstimado: 3200,
+  },
+  {
+    id: "CASO-019",
+    objeto: "Carteira com documentos",
+    tipoObjeto: "carteira",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "09:30",
+    localizacao: "Rodoviária do Plano Piloto",
+    latitude: -15.7939,
+    longitude: -47.8829,
+    status: "Em investigação",
+    vitima: "Fernanda Lima",
+    descricao: "Carteira furtada em meio à multidão.",
+    valorEstimado: 200,
+  },
+  {
+    id: "CASO-020",
+    objeto: "Samsung Galaxy A52",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "12:45",
+    localizacao: "Rodoviária do Plano Piloto",
+    latitude: -15.794,
+    longitude: -47.8826,
+    status: "Em investigação",
+    vitima: "Marcos Oliveira",
+    descricao: "Celular furtado enquanto aguardava ônibus.",
+    valorEstimado: 2200,
+  },
+  {
+    id: "CASO-021",
+    objeto: "Mochila com notebook",
+    tipoObjeto: "notebook",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "17:15",
+    localizacao: "Rodoviária do Plano Piloto",
+    latitude: -15.7943,
+    longitude: -47.8828,
+    status: "Em investigação",
+    vitima: "Luiza Cardoso",
+    descricao: "Mochila furtada enquanto comprava passagem.",
+    valorEstimado: 4800,
+  },
+]
+
+// Adicione mais casos para criar um hotspot ainda mais intenso no Setor Comercial Sul
+const casosHotspotSetorComercial: Caso[] = [
+  {
+    id: "CASO-022",
+    objeto: "iPhone 12",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "13:20",
+    localizacao: "Setor Comercial Sul",
+    latitude: -15.7976,
+    longitude: -47.8917,
+    status: "Em investigação",
+    vitima: "Renata Silva",
+    descricao: "Celular furtado durante almoço em restaurante.",
+    valorEstimado: 4500,
+  },
+  {
+    id: "CASO-023",
+    objeto: "Carteira com documentos",
+    tipoObjeto: "carteira",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "14:30",
+    localizacao: "Setor Comercial Sul",
+    latitude: -15.7978,
+    longitude: -47.892,
+    status: "Em investigação",
+    vitima: "Eduardo Santos",
+    descricao: "Carteira furtada em estabelecimento comercial.",
+    valorEstimado: 280,
+  },
+  {
+    id: "CASO-024",
+    objeto: "Notebook Dell Inspiron",
+    tipoObjeto: "notebook",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "16:15",
+    localizacao: "Setor Comercial Sul",
+    latitude: -15.7979,
+    longitude: -47.8918,
+    status: "Em investigação",
+    vitima: "Carolina Martins",
+    descricao: "Notebook furtado em café.",
+    valorEstimado: 5600,
+  },
+  {
+    id: "CASO-025",
+    objeto: "Samsung Galaxy S23",
+    tipoObjeto: "smartphone",
+    dataRoubo: "2023-11-18",
+    horaRoubo: "18:30",
+    localizacao: "Setor Comercial Sul",
+    latitude: -15.7974,
+    longitude: -47.8916,
+    status: "Em investigação",
+    vitima: "Roberto Alves",
+    descricao: "Celular roubado por indivíduo em motocicleta.",
+    valorEstimado: 5800,
+  },
+]
+
+// Adicione mais casos concentrados em um único ponto para demonstrar melhor o efeito
+// Adicione este novo array de casos após o array casosHotspotSetorComercial
+
+// Adicione um cluster muito concentrado na Rodoviária para demonstrar alta intensidade
+const casosClusterRodoviaria: Caso[] = Array.from({ length: 15 }, (_, i) => ({
+  id: `CASO-${100 + i}`,
+  objeto: "Smartphone",
+  tipoObjeto: "smartphone",
+  dataRoubo: "2023-11-19",
+  horaRoubo: `${8 + Math.floor(i / 2)}:${(i % 2) * 30}`,
+  localizacao: "Rodoviária do Plano Piloto - Ponto de alta concentração",
+  // Pequena variação para não ficarem exatamente no mesmo ponto
+  latitude: -15.794 + (Math.random() - 0.5) * 0.0005,
+  longitude: -47.8827 + (Math.random() - 0.5) * 0.0005,
+  status: "Em investigação",
+  vitima: `Vítima ${100 + i}`,
+  descricao: "Furto em área de alta concentração de ocorrências.",
+  valorEstimado: 2000 + Math.floor(Math.random() * 3000),
+}))
 
 const Map: React.FC<MapProps> = ({
   userType,
   selectedCaso,
-  casos,
-  showHeatmap,
-  // Removendo showPatrulhas dos parâmetros já que não é usado
+  casos: propCasos,
+  showHeatmap: propShowHeatmap,
   onBack,
 }) => {
+  // Combinando os casos fornecidos com os casos de exemplo de Brasília e hotspots
+  const casos =
+    userType === "visitor"
+      ? [
+          ...casosBrasilia,
+          ...casosHotspots,
+          ...casosHotspotRodoviaria,
+          ...casosHotspotSetorComercial,
+          ...casosClusterRodoviaria,
+        ]
+      : propCasos
+
+  // Ativar o mapa de calor por padrão para visitantes
+  const [internalShowHeatmap, setInternalShowHeatmap] = useState(userType === "visitor" ? true : propShowHeatmap)
+
+  // Use o estado interno para controlar o mapa de calor
+  const showHeatmap = userType === "visitor" ? internalShowHeatmap : propShowHeatmap
+
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const mapRef = useRef<L.Map | null>(null)
@@ -140,23 +629,42 @@ const Map: React.FC<MapProps> = ({
   const heatLayerRef = useRef<L.HeatLayer | null>(null)
   const userMarkerRef = useRef<L.Marker | null>(null)
 
+  // Função para garantir que os ícones sejam renderizados corretamente
+  const fixMarkerIcons = () => {
+    if (!mapRef.current) return
+
+    // Forçar uma atualização do tamanho do mapa para garantir que os ícones sejam posicionados corretamente
+    mapRef.current.invalidateSize()
+
+    // Se houver marcadores, ajuste a visualização para incluir todos eles
+    if (markersLayerRef.current && markersLayerRef.current.getLayers().length > 0) {
+      try {
+        const group = L.featureGroup(markersLayerRef.current.getLayers())
+        mapRef.current.fitBounds(group.getBounds(), {
+          padding: [50, 50],
+          maxZoom: 14,
+        })
+      } catch (error) {
+        console.error("Erro ao ajustar a visualização:", error)
+      }
+    }
+  }
+
   useEffect(() => {
     if (!mapContainerRef.current) return
 
     const initMap = (center: [number, number], zoom: number) => {
       if (mapRef.current) return // Prevent re-initialization
 
-      // Garantindo que mapContainerRef.current não é null
       if (!mapContainerRef.current) return
 
       const mapInstance = L.map(mapContainerRef.current, {
         center: center,
         zoom: zoom,
         zoomControl: false,
-        renderer: L.canvas(), // Use canvas renderer for better performance
+        renderer: L.canvas(),
       })
 
-      // Use dark map style
       L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -165,7 +673,6 @@ const Map: React.FC<MapProps> = ({
         className: "dark-style-tiles",
       }).addTo(mapInstance)
 
-      // Add zoom control to the bottom-right corner
       L.control.zoom({ position: "bottomright" }).addTo(mapInstance)
 
       markersLayerRef.current = L.layerGroup().addTo(mapInstance)
@@ -176,7 +683,7 @@ const Map: React.FC<MapProps> = ({
 
     const setupMap = () => {
       if (userType === "visitor") {
-        initMap([-15.7801, -47.9292], 12) // Brasília
+        initMap([-15.7801, -47.9292], 13) // Brasília com zoom mais próximo
       } else if (userType === "citizen" || userType === "police") {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -205,7 +712,7 @@ const Map: React.FC<MapProps> = ({
           (err) => {
             console.error("Erro ao obter localização:", err)
             setError("Não foi possível obter sua localização. Usando localização padrão.")
-            initMap([-15.7801, -47.9292], 5) // Fallback para o centro do Brasil
+            initMap([-15.7801, -47.9292], 13) // Fallback para o centro do Brasil
           },
           { timeout: 10000, enableHighAccuracy: true },
         )
@@ -222,68 +729,130 @@ const Map: React.FC<MapProps> = ({
     }
   }, [userType])
 
+  // Efeito para mostrar/esconder marcadores baseado no estado do mapa de calor
   useEffect(() => {
     if (!mapRef.current || !markersLayerRef.current) return
 
+    // Limpar todos os marcadores existentes
     markersLayerRef.current.clearLayers()
 
-    const theftIcon = L.divIcon({
-      className: "custom-theft-marker",
-      html: `<div style="
-        width: 30px;
-        height: 30px;
-        background-color: #ff4444;
-        border-radius: 50%;
-        border: 2px solid #2c2c2c;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      ">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
-        </svg>
-      </div>`,
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
-      popupAnchor: [0, -30],
-    })
+    // Se o mapa de calor estiver ativo, não mostrar os marcadores individuais
+    if (showHeatmap) return
 
+    // Função para criar ícones personalizados baseados no tipo de objeto
     casos.forEach((caso) => {
-      // Garantindo que latitude e longitude existem
       if (caso.latitude !== undefined && caso.longitude !== undefined) {
-        L.marker([caso.latitude, caso.longitude], { icon: theftIcon })
-          .addTo(markersLayerRef.current!)
-          .bindPopup(`<b>${caso.objeto}</b><br>Roubado em: ${caso.dataRoubo}<br>Local: ${caso.localizacao}`)
+        // Criar um ícone simples e confiável
+        let backgroundColor = "#ff4444" // Cor padrão
+
+        // Definir cores específicas para cada tipo de objeto
+        switch (caso.tipoObjeto.toLowerCase()) {
+          case "smartphone":
+            backgroundColor = "#e74c3c"
+            break
+          case "veiculo":
+            backgroundColor = "#3498db"
+            break
+          case "carteira":
+            backgroundColor = "#f39c12"
+            break
+          case "notebook":
+            backgroundColor = "#9b59b6"
+            break
+          case "bicicleta":
+            backgroundColor = "#2ecc71"
+            break
+        }
+
+        const icon = L.divIcon({
+          className: "custom-marker",
+          html: `<div style="
+            width: 30px;
+            height: 30px;
+            background-color: ${backgroundColor};
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+          "></div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+          popupAnchor: [0, -15],
+        })
+
+        // Criar conteúdo HTML simples para o popup
+        const popupContent = `
+          <div style="padding: 10px; font-family: Arial, sans-serif;">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px;">${caso.objeto}</h3>
+            <p><strong>Data:</strong> ${new Date(caso.dataRoubo).toLocaleDateString("pt-BR")}</p>
+            <p><strong>Hora:</strong> ${caso.horaRoubo}</p>
+            <p><strong>Local:</strong> ${caso.localizacao}</p>
+            <p><strong>Vítima:</strong> ${caso.vitima}</p>
+            ${caso.descricao ? `<p><strong>Descrição:</strong> ${caso.descricao}</p>` : ""}
+            ${caso.valorEstimado ? `<p><strong>Valor estimado:</strong> ${caso.valorEstimado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>` : ""}
+            <p><strong>Status:</strong> ${caso.status}</p>
+          </div>
+        `
+
+        // Criar o marcador com popup simples
+        L.marker([caso.latitude, caso.longitude], { icon }).addTo(markersLayerRef.current!).bindPopup(popupContent)
       }
     })
-  }, [casos])
+  }, [casos, showHeatmap])
 
+  // Efeito para gerenciar o mapa de calor
   useEffect(() => {
     if (!mapRef.current) return
 
     if (showHeatmap) {
       if (!heatLayerRef.current) {
-        // Filtrando casos com latitude e longitude definidos
         const validCasos = casos.filter((caso) => caso.latitude !== undefined && caso.longitude !== undefined)
 
-        const heatData = validCasos.map((caso) => [caso.latitude, caso.longitude, 1] as [number, number, number])
+        // Agrupar casos por localização para criar um mapa de calor baseado em densidade
+        const heatPoints: { [key: string]: { lat: number; lng: number; count: number } } = {}
 
-        // Usando L.heatLayer em vez de (L as any).heatLayer
+        // Função para gerar uma chave baseada na localização aproximada
+        const getLocationKey = (lat: number, lng: number) => {
+          // Arredonda para 5 casas decimais (aproximadamente 1.1 metros)
+          // Usando uma precisão maior para pontos mais precisos
+          return `${lat.toFixed(5)},${lng.toFixed(5)}`
+        }
+
+        // Agrupar casos próximos
+        validCasos.forEach((caso) => {
+          const key = getLocationKey(caso.latitude, caso.longitude)
+
+          if (!heatPoints[key]) {
+            heatPoints[key] = {
+              lat: caso.latitude,
+              lng: caso.longitude,
+              count: 1,
+            }
+          } else {
+            heatPoints[key].count += 1
+          }
+        })
+
+        // Converter para o formato esperado pelo heatLayer
+        const heatData = Object.values(heatPoints).map((point) => {
+          // A intensidade é baseada na contagem de casos naquele ponto
+          // Usando uma função exponencial para aumentar o contraste entre áreas
+          // com poucos casos e áreas com muitos casos
+          const intensity = Math.pow(point.count, 1.5) * 3
+          return [point.lat, point.lng, intensity] as [number, number, number]
+        })
+
         heatLayerRef.current = L.heatLayer(heatData, {
-          radius: 25,
-          gradient: {
-            0.4: "#4a90e2",
-            0.6: "#2ecc71",
-            0.7: "#f1c40f",
-            0.8: "#e67e22",
-            1.0: "#e74c3c",
-          },
-          blur: 15,
+          radius: 30, // Raio menor para pontos mais precisos
+          blur: 20, // Menos blur para maior definição
           maxZoom: 17,
+          max: 30, // Valor máximo de intensidade aumentado
+          gradient: {
+            0.1: "#74b9ff", // Azul claro para áreas de baixa intensidade
+            0.3: "#0984e3", // Azul para intensidade média-baixa
+            0.5: "#fdcb6e", // Amarelo para intensidade média
+            0.7: "#e17055", // Laranja para intensidade média-alta
+            0.9: "#d63031", // Vermelho para alta intensidade
+          },
         }).addTo(mapRef.current)
       }
     } else if (heatLayerRef.current) {
@@ -295,7 +864,6 @@ const Map: React.FC<MapProps> = ({
   useEffect(() => {
     if (!mapRef.current || !selectedCaso) return
 
-    // Garantindo que latitude e longitude existem
     if (selectedCaso.latitude !== undefined && selectedCaso.longitude !== undefined) {
       mapRef.current.setView([selectedCaso.latitude, selectedCaso.longitude], 15)
     }
@@ -307,6 +875,18 @@ const Map: React.FC<MapProps> = ({
     }
   }, [])
 
+  // Chame a função após carregar os marcadores
+  useEffect(() => {
+    if (mapRef.current && !isLoading) {
+      // Pequeno atraso para garantir que o mapa esteja totalmente carregado
+      const timer = setTimeout(() => {
+        fixMarkerIcons()
+      }, 500)
+
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading, casos])
+
   const mapContent = (
     <>
       <MapSidebar
@@ -317,34 +897,9 @@ const Map: React.FC<MapProps> = ({
           }
         }}
         onToggleHeatmap={(enabled) => {
-          if (mapRef.current) {
-            if (enabled) {
-              if (!heatLayerRef.current) {
-                // Filtrando casos com latitude e longitude definidos
-                const validCasos = casos.filter((caso) => caso.latitude !== undefined && caso.longitude !== undefined)
-
-                const heatData = validCasos.map(
-                  (caso) => [caso.latitude, caso.longitude, 1] as [number, number, number],
-                )
-
-                // Usando L.heatLayer em vez de (L as any).heatLayer
-                heatLayerRef.current = L.heatLayer(heatData, {
-                  radius: 25,
-                  gradient: {
-                    0.4: "#4a90e2",
-                    0.6: "#2ecc71",
-                    0.7: "#f1c40f",
-                    0.8: "#e67e22",
-                    1.0: "#e74c3c",
-                  },
-                  blur: 15,
-                  maxZoom: 17,
-                }).addTo(mapRef.current)
-              }
-            } else if (heatLayerRef.current) {
-              mapRef.current.removeLayer(heatLayerRef.current)
-              heatLayerRef.current = null
-            }
+          // Usar o estado interno para visitantes
+          if (userType === "visitor") {
+            setInternalShowHeatmap(enabled)
           }
         }}
         onBack={onBack}
@@ -367,6 +922,32 @@ const Map: React.FC<MapProps> = ({
         </div>
       )}
       {error && <div className="absolute top-0 left-0 right-0 z-20 bg-red-500 text-white p-4 text-center">{error}</div>}
+      {showHeatmap && (
+        <div className="absolute bottom-4 left-4 z-20 bg-black bg-opacity-70 text-white p-3 rounded-lg shadow-lg">
+          <h3 className="text-sm font-bold mb-2">Concentração de Roubos</h3>
+          <div className="flex items-center space-x-1">
+            <div
+              className="w-full h-4 rounded-full"
+              style={{
+                background: "linear-gradient(to right, #74b9ff, #0984e3, #fdcb6e, #e17055, #d63031)",
+              }}
+            ></div>
+          </div>
+          <div className="flex justify-between text-xs mt-1">
+            <span>Baixa</span>
+            <span>Média</span>
+            <span>Alta</span>
+          </div>
+          <p className="text-xs mt-2 opacity-80">* Intensidade baseada na quantidade de casos</p>
+        </div>
+      )}
+      {/* Botão para recarregar os ícones caso ainda haja problemas */}
+      <button
+        onClick={() => fixMarkerIcons()}
+        className="absolute bottom-4 right-4 z-20 bg-primary text-white px-4 py-2 rounded-lg shadow-lg hover:bg-primary/90 transition-colors"
+      >
+        Recarregar Ícones
+      </button>
     </>
   )
 

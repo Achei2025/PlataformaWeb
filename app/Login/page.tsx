@@ -1,29 +1,7 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- *
- * This file is part of Achei.
- *
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- *
- * Contact information: teamachei.2024@gmail.com
- */
-
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import styled, { keyframes } from "styled-components"
 import { Eye, EyeOff, User, Lock, ChromeIcon as Google, FlagIcon as Gov, Loader2 } from "lucide-react"
@@ -364,6 +342,22 @@ export default function LoginPage() {
   const [success, setSuccess] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
 
+  // Check if there are saved credentials on component mount
+  useEffect(() => {
+    const savedUserType = localStorage.getItem("userType") as "citizen" | "police" | null
+    if (savedUserType) {
+      setUserType(savedUserType)
+      if (savedUserType === "citizen") {
+        const savedCpf = localStorage.getItem("cpf")
+        if (savedCpf) setCpf(savedCpf)
+      } else {
+        const savedMatricula = localStorage.getItem("matricula")
+        if (savedMatricula) setMatricula(savedMatricula)
+      }
+      setRememberMe(true)
+    }
+  }, [])
+
   const validateForm = () => {
     const newErrors = { cpf: "", password: "" }
     let isValid = true
@@ -410,19 +404,18 @@ export default function LoginPage() {
         const loginData =
           userType === "citizen"
             ? {
-                cpf: cpf.replace(/\D/g, ""), // Remove caracteres não numéricos
+                username: cpf.replace(/\D/g, ""), // Remove caracteres não numéricos
                 password: password,
               }
             : {
-                matricula: matricula,
+                username: matricula,
                 password: password,
               }
 
-        // Determinar a URL da API com base no tipo de usuário
-        const apiUrl =
-          userType === "citizen"
-            ? "http://26.190.233.3:8080/api/citizens/login"
-            : "http://26.190.233.3:8080/api/police/login"
+        // Usar a URL correta para autenticação
+        const apiUrl = "http://26.190.233.3:8080/auth/login"
+
+        console.log("Enviando dados:", loginData)
 
         // Fazer a chamada para a API
         const response = await fetch(apiUrl, {
@@ -431,11 +424,22 @@ export default function LoginPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(loginData),
+          mode: "cors", // Explicitamente definir o modo CORS
         })
 
+        console.log("Status da resposta:", response.status)
+
         if (!response.ok) {
-          const errorData = await response.json().catch(() => null)
-          throw new Error(errorData?.message || "Falha ao realizar login")
+          let errorMessage = "Falha ao realizar login"
+
+          try {
+            const errorData = await response.json()
+            errorMessage = errorData.message || errorMessage
+          } catch (e) {
+            // Se não conseguir parsear o JSON, usa a mensagem padrão
+          }
+
+          throw new Error(errorMessage)
         }
 
         const result = await response.json()
@@ -478,6 +482,15 @@ export default function LoginPage() {
   const handleSocialLogin = (provider: string) => {
     // Implementação futura para login social
     console.log(`Login with ${provider}`)
+  }
+
+  // Função para formatar o CPF
+  const formatCPF = (value: string) => {
+    const digits = value.replace(/\D/g, "")
+    if (digits.length <= 3) return digits
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`
   }
 
   return (
@@ -532,18 +545,8 @@ export default function LoginPage() {
                       placeholder="CPF"
                       value={cpf}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "") // Remove non-digits
-                        let formattedValue = ""
-
-                        // Format as CPF (000.000.000-00)
-                        if (value.length <= 11) {
-                          formattedValue = value
-                            .replace(/(\d{3})(?=\d)/, "$1.")
-                            .replace(/(\d{3})(?=\d)/, "$1.")
-                            .replace(/(\d{3})(?=\d)/, "$1-")
-
-                          setCpf(formattedValue)
-                        }
+                        const formatted = formatCPF(e.target.value)
+                        if (formatted.length <= 14) setCpf(formatted)
                       }}
                     />
                   ) : (
