@@ -1,25 +1,24 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
-
+ */
 
 "use client"
 
@@ -62,14 +61,14 @@ const Navbar = () => {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
+          {/* Logo - Updated size to 100x100 */}
+          <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/placeholder.svg?height=40&width=40"
+              src="/image/Achei.png"
               alt="Achei Logo"
-              width={40}
-              height={40}
-              className="h-10 w-auto"
+              width={70}
+              height={70}
+              className="h-[70px] w-[70px] object-contain"
             />
             <span className={`ml-2 text-xl font-bold ${isScrolled ? "text-[#333333]" : "text-[#4a90e2]"}`}>Achei!</span>
           </Link>
@@ -149,12 +148,4 @@ const Navbar = () => {
 }
 
 export default Navbar
-
-
-
-
-
-
-
-
 

@@ -1,31 +1,30 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
-
-
+ */
 
 "use client"
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/app/components/ui/button"
 import { User, Shield, Smartphone, Laptop, Car, BadgeHelp } from "lucide-react"
 
@@ -139,20 +138,24 @@ export default function Hero() {
                 Protegemos o que é mais importante para você. Nossa tecnologia de ponta garante a segurança dos seus
                 dados e a tranquilidade que você merece.
               </p>
-              <div className="flex gap-4">
-                <Button
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                  size="lg"
-                >
-                  Saiba Mais
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-medium px-6 py-3 rounded-lg transition-all duration-300"
-                  size="lg"
-                >
-                  Contato
-                </Button>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/AboutUs">
+                  <Button
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-md shadow-md hover:shadow-lg transition-all duration-300 border-2 border-blue-600"
+                    size="lg"
+                  >
+                    Sobre nós
+                  </Button>
+                </Link>
+                <Link href="/Register">
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto bg-transparent hover:bg-yellow-50 text-yellow-600 font-medium px-8 py-3 rounded-md transition-all duration-300 border-2 border-yellow-500 hover:border-yellow-600"
+                    size="lg"
+                  >
+                    Criar conta
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
