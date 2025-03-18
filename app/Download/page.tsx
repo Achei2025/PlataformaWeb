@@ -52,10 +52,10 @@ export default function Download() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             {/* Left side content */}
-            <div className="lg:w-1/2 max-w-xl">
-              <div className="inline-block px-4 py-2 rounded-full bg-yellow-100 text-yellow-800 font-medium mb-6 shadow-sm">
-                App Vantagem 🔥
-              </div>
+            <div className="lg:w-1/2 max-w-xl pt-28">
+            <div className="inline-block px-4 py-2 rounded-full bg-yellow-100 text-yellow-800 font-medium mb-6 shadow-sm">
+              App Vantagem 🔥
+            </div>
 
               <h1 className="text-4xl md:text-5xl font-bold mb-8 text-gray-900 leading-tight">
                 Segurança ao Seu <span style={{ color: brColors.green }}>Alcance</span>

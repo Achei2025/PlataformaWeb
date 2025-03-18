@@ -490,7 +490,7 @@ export default function LoginPage() {
           <FormLayout>
             <LeftColumn>
               <LogoContainer>
-                <Image src="/placeholder.svg?height=60&width=60" alt="Logo" width={60} height={60} />
+                <Image src="/image/Achei.png" alt="Logo" width={60} height={60} />
               </LogoContainer>
               <Title>Bem-vindo de volta</Title>
               <Subtitle>Faça login para continuar</Subtitle>

@@ -101,4 +101,3 @@ const AccountDropdown = ({ isScrolled }: AccountDropdownProps) => {
 export default AccountDropdown
 
 
-

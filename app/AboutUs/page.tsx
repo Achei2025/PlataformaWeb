@@ -42,14 +42,12 @@ import {
   Map,
   AlertTriangle,
   CheckCircle,
-  ArrowRight,
 } from "lucide-react"
 
 // Cores do Brasil
 const brazilGreen = "#009c3b"
 const brazilYellow = "#ffdf00"
 const brazilBlue = "#002776"
-const brazilWhite = "#ffffff"
 
 export default function AboutUs() {
   const advantages = [
@@ -171,10 +169,7 @@ export default function AboutUs() {
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center">
-            <Badge variant="outline" className="mb-4 bg-[#009c3b] text-white border-white/20">
-              Sua segurança em primeiro lugar
-            </Badge>
-            <h1 className="text-2xl md:text-5xl font-bold mb-6 text-[#ffdf00] drop-shadow-md">Proteja o que é seu</h1>
+            <h1 className="pt-28 text-2xl md:text-5xl font-bold mb-6 text-[#ffdf00] drop-shadow-md">Proteja o que é seu</h1>
             <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 opacity-90">
               Uma plataforma social que revoluciona a forma como você protege, registra e recupera seus bens
             </p>
