@@ -1,3 +1,25 @@
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ *
+ * This file is part of Achei.
+ *
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Contact information: teamachei.2024@gmail.com
+ */
+
 "use client"
 
 import type React from "react"
@@ -7,7 +29,6 @@ import * as Yup from "yup"
 import styled, { css } from "styled-components"
 // Importe o QRCode de forma dinâmica para evitar erros de SSR
 import dynamic from "next/dynamic"
-import { useAuthApi } from "../../../hooks/use-auth-api"
 
 const QRCode = dynamic(() => import("qrcode.react"), { ssr: false })
 import { Button } from "../../../components/ui/button"
@@ -56,7 +77,7 @@ import { useToast } from "../../../components/ui/use-toast"
 const categories = [
   { value: "eletronico", label: "Eletrônico" },
   { value: "veiculo", label: "Veículo" },
-  { value: "bicicleta", label: "Bicicleta" },
+  { value: "imovel", label: "Imóvel" },
   { value: "outro", label: "Outro" },
 ]
 
@@ -655,309 +676,18 @@ const ExplanatoryNote = styled.p`
   font-style: italic;
 `
 
-// Additional styled components
-const SearchContainer = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-`
+// Removed darkMode prop from CadastrarTabProps
+type CadastrarTabProps = {}
 
-const SearchInput = styled(Input)`
-  ${inputStyles}
-`
-
-const CategoryBadge = styled.span`
-  background-color: #e0e7ff;
-  color: #3b82f6;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-`
-
-const SituationBadge = styled.span<{ situation: string }>`
-  background-color: ${({ situation }) =>
-    situation === "novo" ? "#dcfce7" : situation === "usado" ? "#ffedd5" : "#fee2e2"};
-  color: ${({ situation }) => (situation === "novo" ? "#16a34a" : situation === "usado" ? "#ea580c" : "#b91c1c")};
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-`
-
-const QRCodeButton = styled(ActionButton)`
-  background-color: ${theme.secondary};
-  color: white;
-  &:hover {
-    background-color: ${theme.secondaryHover};
-  }
-`
-
-const ImagesButton = styled(ActionButton)`
-  background-color: ${theme.info};
-  color: white;
-  &:hover {
-    background-color: ${theme.primaryHover};
-  }
-`
-
-const ReceiptButton = styled(ActionButton)`
-  background-color: ${theme.warning};
-  color: ${theme.text};
-  &:hover {
-    background-color: #fcd34d;
-  }
-`
-
-const EditButton = styled(ActionButton)`
-  background-color: #a78bfa;
-  color: white;
-  &:hover {
-    background-color: #7c3aed;
-  }
-`
-
-const DeleteButton = styled(ActionButton)`
-  background-color: #f87171;
-  color: white;
-  &:hover {
-    background-color: #dc2626;
-  }
-`
-
-const CloseButton = styled(ActionButton)`
-  background-color: ${theme.border};
-  color: ${theme.text};
-  &:hover {
-    background-color: ${theme.borderHover};
-  }
-`
-
-const DownloadButton = styled(ActionButton)`
-  background-color: ${theme.success};
-  color: white;
-  &:hover {
-    background-color: ${theme.secondaryHover};
-  }
-`
-
-const AddImageButtonLabel = styled(Button)`
-  background-color: ${theme.secondary};
-  color: white;
-  &:hover {
-    background-color: ${theme.secondaryHover};
-  }
-`
-
-const ImageGalleryContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`
-
-const ImageContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  width: 100%;
-  max-height: 600px;
-  overflow: hidden;
-  border-radius: 0.5rem;
-  background-color: ${theme.background};
-`
-
-const StyledImage = styled.img<{ zoom: number }>`
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transition: transform 0.3s ease;
-  transform: scale(${({ zoom }) => zoom});
-`
-
-const ImageControls = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 0 0.5rem;
-`
-
-const NavigationControls = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`
-
-const ZoomControls = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`
-
-const ControlButton = styled(Button)`
-  padding: 0.5rem;
-  border-radius: 9999px;
-  background-color: ${theme.background};
-  color: ${theme.text};
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: ${theme.border};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`
-
-const ThumbnailsContainer = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-`
-
-const Thumbnail = styled.div<{ active: boolean }>`
-  width: 80px;
-  height: 60px;
-  border-radius: 0.375rem;
-  overflow: hidden;
-  cursor: pointer;
-  opacity: ${({ active }) => (active ? 1 : 0.6)};
-  transition: opacity 0.2s ease-in-out, border-color 0.3s ease;
-  border: 2px solid ${({ active }) => (active ? theme.primary : "transparent")};
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  &:hover {
-    opacity: 1;
-  }
-`
-
-const NoImagesMessage = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background-color: ${theme.background};
-  border-radius: 0.5rem;
-  color: ${theme.textLight};
-  gap: 1rem;
-  text-align: center;
-  transition: background-color 0.3s ease, color 0.3s ease;
-`
-
-const ImageCounter = styled.div`
-  position: absolute;
-  bottom: 0.5rem;
-  right: 0.5rem;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-`
-
-const ImageActionButton = styled(Button)`
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background-color: rgba(220, 38, 38, 0.7);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-
-  &:hover {
-    background-color: rgba(220, 38, 38, 1);
-  }
-`
-
-const AlertBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background-color: #fff7ed;
-  border-radius: 0.5rem;
-  color: #a16207;
-  border: 1px solid #f9e6c9;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-
-  span {
-    font-size: 0.875rem;
-  }
-`
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
-  flex-direction: column;
-  gap: 1rem;
-`
-
-const Spinner = styled.div`
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  border: 0.25rem solid #e5e7eb;
-  border-top-color: #2563eb;
-  animation: spin 1s linear infinite;
-  
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`
-
-const LoadingText = styled.p`
-  color: #6b7280;
-`
-
-const ErrorContainer = styled.div`
-  padding: 2rem;
-  text-align: center;
-  max-width: 32rem;
-  margin: 0 auto;
-  background-color: #fee2e2;
-  border-radius: 0.5rem;
-  border: 1px solid #fecaca;
-`
-
-const ErrorTitle = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #b91c1c;
-  margin-bottom: 0.5rem;
-`
-
-const ErrorMessageStyled = styled.p`
-  color: #b91c1c;
-  margin-bottom: 1.5rem;
-`
-
-interface CadastrarTabProps {
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>
-}
-
-const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
+// Removed darkMode prop from component
+const CadastrarTab: React.FC = () => {
   const { toast } = useToast()
-  const { storedToken } = useAuthApi()
   const [showConfirmCadastroDialog, setShowConfirmCadastroDialog] = useState(false)
   const [showConfirmEditDialog, setShowConfirmEditDialog] = useState(false)
   const [objectToConfirmCadastro, setObjectToConfirmCadastro] = useState<FormValues | null>(null)
   const [objectToConfirmEdit, setObjectToConfirmEdit] = useState<FormValues | null>(null)
-  const [objectsData, setObjectsData] = useState<ObjectItemProps[]>([])
-  const [filteredObjects, setFilteredObjects] = useState<ObjectItemProps[]>([])
+  const [objectsData, setObjectsData] = useState<ObjectItemProps[]>(mockObjects)
+  const [filteredObjects, setFilteredObjects] = useState<ObjectItemProps[]>(mockObjects)
   const [searchTerm, setSearchTerm] = useState("")
   const [showObjectList, setShowObjectList] = useState<boolean>(objectsData.length > 0)
   const [showQRDialog, setShowQRDialog] = useState<boolean>(false)
@@ -974,8 +704,6 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
   const [showDeleteImageConfirmDialog, setShowDeleteImageConfirmDialog] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const initialValues: FormValues = {
     categoria: "",
@@ -1020,36 +748,6 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
     }
   }, [])
 
-  // Carregar objetos do usuário
-  useEffect(() => {
-    const fetchObjects = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-
-        const response = await authFetch("http://26.190.233.3:8080/api/objects/me", {
-          method: "GET",
-        })
-
-        if (!response.ok) {
-          throw new Error("Falha ao carregar objetos. Por favor, tente novamente.")
-        }
-
-        const data = await response.json()
-        setObjectsData(data)
-        setFilteredObjects(data)
-        setShowObjectList(data.length > 0)
-        setIsLoading(false)
-      } catch (error) {
-        console.error("Erro ao buscar objetos:", error)
-        setError(error instanceof Error ? error.message : "Erro desconhecido ao carregar objetos")
-        setIsLoading(false)
-      }
-    }
-
-    fetchObjects()
-  }, [authFetch])
-
   useEffect(() => {
     const filtered = objectsData.filter((object) => object.nome.toLowerCase().includes(searchTerm.toLowerCase()))
     setFilteredObjects(filtered)
@@ -1064,56 +762,45 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
     setShowConfirmEditDialog(true)
   }
 
+  // Mock API call (replace with your actual API endpoint)
+  const api = {
+    post: async (url: string, formData: FormData, config: any) => {
+      // Simulate an API call
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          console.log("Simulating API call to", url, "with data", formData)
+          resolve({ status: 200, message: "Object created successfully" })
+        }, 1000)
+      })
+    },
+  }
+
   async function createObject(values: FormValues) {
     try {
       setIsSubmitting(true)
 
       const formData = new FormData()
-      formData.append("categoria", values.categoria)
-      formData.append("nome", values.nome)
-      formData.append("descricao", values.descricao)
-      formData.append("marca", values.marca)
-      formData.append("modelo", values.modelo)
-      formData.append("dataAquisicao", values.dataAquisicao)
-      formData.append("situacao", values.situacao)
-      formData.append("preco", values.preco)
-      if (values.numeroSerie) formData.append("numeroSerie", values.numeroSerie)
-      if (values.imei) formData.append("imei", values.imei)
-      if (values.chassi) formData.append("chassi", values.chassi)
-      if (values.notaFiscal) formData.append("notaFiscal", values.notaFiscal)
-      if (values.imagens) {
-        Array.from(values.imagens).forEach((file) => {
-          formData.append("imagens", file)
-        })
-      }
 
-      const response = await authFetch("http://26.190.233.3:8080/api/objects", {
-        method: "POST",
-        body: formData,
+      Object.entries(values).forEach(([key, value]) => {
+        formData.append(key, value)
       })
 
-      if (!response.ok) {
-        throw new Error("Falha ao cadastrar objeto. Por favor, tente novamente.")
-      }
-
-      const newObject = await response.json()
-      setObjectsData((prev) => [...prev, newObject])
-      setFilteredObjects((prev) => [...prev, newObject])
-      setShowObjectList(true)
+      await api.post("/objects", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
 
       toast({
         title: "Objeto cadastrado com sucesso!",
       })
-
-      return newObject
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
       toast({
         title: "Erro ao cadastrar objeto!",
-        description: error instanceof Error ? error.message : "Erro desconhecido",
+        description: error.message,
         variant: "destructive",
       })
-      throw error
     } finally {
       setIsSubmitting(false)
     }
@@ -1128,68 +815,49 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
     setSubmitting(false)
   }
 
-  const confirmObjectCreation = async () => {
+  const confirmObjectCreation = () => {
     if (objectToConfirmCadastro) {
-      try {
-        await createObject(objectToConfirmCadastro)
-        setShowConfirmCadastroDialog(false)
-        setObjectToConfirmCadastro(null)
-      } catch (error) {
-        console.error("Erro ao confirmar criação do objeto:", error)
+      console.log("Objeto cadastrado:", objectToConfirmCadastro)
+
+      // Gerar URLs de placeholder para as imagens enviadas
+      const imagensUrls: string[] = []
+      if (objectToConfirmCadastro.imagens) {
+        for (let i = 0; i < objectToConfirmCadastro.imagens.length; i++) {
+          imagensUrls.push(`/placeholder.svg?height=600&width=800&text=Imagem+${i + 1}`)
+        }
       }
+
+      // Adicionar novo objeto à lista
+      const newObject: ObjectItemProps = {
+        id: `obj${objectsData.length + 1}`.padStart(6, "0"),
+        ...objectToConfirmCadastro,
+        dataCadastro: new Date().toISOString().split("T")[0],
+        cpfDono: "123.456.789-00", // Simulando o CPF do usuário logado
+        emailDono: "usuario@example.com", // Simulando o email do usuário logado
+        notaFiscalUrl: objectToConfirmCadastro.notaFiscal
+          ? "/placeholder.svg?height=800&width=600&text=Nota+Fiscal+Nova"
+          : undefined,
+        imagensUrls: imagensUrls.length > 0 ? imagensUrls : undefined,
+      }
+
+      setObjectsData([...objectsData, newObject])
+      setFilteredObjects([...objectsData, newObject])
+      setShowObjectList(true)
+      setShowConfirmCadastroDialog(false)
+      setObjectToConfirmCadastro(null)
     }
   }
 
-  const confirmObjectEdit = async () => {
+  const confirmObjectEdit = () => {
     if (currentObject && objectToConfirmEdit) {
-      try {
-        setIsSubmitting(true)
-
-        const formData = new FormData()
-        formData.append("categoria", objectToConfirmEdit.categoria)
-        formData.append("nome", objectToConfirmEdit.nome)
-        formData.append("descricao", objectToConfirmEdit.descricao)
-        formData.append("marca", objectToConfirmEdit.marca)
-        formData.append("modelo", objectToConfirmEdit.modelo)
-        formData.append("dataAquisicao", objectToConfirmEdit.dataAquisicao)
-        formData.append("situacao", objectToConfirmEdit.situacao)
-        formData.append("preco", objectToConfirmEdit.preco)
-        if (objectToConfirmEdit.numeroSerie) formData.append("numeroSerie", objectToConfirmEdit.numeroSerie)
-        if (objectToConfirmEdit.imei) formData.append("imei", objectToConfirmEdit.imei)
-        if (objectToConfirmEdit.chassi) formData.append("chassi", objectToConfirmEdit.chassi)
-
-        const response = await authFetch(`http://26.190.233.3:8080/api/objects/${currentObject.id}`, {
-          method: "PUT",
-          body: formData,
-        })
-
-        if (!response.ok) {
-          throw new Error("Falha ao atualizar objeto. Por favor, tente novamente.")
-        }
-
-        const updatedObject = await response.json()
-        const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
-
-        setObjectsData(updatedObjects)
-        setFilteredObjects(updatedObjects)
-        setCurrentObject(updatedObject)
-        setShowEditDialog(false)
-        setShowConfirmEditDialog(false)
-        setObjectToConfirmEdit(null)
-
-        toast({
-          title: "Objeto atualizado com sucesso!",
-        })
-      } catch (error) {
-        console.error("Erro ao atualizar objeto:", error)
-        toast({
-          title: "Erro ao atualizar objeto!",
-          description: error instanceof Error ? error.message : "Erro desconhecido",
-          variant: "destructive",
-        })
-      } finally {
-        setIsSubmitting(false)
-      }
+      const updatedObject = { ...currentObject, ...objectToConfirmEdit }
+      const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
+      setObjectsData(updatedObjects)
+      setFilteredObjects(updatedObjects)
+      setCurrentObject(updatedObject)
+      setShowEditDialog(false)
+      setShowConfirmEditDialog(false)
+      setObjectToConfirmEdit(null)
     }
   }
 
@@ -1197,9 +865,15 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
     setShowEditDialog(true)
   }
 
-  const handleEdit = async (values: FormValues) => {
-    setObjectToConfirmEdit(values)
-    setShowConfirmEditDialog(true)
+  const handleEdit = (values: FormValues) => {
+    if (currentObject) {
+      const updatedObject = { ...currentObject, ...values }
+      const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
+      setObjectsData(updatedObjects)
+      setFilteredObjects(updatedObjects)
+      setCurrentObject(updatedObject)
+      setShowEditDialog(false)
+    }
   }
 
   const showQRCode = () => {
@@ -1279,142 +953,45 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
     setZoom(1)
   }
 
-  const handleDeleteObject = async () => {
+  const handleDeleteObject = () => {
     if (currentObject) {
-      try {
-        const response = await authFetch(`http://26.190.233.3:8080/api/objects/${currentObject.id}`, {
-          method: "DELETE",
-        })
-
-        if (!response.ok) {
-          throw new Error("Falha ao excluir objeto. Por favor, tente novamente.")
-        }
-
-        const updatedObjects = objectsData.filter((obj) => obj.id !== currentObject.id)
-        setObjectsData(updatedObjects)
-        setFilteredObjects(updatedObjects)
-        setShowObjectDialog(false)
-        setShowDeleteConfirmDialog(false)
-
-        toast({
-          title: "Objeto excluído com sucesso!",
-        })
-      } catch (error) {
-        console.error("Erro ao excluir objeto:", error)
-        toast({
-          title: "Erro ao excluir objeto!",
-          description: error instanceof Error ? error.message : "Erro desconhecido",
-          variant: "destructive",
-        })
-      }
+      const updatedObjects = objectsData.filter((obj) => obj.id !== currentObject.id)
+      setObjectsData(updatedObjects)
+      setFilteredObjects(updatedObjects)
+      setShowObjectDialog(false)
+      setShowDeleteConfirmDialog(false)
     }
   }
 
-  const handleDeleteImage = async () => {
+  const handleDeleteImage = () => {
     if (currentObject && currentObject.imagensUrls) {
-      try {
-        const imageUrl = currentObject.imagensUrls[currentImageIndex]
-        const imageId = imageUrl.split("/").pop()?.split(".")[0] || ""
-
-        const response = await authFetch(`http://26.190.233.3:8080/api/objects/${currentObject.id}/images/${imageId}`, {
-          method: "DELETE",
-        })
-
-        if (!response.ok) {
-          throw new Error("Falha ao excluir imagem. Por favor, tente novamente.")
-        }
-
-        const updatedImageUrls = currentObject.imagensUrls.filter((_, index) => index !== currentImageIndex)
-        const updatedObject = { ...currentObject, imagensUrls: updatedImageUrls }
-        const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
-
-        setObjectsData(updatedObjects)
-        setFilteredObjects(updatedObjects)
-        setCurrentObject(updatedObject)
-        setShowDeleteImageConfirmDialog(false)
-
-        if (updatedImageUrls.length === 0) {
-          setShowImagesDialog(false)
-        } else {
-          setCurrentImageIndex(Math.min(currentImageIndex, updatedImageUrls.length - 1))
-        }
-
-        toast({
-          title: "Imagem excluída com sucesso!",
-        })
-      } catch (error) {
-        console.error("Erro ao excluir imagem:", error)
-        toast({
-          title: "Erro ao excluir imagem!",
-          description: error instanceof Error ? error.message : "Erro desconhecido",
-          variant: "destructive",
-        })
+      const updatedImageUrls = currentObject.imagensUrls.filter((_, index) => index !== currentImageIndex)
+      const updatedObject = { ...currentObject, imagensUrls: updatedImageUrls }
+      const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
+      setObjectsData(updatedObjects)
+      setFilteredObjects(updatedObjects)
+      setCurrentObject(updatedObject)
+      setShowDeleteImageConfirmDialog(false)
+      if (updatedImageUrls.length === 0) {
+        setShowImagesDialog(false)
+      } else {
+        setCurrentImageIndex(Math.min(currentImageIndex, updatedImageUrls.length - 1))
       }
     }
   }
 
-  const handleAddImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAddImages = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (files && currentObject) {
-      try {
-        const formData = new FormData()
-
-        for (let i = 0; i < files.length; i++) {
-          formData.append("imagens", files[i])
-        }
-
-        const response = await authFetch(`http://26.190.233.3:8080/api/objects/${currentObject.id}/images`, {
-          method: "POST",
-          body: formData,
-        })
-
-        if (!response.ok) {
-          throw new Error("Falha ao adicionar imagens. Por favor, tente novamente.")
-        }
-
-        const updatedObject = await response.json()
-        const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
-
-        setObjectsData(updatedObjects)
-        setFilteredObjects(updatedObjects)
-        setCurrentObject(updatedObject)
-
-        if (updatedObject.imagensUrls && updatedObject.imagensUrls.length > 0) {
-          setCurrentImageIndex(updatedObject.imagensUrls.length - 1)
-        }
-
-        toast({
-          title: "Imagens adicionadas com sucesso!",
-        })
-      } catch (error) {
-        console.error("Erro ao adicionar imagens:", error)
-        toast({
-          title: "Erro ao adicionar imagens!",
-          description: error instanceof Error ? error.message : "Erro desconhecido",
-          variant: "destructive",
-        })
-      }
+      const newImageUrls = Array.from(files).map(() => `/placeholder.svg?height=600&width=800&text=Nova+Imagem`)
+      const updatedImageUrls = [...(currentObject.imagensUrls || []), ...newImageUrls]
+      const updatedObject = { ...currentObject, imagensUrls: updatedImageUrls }
+      const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
+      setObjectsData(updatedObjects)
+      setFilteredObjects(updatedObjects)
+      setCurrentObject(updatedObject)
+      setCurrentImageIndex(updatedImageUrls.length - 1)
     }
-  }
-
-  if (isLoading) {
-    return (
-      <LoadingContainer>
-        <Spinner />
-        <LoadingText>Carregando objetos...</LoadingText>
-      </LoadingContainer>
-    )
-  }
-
-  if (error) {
-    return (
-      <ErrorContainer>
-        <AlertTriangle size={48} color="#b91c1c" />
-        <ErrorTitle>Erro ao carregar objetos</ErrorTitle>
-        <ErrorMessageStyled>{error}</ErrorMessageStyled>
-        <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
-      </ErrorContainer>
-    )
   }
 
   return (
@@ -1440,49 +1017,40 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
                   <Search className="h-4 w-4" />
                 </Button>
               </SearchContainer>
-              {filteredObjects.length === 0 ? (
-                <NoImagesMessage>
-                  <Package size={48} color="#6b7280" />
-                  <span>Nenhum objeto encontrado. Cadastre seu primeiro objeto na aba "Cadastrar Novo".</span>
-                </NoImagesMessage>
-              ) : (
-                <ObjectListContainer>
-                  {filteredObjects.map((object) => (
-                    <ObjectCard key={object.id} onClick={() => viewObjectDetails(object)}>
-                      <ObjectCardHeader>
-                        <HeaderImage>
-                          <img
-                            src={object.imagensUrls?.[0] || "/placeholder.svg?height=200&width=300&text=No+Image"}
-                            alt={object.nome}
-                          />
-                        </HeaderImage>
-                        <ObjectCardTitle>{object.nome}</ObjectCardTitle>
-                      </ObjectCardHeader>
-                      <ObjectCardContent>
-                        <CategoryBadge>
-                          {categories.find((c) => c.value === object.categoria)?.label || object.categoria}
-                        </CategoryBadge>
+              <ObjectListContainer>
+                {filteredObjects.map((object) => (
+                  <ObjectCard key={object.id} onClick={() => viewObjectDetails(object)}>
+                    <ObjectCardHeader>
+                      <HeaderImage>
+                        <img
+                          src={object.imagensUrls?.[0] || "/placeholder.svg?height=200&width=300&text=No+Image"}
+                          alt={object.nome}
+                        />
+                      </HeaderImage>
+                      <ObjectCardTitle>{object.nome}</ObjectCardTitle>
+                    </ObjectCardHeader>
+                    <ObjectCardContent>
+                      <CategoryBadge>
+                        {categories.find((c) => c.value === object.categoria)?.label || object.categoria}
+                      </CategoryBadge>
 
-                        <ObjectDetail>
-                          <ObjectProperty>Marca / Modelo:</ObjectProperty>
-                          <ObjectValue>
-                            {object.marca} / {object.modelo}
-                          </ObjectValue>
-                        </ObjectDetail>
+                      <ObjectDetail>
+                        <ObjectProperty>Marca / Modelo:</ObjectProperty>
+                        <ObjectValue>
+                          {object.marca} / {object.modelo}
+                        </ObjectValue>
+                      </ObjectDetail>
 
-                        <ObjectDetail>
-                          <ObjectProperty>Data de Aquisição:</ObjectProperty>
-                          <ObjectValue>{formatDate(object.dataAquisicao)}</ObjectValue>
-                        </ObjectDetail>
+                      <ObjectDetail>
+                        <ObjectProperty>Data de Aquisição:</ObjectProperty>
+                        <ObjectValue>{formatDate(object.dataAquisicao)}</ObjectValue>
+                      </ObjectDetail>
 
-                        <SituationBadge situation={object.situacao}>
-                          {getSituationLabel(object.situacao)}
-                        </SituationBadge>
-                      </ObjectCardContent>
-                    </ObjectCard>
-                  ))}
-                </ObjectListContainer>
-              )}
+                      <SituationBadge situation={object.situacao}>{getSituationLabel(object.situacao)}</SituationBadge>
+                    </ObjectCardContent>
+                  </ObjectCard>
+                ))}
+              </ObjectListContainer>
             </CardContent>
           </FormCard>
         </TabsContent>
@@ -1988,13 +1556,22 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
                       </FormSection>
                     </FormGrid>
                     <SubmitButton type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Salvando..." : "Salvar Alterações"}
+                      {isSubmitting ? "Editando..." : "Salvar Edições"}
                     </SubmitButton>
                   </FormContainer>
                 )}
               </Formik>
             )}
           </DialogBodyStyled>
+
+          <DialogFooterStyled>
+            <Button type="button" variant="secondary" onClick={() => setShowEditDialog(false)}>
+              Cancelar
+            </Button>
+            <Button type="button" onClick={() => handleEditObject(initialValues)}>
+              Salvar
+            </Button>
+          </DialogFooterStyled>
         </DialogContentStyled>
       </Dialog>
 
@@ -2065,8 +1642,8 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
             <Button type="button" variant="secondary" onClick={() => setShowConfirmCadastroDialog(false)}>
               Cancelar
             </Button>
-            <Button type="button" onClick={confirmObjectCreation} disabled={isSubmitting}>
-              {isSubmitting ? "Cadastrando..." : "Confirmar Cadastro"}
+            <Button type="button" onClick={confirmObjectCreation}>
+              Confirmar Cadastro
             </Button>
           </DialogFooterStyled>
         </DialogContentStyled>
@@ -2139,8 +1716,8 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
             <Button type="button" variant="secondary" onClick={() => setShowConfirmEditDialog(false)}>
               Cancelar
             </Button>
-            <Button type="button" onClick={confirmObjectEdit} disabled={isSubmitting}>
-              {isSubmitting ? "Salvando..." : "Confirmar Edição"}
+            <Button type="button" onClick={confirmObjectEdit}>
+              Confirmar Edição
             </Button>
           </DialogFooterStyled>
         </DialogContentStyled>
@@ -2273,5 +1850,302 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
   )
 }
 
+// Additional styled components
+const SearchContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`
+
+const SearchInput = styled(Input)`
+  ${inputStyles}
+`
+
+const CategoryBadge = styled.span`
+  background-color: #e0e7ff;
+  color: #3b82f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+`
+
+const SituationBadge = styled.span<{ situation: string }>`
+  background-color: ${({ situation }) =>
+    situation === "novo" ? "#dcfce7" : situation === "usado" ? "#ffedd5" : "#fee2e2"};
+  color: ${({ situation }) => (situation === "novo" ? "#16a34a" : situation === "usado" ? "#ea580c" : "#b91c1c")};
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+`
+
+const QRCodeButton = styled(ActionButton)`
+  background-color: ${theme.secondary};
+  color: white;
+  &:hover {
+    background-color: ${theme.secondaryHover};
+  }
+`
+
+const ImagesButton = styled(ActionButton)`
+  background-color: ${theme.info};
+  color: white;
+  &:hover {
+    background-color: ${theme.primaryHover};
+  }
+`
+
+const ReceiptButton = styled(ActionButton)`
+  background-color: ${theme.warning};
+  color: ${theme.text};
+  &:hover {
+    background-color: #fcd34d;
+  }
+`
+
+const EditButton = styled(ActionButton)`
+  background-color: #a78bfa;
+  color: white;
+  &:hover {
+    background-color: #7c3aed;
+  }
+`
+
+const DeleteButton = styled(ActionButton)`
+  background-color: #f87171;
+  color: white;
+  &:hover {
+    background-color: #dc2626;
+  }
+`
+
+const CloseButton = styled(ActionButton)`
+  background-color: ${theme.border};
+  color: ${theme.text};
+  &:hover {
+    background-color: ${theme.borderHover};
+  }
+`
+
+const DownloadButton = styled(ActionButton)`
+  background-color: ${theme.success};
+  color: white;
+  &:hover {
+    background-color: ${theme.secondaryHover};
+  }
+`
+
+const AddImageButtonLabel = styled(Button)`
+  background-color: ${theme.secondary};
+  color: white;
+  &:hover {
+    background-color: ${theme.secondaryHover};
+  }
+`
+
+const ImageGalleryContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`
+
+const ImageContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  max-height: 600px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: ${theme.background};
+`
+
+const StyledImage = styled.img<{ zoom: number }>`
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  transform: scale(${({ zoom }) => zoom});
+`
+
+const ImageControls = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 0.5rem;
+`
+
+const NavigationControls = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`
+
+const ZoomControls = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`
+
+const ControlButton = styled(Button)`
+  padding: 0.5rem;
+  border-radius: 9999px;
+  background-color: ${theme.background};
+  color: ${theme.text};
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: ${theme.border};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`
+
+const ThumbnailsContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+`
+
+const Thumbnail = styled.div<{ active: boolean }>`
+  width: 80px;
+  height: 60px;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: ${({ active }) => (active ? 1 : 0.6)};
+  transition: opacity 0.2s ease-in-out, border-color 0.3s ease;
+  border: 2px solid ${({ active }) => (active ? theme.primary : "transparent")};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+`
+
+const NoImagesMessage = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: ${theme.background};
+  border-radius: 0.5rem;
+  color: ${theme.textLight};
+  gap: 1rem;
+  text-align: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+`
+
+const ImageCounter = styled.div`
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+`
+
+const ImageActionButton = styled(Button)`
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(220, 38, 38, 0.7);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+
+  &:hover {
+    background-color: rgba(220, 38, 38, 1);
+  }
+`
+
+const AlertBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: #fff7ed;
+  border-radius: 0.5rem;
+  color: #a16207;
+  border: 1px solid #f9e6c9;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+
+  span {
+    font-size: 0.875rem;
+  }
+`
+
 export default CadastrarTab
+
+const mockObjects: ObjectItemProps[] = [
+  {
+    id: "obj001",
+    categoria: "eletronico",
+    nome: "Smartphone X",
+    descricao: "Um smartphone moderno com câmera de alta resolução.",
+    marca: "Marca A",
+    modelo: "Modelo 1",
+    dataAquisicao: "2023-01-15",
+    numeroSerie: "SN12345",
+    imei: "IMEI12345",
+    situacao: "novo",
+    dataCadastro: "2023-01-20",
+    cpfDono: "123.456.789-00",
+    emailDono: "usuario@example.com",
+    notaFiscalUrl: "/placeholder.svg?height=600&width=800&text=Nota+Fiscal",
+    imagensUrls: [
+      "/placeholder.svg?height=600&width=800&text=Imagem+1",
+      "/placeholder.svg?height=600&width=800&text=Imagem+2",
+    ],
+    preco: "1200.00",
+  },
+  {
+    id: "obj002",
+    categoria: "veiculo",
+    nome: "Carro Y",
+    descricao: "Um carro confortável para a família.",
+    marca: "Marca B",
+    modelo: "Modelo 2",
+    dataAquisicao: "2022-11-01",
+    chassi: "Chassi67890",
+    situacao: "usado",
+    dataCadastro: "2022-11-05",
+    cpfDono: "123.456.789-00",
+    emailDono: "usuario@example.com",
+    notaFiscalUrl: "/placeholder.svg?height=600&width=800&text=Nota+Fiscal",
+    imagensUrls: ["/placeholder.svg?height=600&width=800&text=Imagem+1"],
+    preco: "25000.00",
+  },
+  {
+    id: "obj003",
+    categoria: "outro",
+    nome: "Bicicleta Z",
+    descricao: "Uma bicicleta para passeios ao ar livre.",
+    marca: "Marca C",
+    modelo: "Modelo 3",
+    dataAquisicao: "2023-05-20",
+    situacao: "novo",
+    dataCadastro: "2023-05-25",
+    cpfDono: "123.456.789-00",
+    emailDono: "usuario@example.com",
+    notaFiscalUrl: "/placeholder.svg?height=600&width=800&text=Nota+Fiscal",
+    imagensUrls: ["/placeholder.svg?height=600&width=800&text=Imagem+1"],
+    preco: "300.00",
+  },
+]
 

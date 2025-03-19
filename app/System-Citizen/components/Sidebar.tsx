@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
     { id: "cadastrar", icon: BoxIcon, label: "Meus Objetos" },
     { id: "mapa", icon: Map, label: "Mapa" },
     { id: "casos", icon: FileText, label: "Casos" },
-    { id: "configuracoes", icon: Settings, label: "Configurações" },
+    { id: "ConfiguracoesTab", icon: Settings, label: "Configurações" },
   ]
 
   return (
