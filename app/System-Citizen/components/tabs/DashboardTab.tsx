@@ -1,33 +1,10 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- *
- * This file is part of Achei.
- *
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- *
- * Contact information: teamachei.2024@gmail.com
- */
-
 "use client"
 
 import type React from "react"
+
 import { useState, useEffect, useRef } from "react"
-import { useAuth } from "@/app/contexts/auth-context"
 import styled, { createGlobalStyle, keyframes } from "styled-components"
 import { AlertTriangle, Bell, Clock, Shield, X, Calendar, MapPin, AlertCircle } from "lucide-react"
-import axios from "axios"
 
 // Modificar as cores do tema para o modo claro
 const theme = {
@@ -261,9 +238,9 @@ const HeaderActions = styled.div`
 
 // Card Components - Standardized padding and spacing
 const Card = styled.div`
-  background-color: ${theme.colors.card};
+  background-color: ${(props) => props.theme.card};
   border-radius: ${theme.borderRadius.lg};
-  border: 1px solid ${theme.colors.border};
+  border: 1px solid ${(props) => props.theme.border};
   overflow: hidden;
   box-shadow: ${theme.shadows.md};
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -278,14 +255,14 @@ const Card = styled.div`
 
 const CardHeader = styled.div`
   padding: ${theme.spacing[4]};
-  border-bottom: ${(props) => (props.noBorder ? "none" : `1px solid ${theme.colors.border}`)};
+  border-bottom: ${(props) => (props.noBorder ? "none" : `1px solid ${props.theme.border}`)};
   background-color: rgba(0, 156, 59, 0.05);
 `
 
 const CardTitle = styled.h3`
   font-size: ${(props) => (props.$small ? theme.fontSizes.sm : theme.fontSizes.lg)};
   font-weight: ${theme.fontWeights.medium};
-  color: ${theme.colors.primary};
+  color: ${(props) => props.theme.primary};
 `
 
 const CardDescription = styled.p`
@@ -303,7 +280,7 @@ const CardContent = styled.div`
 
 const CardFooter = styled.div`
   padding: ${theme.spacing[4]};
-  border-top: 1px solid ${theme.colors.border};
+  border-top: 1px solid ${(props) => props.theme.border};
   background-color: rgba(0, 156, 59, 0.03);
 `
 
@@ -508,14 +485,14 @@ const TableContainer = styled.div`
   width: 100%;
   overflow-x: auto;
   border-radius: ${theme.borderRadius.md};
-  border: 1px solid ${theme.colors.border};
-  background-color: ${theme.colors.card};
+  border: 1px solid ${(props) => props.theme.border};
+  background-color: ${(props) => props.theme.card};
 `
 
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background-color: ${theme.colors.card};
+  background-color: ${(props) => props.theme.card};
   border-radius: ${theme.borderRadius.md};
   overflow: hidden;
 `
@@ -535,8 +512,8 @@ const TableHeaderStyled = styled.th`
 const TableBodyStyled = styled.tbody``
 
 const TableRowStyled = styled.tr`
-  border-bottom: 1px solid ${theme.colors.border};
-  background-color: ${theme.colors.card};
+  border-bottom: 1px solid ${(props) => props.theme.border};
+  background-color: ${(props) => props.theme.card};
   transition: background-color 0.2s ease;
   
   &:last-child {
@@ -551,7 +528,7 @@ const TableRowStyled = styled.tr`
 const TableCellStyled = styled.td`
   padding: ${theme.spacing[3]};
   font-size: ${theme.fontSizes.sm};
-  color: ${theme.colors.foreground};
+  color: ${(props) => props.theme.foreground};
   
   ${(props) =>
     props.fontWeight === "medium" &&
@@ -638,8 +615,8 @@ const PieChartContainer = styled.div`
 `
 
 const StatCard = styled.div`
-  background-color: ${theme.colors.card};
-  border: 1px solid ${theme.colors.border};
+  background-color: ${(props) => props.theme.card};
+  border: 1px solid ${(props) => props.theme.border};
   border-radius: ${theme.borderRadius.md};
   padding: ${theme.spacing[3]};
   text-align: center;
@@ -660,7 +637,7 @@ const StyledTable2 = styled.table`
   border-collapse: separate;
   border-spacing: 0;
   animation: ${fadeInUp} 0.6s ease-out;
-  background-color: ${theme.colors.card};
+  background-color: ${(props) => props.theme.card};
   border-radius: ${theme.borderRadius.md};
   overflow: hidden;
 `
@@ -685,7 +662,7 @@ const StyledTableRow = styled.tr`
   }
   
   &:nth-child(odd) {
-    background-color: ${theme.colors.card};
+    background-color: ${(props) => props.theme.card};
   }
   
   transition: background-color 0.2s ease;
@@ -698,7 +675,7 @@ const StyledTableRow = styled.tr`
 const StyledTableCell = styled.td`
   padding: ${theme.spacing[3]};
   font-size: ${theme.fontSizes.sm};
-  color: ${theme.colors.foreground};
+  color: ${(props) => props.theme.foreground};
 `
 
 const PieChartCenter = styled.div`
@@ -713,7 +690,7 @@ const PieChartCenter = styled.div`
 const TipCard = styled.div`
   padding: ${theme.spacing[4]};
   border-radius: ${theme.borderRadius.lg};
-  border: 1px solid ${theme.colors.border};
+  border: 1px solid ${(props) => props.theme.border};
   background-color: rgba(243, 244, 246, 0.5);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   height: 100%; // Ensure consistent height
@@ -771,7 +748,7 @@ const Modal = styled.div`
 `
 
 const ModalContent = styled.div`
-  background-color: ${theme.colors.background};
+  background-color: ${(props) => props.theme.background};
   padding: ${theme.spacing[6]};
   border-radius: ${theme.borderRadius.lg};
   max-width: 600px;
@@ -779,7 +756,7 @@ const ModalContent = styled.div`
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: ${theme.shadows.xl};
-  border: 1px solid ${theme.colors.border};
+  border: 1px solid ${(props) => props.theme.border};
   
   @media (max-width: 768px) {
     max-width: 90%;
@@ -793,7 +770,7 @@ const ModalHeader = styled.div`
   align-items: center;
   margin-bottom: ${theme.spacing[4]};
   padding-bottom: ${theme.spacing[3]};
-  border-bottom: 1px solid ${theme.colors.border};
+  border-bottom: 1px solid ${(props) => props.theme.border};
 `
 
 const ModalTitle = styled.h2`
@@ -824,7 +801,7 @@ const CloseButton = styled.button`
 // Alert Components - Standardized
 const AlertItem = styled.div`
   padding: ${theme.spacing[4]};
-  border-bottom: 1px solid ${theme.colors.border};
+  border-bottom: 1px solid ${(props) => props.theme.border};
   transition: background-color 0.2s ease;
   
   &:last-child {
@@ -861,9 +838,9 @@ const Select = styled.select`
   width: 100%;
   padding: ${theme.spacing[2]} ${theme.spacing[3]};
   border-radius: ${theme.borderRadius.md};
-  border: 1px solid ${theme.colors.border};
-  background-color: ${theme.colors.background};
-  color: ${theme.colors.foreground};
+  border: 1px solid ${(props) => props.theme.border};
+  background-color: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.foreground};
   font-size: ${theme.fontSizes.sm};
   transition: all 0.2s ease;
   
@@ -882,9 +859,9 @@ const Input = styled.input`
   width: 100%;
   padding: ${theme.spacing[2]} ${theme.spacing[3]};
   border-radius: ${theme.borderRadius.md};
-  border: 1px solid ${theme.colors.border};
-  background-color: ${theme.colors.background};
-  color: ${theme.colors.foreground};
+  border: 1px solid ${(props) => props.theme.border};
+  background-color: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.foreground};
   font-size: ${theme.fontSizes.sm};
   transition: all 0.2s ease;
   
@@ -902,7 +879,7 @@ const Input = styled.input`
 // Info Card Components - Standardized
 const InfoCard = styled.div`
   background-color: rgba(0, 156, 59, 0.05);
-  border: 1px solid ${theme.colors.border};
+  border: 1px solid ${(props) => props.theme.border};
   border-radius: ${theme.borderRadius.md};
   padding: ${theme.spacing[4]};
   margin-top: ${theme.spacing[4]};
@@ -1013,7 +990,7 @@ const CarouselItem = styled.div`
   border-radius: ${theme.borderRadius.md};
   box-shadow: ${theme.shadows.sm};
   animation: ${fadeInUp} 0.5s ease-out;
-  border: 1px solid ${theme.colors.border};
+  border: 1px solid ${(props) => props.theme.border};
 `
 
 const CarouselTitle = styled.h4`
@@ -1049,7 +1026,7 @@ const CarouselNavigation = styled.div`
 
 const CarouselButton = styled.button`
   background: none;
-  border: 1px solid ${theme.colors.border};
+  border: 1px solid ${(props) => props.theme.border};
   border-radius: ${theme.borderRadius.md};
   padding: ${theme.spacing[1]} ${theme.spacing[2]};
   cursor: pointer;
@@ -1093,7 +1070,7 @@ const CarouselIndicator = styled.button`
 const AlertCard = styled.div`
   padding: ${theme.spacing[3]};
   border-radius: ${theme.borderRadius.md};
-  border: 1px solid ${theme.colors.border};
+  border: 1px solid ${(props) => props.theme.border};
   background-color: rgba(0, 156, 59, 0.05);
   margin-bottom: ${theme.spacing[2]};
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -1228,28 +1205,7 @@ const PieChartSegment = styled.div`
   animation-fill-mode: both;
 `
 
-// Loading and Error States
-const LoadingState = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  font-size: 18px;
-  color: #666;
-`
-
-const ErrorState = styled.div`
-  background-color: #ffebee;
-  color: #c62828;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`
-
-// Data interfaces
+// Data interface
 interface OccurrenceData {
   hour: number
   count: number
@@ -1273,49 +1229,10 @@ interface SecurityTip {
   category: string
 }
 
-interface DashboardStats {
-  totalObjects: number
-  registeredCases: number
-  resolvedCases: number
-  pendingCases: number
-}
+type DashboardProps = {}
 
-interface RecentActivity {
-  id: string
-  type: string
-  description: string
-  date: string
-  status: string
-}
-
-interface Alert {
-  id: number
-  title: string
-  description: string
-  date: string
-  location: string
-  priority: string
-  type: string
-  status: string
-}
-
-interface RegisteredObject {
-  id: string
-  name: string
-  category: string
-  registrationDate: string
-  status: string
-}
-
-interface Notification {
-  id: number
-  title: string
-  message: string
-  time: string
-}
-
-const DashboardTab: React.FC = () => {
-  const { user, isLoading: authLoading } = useAuth()
+// Modificar o Dashboard para usar o tema do ThemeProvider
+export function Dashboard({}: DashboardProps) {
   const [showSecurityTipsModal, setShowSecurityTipsModal] = useState(false)
   const [showAlertsModal, setShowAlertsModal] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState("jardins")
@@ -1328,22 +1245,6 @@ const DashboardTab: React.FC = () => {
   const [displayedTips, setDisplayedTips] = useState<SecurityTip[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const tipsContainerRef = useRef<HTMLDivElement | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  // Dashboard data states
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [activities, setActivities] = useState<RecentActivity[]>([])
-  const [alertsData, setAlertsData] = useState<Alert[]>([])
-  const [registeredObjects, setRegisteredObjects] = useState<RegisteredObject[]>([])
-  const [notificationsData, setNotificationsData] = useState<Notification[]>([])
-  const [appStats, setAppStats] = useState({
-    registrosHoje: 0,
-    registrosMes: 0,
-    registrosAno: 0,
-    usuariosAtivos: 0,
-    alertasEmitidos: 0,
-    objetosRecuperados: 0,
-  })
 
   // Chart data state
   const [chartData, setChartData] = useState<ChartData>({
@@ -1361,6 +1262,50 @@ const DashboardTab: React.FC = () => {
     safestTime: "04h - 06h",
   })
 
+  const bairrosData = [
+    {
+      name: "Jardins",
+      safety: 85,
+      crimeRate: 5,
+      populationDensity: 12000,
+      greenAreas: 15,
+      publicTransportLines: 20,
+    },
+    {
+      name: "Vila Mariana",
+      safety: 78,
+      crimeRate: 8,
+      populationDensity: 10000,
+      greenAreas: 12,
+      publicTransportLines: 18,
+    },
+    {
+      name: "Moema",
+      safety: 90,
+      crimeRate: 3,
+      populationDensity: 11000,
+      greenAreas: 18,
+      publicTransportLines: 22,
+    },
+    {
+      name: "Itaim Bibi",
+      safety: 82,
+      crimeRate: 6,
+      populationDensity: 13000,
+      greenAreas: 10,
+      publicTransportLines: 25,
+    },
+  ]
+
+  const appStats = {
+    registrosHoje: 150,
+    registrosMes: 4500,
+    registrosAno: 54000,
+    usuariosAtivos: 12000,
+    alertasEmitidos: 300,
+    objetosRecuperados: 60,
+  }
+
   const carouselItems = [
     {
       title: "Aumento de Usuários",
@@ -1373,6 +1318,59 @@ const DashboardTab: React.FC = () => {
     {
       title: "Recuperação de Objetos",
       description: "A taxa de recuperação de objetos aumentou 20% este ano.",
+    },
+  ]
+
+  const alertsData = [
+    {
+      id: 1,
+      title: "Movimentação Suspeita",
+      description: "Detectada movimentação suspeita próxima à sua residência.",
+      date: "15/05/2023 18:30",
+      location: "Jardins, São Paulo",
+      priority: "alta",
+      type: "segurança",
+      status: "novo",
+    },
+    {
+      id: 2,
+      title: "Alerta de Roubo",
+      description: "Roubo de veículo reportado na rua ao lado.",
+      date: "15/05/2023 19:00",
+      location: "Rua Augusta, 500",
+      priority: "alta",
+      type: "crime",
+      status: "em andamento",
+    },
+    {
+      id: 3,
+      title: "Aumento de Furtos",
+      description: "Aumento significativo de furtos na região central.",
+      date: "15/05/2023 20:00",
+      location: "Centro, São Paulo",
+      priority: "média",
+      type: "informativo",
+      status: "verificado",
+    },
+    {
+      id: 4,
+      title: "Objeto Recuperado",
+      description: "Um objeto similar ao seu foi recuperado pela polícia.",
+      date: "14/05/2023 14:30",
+      location: "Delegacia Central",
+      priority: "baixa",
+      type: "recuperação",
+      status: "resolvido",
+    },
+    {
+      id: 5,
+      title: "Horário de Risco",
+      description: "Você está entrando em um horário com alto índice de ocorrências.",
+      date: "14/05/2023 19:45",
+      location: "Seu trajeto atual",
+      priority: "média",
+      type: "preventivo",
+      status: "ativo",
     },
   ]
 
@@ -1429,161 +1427,85 @@ const DashboardTab: React.FC = () => {
       icon: "refresh-cw",
       category: "digital",
     },
+    {
+      title: "Instale um aplicativo de rastreamento",
+      description:
+        "Use um app de rastreamento em seus dispositivos para ajudar a localizá-los em caso de perda ou roubo.",
+      icon: "map-pin",
+      category: "digital",
+    },
+    {
+      title: "Seja cauteloso com e-mails suspeitos",
+      description: "Não abra anexos ou clique em links de e-mails desconhecidos ou suspeitos.",
+      icon: "mail",
+      category: "digital",
+    },
+    {
+      title: "Mantenha-se informado sobre golpes recentes",
+      description: "Fique atento às notícias sobre novos golpes e fraudes para evitar cair em armadilhas.",
+      icon: "alert-triangle",
+      category: "fisica",
+    },
+    {
+      title: "Use iluminação adequada",
+      description: "Mantenha sua residência bem iluminada, especialmente nas entradas e áreas externas.",
+      icon: "sun",
+      category: "fisica",
+    },
   ]
 
-  // Função para obter o token de autenticação
-  const getAuthToken = () => {
-    return localStorage.getItem("auth-token") || ""
-  }
-
-  // Função para buscar estatísticas do dashboard
-  const fetchDashboardStats = async () => {
-    try {
-      const response = await axios.get("/api/dashboard/stats", {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      })
-      setStats(response.data)
-    } catch (err: any) {
-      console.error("Erro ao carregar estatísticas:", err)
-      setError(err.response?.data?.message || "Erro ao carregar estatísticas do dashboard")
-    }
-  }
-
-  // Função para buscar atividades recentes
-  const fetchRecentActivities = async () => {
-    try {
-      const response = await axios.get("/api/dashboard/activities", {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      })
-      setActivities(response.data)
-    } catch (err: any) {
-      console.error("Erro ao carregar atividades recentes:", err)
-      setError(err.response?.data?.message || "Erro ao carregar atividades recentes")
-    }
-  }
-
-  // Função para buscar alertas
-  const fetchAlerts = async () => {
-    try {
-      const response = await axios.get("/api/dashboard/alerts", {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      })
-      setAlertsData(response.data)
-    } catch (err: any) {
-      console.error("Erro ao carregar alertas:", err)
-      setError(err.response?.data?.message || "Erro ao carregar alertas")
-    }
-  }
-
-  // Função para buscar objetos registrados
-  const fetchRegisteredObjects = async () => {
-    try {
-      const response = await axios.get("/api/objects", {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      })
-
-      // Transformar os dados para o formato esperado
-      const formattedObjects = response.data.map((obj: any) => ({
-        id: obj.id,
-        name: obj.nome,
-        category: obj.categoria,
-        registrationDate: obj.dataCadastro,
-        status: obj.situacao === "roubado" ? "Furtado" : "Seguro",
-      }))
-
-      setRegisteredObjects(formattedObjects)
-    } catch (err: any) {
-      console.error("Erro ao carregar objetos:", err)
-      setError(err.response?.data?.message || "Erro ao carregar objetos registrados")
-    }
-  }
-
-  // Função para buscar notificações
-  const fetchNotifications = async () => {
-    try {
-      const response = await axios.get("/api/dashboard/notifications", {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      })
-      setNotificationsData(response.data)
-    } catch (err: any) {
-      console.error("Erro ao carregar notificações:", err)
-      setError(err.response?.data?.message || "Erro ao carregar notificações")
-    }
-  }
-
-  // Função para buscar estatísticas do aplicativo
-  const fetchAppStats = async () => {
-    try {
-      const response = await axios.get("/api/dashboard/app-stats", {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      })
-      setAppStats(response.data)
-    } catch (err: any) {
-      console.error("Erro ao carregar estatísticas do aplicativo:", err)
-      setError(err.response?.data?.message || "Erro ao carregar estatísticas do aplicativo")
-    }
-  }
-
-  // Função para buscar dados do gráfico
-  const fetchChartData = async () => {
-    try {
-      const response = await axios.get(`/api/dashboard/chart-data?location=${selectedLocation}`, {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      })
-      setChartData(response.data)
-      setChartKey((prevKey) => prevKey + 1) // Trigger animation restart
-    } catch (err: any) {
-      console.error("Erro ao carregar dados do gráfico:", err)
-      setError(err.response?.data?.message || "Erro ao carregar dados do gráfico")
-    }
-  }
-
-  // Carregar dados do dashboard
-  useEffect(() => {
-    if (user) {
-      setIsLoading(true)
-      setError(null)
-
-      // Executar chamadas à API em paralelo
-      Promise.all([
-        fetchDashboardStats(),
-        fetchRecentActivities(),
-        fetchAlerts(),
-        fetchRegisteredObjects(),
-        fetchNotifications(),
-        fetchAppStats(),
-        fetchChartData(),
-      ])
-        .catch((err) => {
-          console.error("Erro ao carregar dados do dashboard:", err)
-          setError("Falha ao carregar dados do dashboard. Por favor, tente novamente.")
-        })
-        .finally(() => {
-          setIsLoading(false)
-        })
-    }
-  }, [user])
-
-  // Atualizar dados do gráfico quando a localização muda
-  useEffect(() => {
-    if (user) {
-      fetchChartData()
-    }
-  }, [selectedLocation, user])
+  const notificationsData = [
+    { id: 1, title: "Alerta de Furto", message: "Aumento de furtos de celulares na Av. Paulista", time: "Hoje, 14:30" },
+    { id: 2, title: "Roubo Reportado", message: "Roubo de veículo na Rua Augusta", time: "Hoje, 12:15" },
+    {
+      id: 3,
+      title: "Alerta de Segurança",
+      message: "Movimentação suspeita próximo à sua residência",
+      time: "Hoje, 10:45",
+    },
+    {
+      id: 4,
+      title: "Ocorrência Próxima",
+      message: "Assalto reportado a 500m da sua localização",
+      time: "Ontem, 22:30",
+    },
+    {
+      id: 5,
+      title: "Horário de Risco",
+      message: "Você está entrando em um horário com alto índice de ocorrências",
+      time: "Ontem, 19:00",
+    },
+    {
+      id: 6,
+      title: "Alerta de Trânsito",
+      message: "Acidente na Av. Rebouças causando congestionamento",
+      time: "Ontem, 18:20",
+    },
+    {
+      id: 7,
+      title: "Novo Ponto Crítico",
+      message: "Nova área de risco identificada no seu trajeto habitual",
+      time: "15/05, 16:45",
+    },
+    {
+      id: 8,
+      title: "Atualização de Segurança",
+      message: "Índice de segurança do seu bairro foi atualizado",
+      time: "14/05, 09:30",
+    },
+    {
+      id: 9,
+      title: "Objeto Recuperado",
+      message: "Um objeto similar ao seu foi recuperado pela polícia",
+      time: "13/05, 14:10",
+    },
+    {
+      id: 10,
+      title: "Dica de Segurança",
+      message: "Novas recomendações de segurança para sua região",
+      time: "12/05, 11:25",
+    },
+  ]
 
   // Auto-advance carousel
   useEffect(() => {
@@ -1594,7 +1516,78 @@ const DashboardTab: React.FC = () => {
     return () => clearInterval(interval)
   }, [carouselItems.length])
 
-  // Inicializar as dicas exibidas
+  // Reset chart animation when location changes
+  useEffect(() => {
+    setChartKey((prevKey) => prevKey + 1)
+  }, [selectedLocation])
+
+  // Fetch chart data when location changes
+  useEffect(() => {
+    // This would be replaced with an actual API call in production
+    const fetchChartData = async () => {
+      try {
+        // Simulate API call with a timeout
+        setTimeout(() => {
+          // Mock data - in a real app, you would fetch from your API
+          const newData: ChartData = {
+            occurrencesByHour: Array.from({ length: 24 }, (_, i) => ({
+              hour: i,
+              // Generate slightly different data based on selected location
+              count: Math.floor(Math.random() * 30) + 1,
+            })),
+            crimeTypes: [
+              {
+                type: "Celulares",
+                percentage: 40 + Math.floor(Math.random() * 10),
+                color: "#009c3b",
+              },
+              {
+                type: "Bicicletas",
+                percentage: 25 + Math.floor(Math.random() * 10),
+                color: "#EF4444",
+              },
+              {
+                type: "Veículos",
+                percentage: 15 + Math.floor(Math.random() * 10),
+                color: "#F59E0B",
+              },
+              {
+                type: "Outros",
+                percentage: 10 + Math.floor(Math.random() * 5),
+                color: "#002776",
+              },
+            ],
+            mostDangerousTime: "19h - 21h",
+            safestTime: "04h - 06h",
+          }
+
+          // Ensure percentages add up to 100%
+          const total = newData.crimeTypes.reduce((sum, item) => sum + item.percentage, 0)
+          if (total !== 100) {
+            const diff = 100 - total
+            newData.crimeTypes[newData.crimeTypes.length - 1].percentage += diff
+          }
+
+          setChartData(newData)
+          setChartKey((prevKey) => prevKey + 1) // Trigger animation restart
+        }, 500)
+      } catch (error) {
+        console.error("Error fetching chart data:", error)
+      }
+    }
+
+    fetchChartData()
+  }, [selectedLocation])
+
+  // Handle modal outside click
+  const handleModalOutsideClick = (e: React.MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      setShowSecurityTipsModal(false)
+      setShowAlertsModal(false)
+    }
+  }
+
+  // Adicione este useEffect para inicializar as dicas exibidas
   useEffect(() => {
     if (activeTab === "fisica") {
       const physicalTips = allSecurityTips.filter((tip) => tip.category === "fisica")
@@ -1605,7 +1598,7 @@ const DashboardTab: React.FC = () => {
     }
   }, [activeTab])
 
-  // Scroll infinito para as dicas
+  // Adicione este useEffect para o scroll infinito
   useEffect(() => {
     const handleScroll = () => {
       if (!tipsContainerRef.current) return
@@ -1640,8 +1633,8 @@ const DashboardTab: React.FC = () => {
     }
   }, [isLoading, activeTab])
 
-  // Função para embaralhar as dicas
-  const shuffleTips = (tips: SecurityTip[]) => {
+  // Adicione esta função para embaralhar as dicas
+  const shuffleTips = (tips: any[]) => {
     const shuffled = [...tips]
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
@@ -1650,36 +1643,7 @@ const DashboardTab: React.FC = () => {
     return shuffled
   }
 
-  // Handle modal outside click
-  const handleModalOutsideClick = (e: React.MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      setShowSecurityTipsModal(false)
-      setShowAlertsModal(false)
-    }
-  }
-
-  // Renderizar estado de carregamento
-  if (authLoading || isLoading) {
-    return <LoadingState>Carregando dashboard...</LoadingState>
-  }
-
-  // Renderizar mensagem de erro
-  if (error) {
-    return (
-      <MainContent>
-        <Container>
-          <ErrorState>
-            <AlertCircle size={20} />
-            <span>{error}</span>
-            <Button variant="outline" onClick={() => window.location.reload()}>
-              Tentar novamente
-            </Button>
-          </ErrorState>
-        </Container>
-      </MainContent>
-    )
-  }
-
+  // Modifique o retorno para usar o tema diretamente
   return (
     <MainContent>
       <Container>
@@ -1688,9 +1652,7 @@ const DashboardTab: React.FC = () => {
           <HeaderContent>
             <HeaderTitle>
               <PageTitle>Dashboard de Segurança</PageTitle>
-              <PageDescription>
-                Olá, {user?.name || "Usuário"}! Aqui estão suas informações de segurança.
-              </PageDescription>
+              <PageDescription>Informações sobre segurança no seu bairro e região</PageDescription>
             </HeaderTitle>
             <HeaderActions>
               <IconButton variant="icon">
@@ -1786,12 +1748,14 @@ const DashboardTab: React.FC = () => {
                     Alertas Recentes
                   </InfoTitle>
                   <Flex direction="column" gap={2} style={{ marginTop: theme.spacing[2] }}>
-                    {activities.slice(0, 2).map((activity, index) => (
-                      <Flex key={activity.id} gap={2} alignItems="center">
-                        <AlertTriangle size={16} color="#EF4444" />
-                        <span>{activity.description}</span>
-                      </Flex>
-                    ))}
+                    <Flex gap={2} alignItems="center">
+                      <AlertTriangle size={16} color="#EF4444" />
+                      <span>Aumento de furtos de celulares na região</span>
+                    </Flex>
+                    <Flex gap={2} alignItems="center">
+                      <AlertTriangle size={16} color="#EF4444" />
+                      <span>Ocorrência reportada a 500m da sua localização</span>
+                    </Flex>
                   </Flex>
                 </div>
 
@@ -1802,12 +1766,14 @@ const DashboardTab: React.FC = () => {
                     Dicas de Segurança
                   </InfoTitle>
                   <Flex direction="column" gap={2} style={{ marginTop: theme.spacing[2] }}>
-                    {displayedTips.slice(0, 2).map((tip, index) => (
-                      <Flex key={`${tip.title}-${index}`} gap={2} alignItems="center">
-                        <Shield size={16} color="#009c3b" />
-                        <span>{tip.title}</span>
-                      </Flex>
-                    ))}
+                    <Flex gap={2} alignItems="center">
+                      <Shield size={16} color="#009c3b" />
+                      <span>Evite usar celular em locais públicos neste horário</span>
+                    </Flex>
+                    <Flex gap={2} alignItems="center">
+                      <Shield size={16} color="#009c3b" />
+                      <span>Mantenha objetos de valor fora da vista</span>
+                    </Flex>
                   </Flex>
                 </div>
               </Flex>
@@ -1993,20 +1959,38 @@ const DashboardTab: React.FC = () => {
                     </tr>
                   </TableHeadStyled>
                   <TableBodyStyled>
-                    {registeredObjects.slice(0, 4).map((object) => (
-                      <TableRowStyled key={object.id}>
-                        <TableCellStyled fontWeight="medium">{object.name}</TableCellStyled>
-                        <TableCellStyled>{object.category}</TableCellStyled>
-                        <TableCellStyled>
-                          {new Date(object.registrationDate).toLocaleDateString("pt-BR")}
-                        </TableCellStyled>
-                        <TableCellStyled>
-                          <Badge variant={object.status === "Furtado" ? "destructive" : "success"}>
-                            {object.status}
-                          </Badge>
-                        </TableCellStyled>
-                      </TableRowStyled>
-                    ))}
+                    <TableRowStyled>
+                      <TableCellStyled fontWeight="medium">iPhone 13 Pro</TableCellStyled>
+                      <TableCellStyled>Celular</TableCellStyled>
+                      <TableCellStyled>12/03/2023</TableCellStyled>
+                      <TableCellStyled>
+                        <Badge variant="success">Seguro</Badge>
+                      </TableCellStyled>
+                    </TableRowStyled>
+                    <TableRowStyled>
+                      <TableCellStyled fontWeight="medium">MacBook Pro</TableCellStyled>
+                      <TableCellStyled>Notebook</TableCellStyled>
+                      <TableCellStyled>05/01/2023</TableCellStyled>
+                      <TableCellStyled>
+                        <Badge variant="success">Seguro</Badge>
+                      </TableCellStyled>
+                    </TableRowStyled>
+                    <TableRowStyled>
+                      <TableCellStyled fontWeight="medium">Bicicleta Caloi Elite</TableCellStyled>
+                      <TableCellStyled>Bicicleta</TableCellStyled>
+                      <TableCellStyled>28/11/2022</TableCellStyled>
+                      <TableCellStyled>
+                        <Badge variant="destructive">Furtado</Badge>
+                      </TableCellStyled>
+                    </TableRowStyled>
+                    <TableRowStyled>
+                      <TableCellStyled fontWeight="medium">Relógio Apple Watch</TableCellStyled>
+                      <TableCellStyled>Acessório</TableCellStyled>
+                      <TableCellStyled>15/04/2023</TableCellStyled>
+                      <TableCellStyled>
+                        <Badge variant="success">Seguro</Badge>
+                      </TableCellStyled>
+                    </TableRowStyled>
                   </TableBodyStyled>
                 </StyledTable>
               </TableContainer>
@@ -2116,7 +2100,6 @@ const DashboardTab: React.FC = () => {
           </CardContent>
         </Card>
       </Container>
-
       {/* Alerts Modal */}
       {showAlertsModal && (
         <Modal onClick={handleModalOutsideClick}>
@@ -2149,5 +2132,5 @@ const DashboardTab: React.FC = () => {
   )
 }
 
-export default DashboardTab
+export default Dashboard
 
