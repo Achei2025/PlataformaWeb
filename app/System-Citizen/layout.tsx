@@ -20,10 +20,18 @@
  * Contact information: teamachei.2024@gmail.com
 */
 
+"use client"
+
+import type React from "react"
+
+import { AuthProvider } from "../contexts/auth-context"
+import ProtectedRoute from "../components/protected-route"
+
 export default function CitizenLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {children}
-    </>
-  );
+    <AuthProvider>
+      <ProtectedRoute>{children}</ProtectedRoute>
+    </AuthProvider>
+  )
 }
+

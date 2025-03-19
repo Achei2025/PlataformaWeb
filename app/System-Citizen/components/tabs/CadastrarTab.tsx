@@ -16,7 +16,32 @@ import { Label } from "../../../components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select"
 import { Textarea } from "../../../components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
-import { Calendar, Camera, FileText, Package, Truck, QrCode, X, Download, Info, Image, FileImage, DollarSign, Search, Edit, Trash2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Maximize2, Minimize2, ImageIcon, AlertTriangle } from 'lucide-react'
+import {
+  Calendar,
+  Camera,
+  FileText,
+  Package,
+  Truck,
+  QrCode,
+  X,
+  Download,
+  Info,
+  Image,
+  FileImage,
+  DollarSign,
+  Search,
+  Edit,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  Maximize2,
+  Minimize2,
+  ImageIcon,
+  AlertTriangle,
+} from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -1002,21 +1027,22 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
         setIsLoading(true)
         setError(null)
 
-        const response = await authFetch('/api/objects', {
-          method: 'GET',
+        const response = await authFetch("http://26.190.233.3:8080/api/objects/me", {
+          method: "GET",
         })
 
         if (!response.ok) {
-          throw new Error('Falha ao carregar objetos. Por favor, tente novamente.')
+          throw new Error("Falha ao carregar objetos. Por favor, tente novamente.")
         }
 
         const data = await response.json()
         setObjectsData(data)
         setFilteredObjects(data)
+        setShowObjectList(data.length > 0)
         setIsLoading(false)
       } catch (error) {
-        console.error('Erro ao buscar objetos:', error)
-        setError(error instanceof Error ? error.message : 'Erro desconhecido ao carregar objetos')
+        console.error("Erro ao buscar objetos:", error)
+        setError(error instanceof Error ? error.message : "Erro desconhecido ao carregar objetos")
         setIsLoading(false)
       }
     }
@@ -1042,45 +1068,49 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
     try {
       setIsSubmitting(true)
 
-      // Simulando uma chamada de API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Gerar URLs de placeholder para as imagens enviadas
-      const imagensUrls: string[] = []
+      const formData = new FormData()
+      formData.append("categoria", values.categoria)
+      formData.append("nome", values.nome)
+      formData.append("descricao", values.descricao)
+      formData.append("marca", values.marca)
+      formData.append("modelo", values.modelo)
+      formData.append("dataAquisicao", values.dataAquisicao)
+      formData.append("situacao", values.situacao)
+      formData.append("preco", values.preco)
+      if (values.numeroSerie) formData.append("numeroSerie", values.numeroSerie)
+      if (values.imei) formData.append("imei", values.imei)
+      if (values.chassi) formData.append("chassi", values.chassi)
+      if (values.notaFiscal) formData.append("notaFiscal", values.notaFiscal)
       if (values.imagens) {
-        for (let i = 0; i < values.imagens.length; i++) {
-          imagensUrls.push(`/placeholder.svg?height=600&width=800&text=Imagem+${i + 1}`)
-        }
+        Array.from(values.imagens).forEach((file) => {
+          formData.append("imagens", file)
+        })
       }
 
-      // Criar novo objeto
-      const newObject: ObjectItemProps = {
-        id: `obj${objectsData.length + 1}`.padStart(6, "0"),
-        ...values,
-        dataCadastro: new Date().toISOString().split("T")[0],
-        cpfDono: "123.456.789-00", // Simulando o CPF do usuário logado
-        emailDono: "usuario@example.com", // Simulando o email do usuário logado
-        notaFiscalUrl: values.notaFiscal
-          ? "/placeholder.svg?height=800&width=600&text=Nota+Fiscal+Nova"
-          : undefined,
-        imagensUrls: imagensUrls.length > 0 ? imagensUrls : undefined,
+      const response = await authFetch("http://26.190.233.3:8080/api/objects", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Falha ao cadastrar objeto. Por favor, tente novamente.")
       }
 
-      // Adicionar à lista
-      setObjectsData(prev => [...prev, newObject])
-      setFilteredObjects(prev => [...prev, newObject])
+      const newObject = await response.json()
+      setObjectsData((prev) => [...prev, newObject])
+      setFilteredObjects((prev) => [...prev, newObject])
       setShowObjectList(true)
-      
+
       toast({
         title: "Objeto cadastrado com sucesso!",
       })
-      
+
       return newObject
     } catch (error) {
       console.error(error)
       toast({
         title: "Erro ao cadastrar objeto!",
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive",
       })
       throw error
@@ -1105,7 +1135,7 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
         setShowConfirmCadastroDialog(false)
         setObjectToConfirmCadastro(null)
       } catch (error) {
-        console.error('Erro ao confirmar criação do objeto:', error)
+        console.error("Erro ao confirmar criação do objeto:", error)
       }
     }
   }
@@ -1114,28 +1144,47 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
     if (currentObject && objectToConfirmEdit) {
       try {
         setIsSubmitting(true)
-        
-        // Simulando uma chamada de API
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const updatedObject = { ...currentObject, ...objectToConfirmEdit }
-        const updatedObjects = objectsData.map(obj => obj.id === currentObject.id ? updatedObject : obj)
-        
+
+        const formData = new FormData()
+        formData.append("categoria", objectToConfirmEdit.categoria)
+        formData.append("nome", objectToConfirmEdit.nome)
+        formData.append("descricao", objectToConfirmEdit.descricao)
+        formData.append("marca", objectToConfirmEdit.marca)
+        formData.append("modelo", objectToConfirmEdit.modelo)
+        formData.append("dataAquisicao", objectToConfirmEdit.dataAquisicao)
+        formData.append("situacao", objectToConfirmEdit.situacao)
+        formData.append("preco", objectToConfirmEdit.preco)
+        if (objectToConfirmEdit.numeroSerie) formData.append("numeroSerie", objectToConfirmEdit.numeroSerie)
+        if (objectToConfirmEdit.imei) formData.append("imei", objectToConfirmEdit.imei)
+        if (objectToConfirmEdit.chassi) formData.append("chassi", objectToConfirmEdit.chassi)
+
+        const response = await authFetch(`http://26.190.233.3:8080/api/objects/${currentObject.id}`, {
+          method: "PUT",
+          body: formData,
+        })
+
+        if (!response.ok) {
+          throw new Error("Falha ao atualizar objeto. Por favor, tente novamente.")
+        }
+
+        const updatedObject = await response.json()
+        const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
+
         setObjectsData(updatedObjects)
         setFilteredObjects(updatedObjects)
         setCurrentObject(updatedObject)
         setShowEditDialog(false)
         setShowConfirmEditDialog(false)
         setObjectToConfirmEdit(null)
-        
+
         toast({
           title: "Objeto atualizado com sucesso!",
         })
       } catch (error) {
-        console.error('Erro ao atualizar objeto:', error)
+        console.error("Erro ao atualizar objeto:", error)
         toast({
           title: "Erro ao atualizar objeto!",
-          description: error instanceof Error ? error.message : 'Erro desconhecido',
+          description: error instanceof Error ? error.message : "Erro desconhecido",
           variant: "destructive",
         })
       } finally {
@@ -1233,23 +1282,28 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
   const handleDeleteObject = async () => {
     if (currentObject) {
       try {
-        // Simulando uma chamada de API
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const updatedObjects = objectsData.filter(obj => obj.id !== currentObject.id)
+        const response = await authFetch(`http://26.190.233.3:8080/api/objects/${currentObject.id}`, {
+          method: "DELETE",
+        })
+
+        if (!response.ok) {
+          throw new Error("Falha ao excluir objeto. Por favor, tente novamente.")
+        }
+
+        const updatedObjects = objectsData.filter((obj) => obj.id !== currentObject.id)
         setObjectsData(updatedObjects)
         setFilteredObjects(updatedObjects)
         setShowObjectDialog(false)
         setShowDeleteConfirmDialog(false)
-        
+
         toast({
           title: "Objeto excluído com sucesso!",
         })
       } catch (error) {
-        console.error('Erro ao excluir objeto:', error)
+        console.error("Erro ao excluir objeto:", error)
         toast({
           title: "Erro ao excluir objeto!",
-          description: error instanceof Error ? error.message : 'Erro desconhecido',
+          description: error instanceof Error ? error.message : "Erro desconhecido",
           variant: "destructive",
         })
       }
@@ -1259,32 +1313,40 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
   const handleDeleteImage = async () => {
     if (currentObject && currentObject.imagensUrls) {
       try {
-        // Simulando uma chamada de API
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
+        const imageUrl = currentObject.imagensUrls[currentImageIndex]
+        const imageId = imageUrl.split("/").pop()?.split(".")[0] || ""
+
+        const response = await authFetch(`http://26.190.233.3:8080/api/objects/${currentObject.id}/images/${imageId}`, {
+          method: "DELETE",
+        })
+
+        if (!response.ok) {
+          throw new Error("Falha ao excluir imagem. Por favor, tente novamente.")
+        }
+
         const updatedImageUrls = currentObject.imagensUrls.filter((_, index) => index !== currentImageIndex)
         const updatedObject = { ...currentObject, imagensUrls: updatedImageUrls }
-        const updatedObjects = objectsData.map(obj => obj.id === currentObject.id ? updatedObject : obj)
-        
+        const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
+
         setObjectsData(updatedObjects)
         setFilteredObjects(updatedObjects)
         setCurrentObject(updatedObject)
         setShowDeleteImageConfirmDialog(false)
-        
+
         if (updatedImageUrls.length === 0) {
           setShowImagesDialog(false)
         } else {
           setCurrentImageIndex(Math.min(currentImageIndex, updatedImageUrls.length - 1))
         }
-        
+
         toast({
           title: "Imagem excluída com sucesso!",
         })
       } catch (error) {
-        console.error('Erro ao excluir imagem:', error)
+        console.error("Erro ao excluir imagem:", error)
         toast({
           title: "Erro ao excluir imagem!",
-          description: error instanceof Error ? error.message : 'Erro desconhecido',
+          description: error instanceof Error ? error.message : "Erro desconhecido",
           variant: "destructive",
         })
       }
@@ -1295,33 +1357,40 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
     const files = event.target.files
     if (files && currentObject) {
       try {
-        // Simulando uma chamada de API
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const newImageUrls = Array.from(files).map((_, index) => 
-          `/placeholder.svg?height=600&width=800&text=Nova+Imagem+${index + 1}`
-        )
-        
-        const updatedImageUrls = [...(currentObject.imagensUrls || []), ...newImageUrls]
-        const updatedObject = { ...currentObject, imagensUrls: updatedImageUrls }
-        const updatedObjects = objectsData.map(obj => obj.id === currentObject.id ? updatedObject : obj)
-        
+        const formData = new FormData()
+
+        for (let i = 0; i < files.length; i++) {
+          formData.append("imagens", files[i])
+        }
+
+        const response = await authFetch(`http://26.190.233.3:8080/api/objects/${currentObject.id}/images`, {
+          method: "POST",
+          body: formData,
+        })
+
+        if (!response.ok) {
+          throw new Error("Falha ao adicionar imagens. Por favor, tente novamente.")
+        }
+
+        const updatedObject = await response.json()
+        const updatedObjects = objectsData.map((obj) => (obj.id === currentObject.id ? updatedObject : obj))
+
         setObjectsData(updatedObjects)
         setFilteredObjects(updatedObjects)
         setCurrentObject(updatedObject)
-        
-        if (updatedImageUrls.length > 0) {
-          setCurrentImageIndex(updatedImageUrls.length - 1)
+
+        if (updatedObject.imagensUrls && updatedObject.imagensUrls.length > 0) {
+          setCurrentImageIndex(updatedObject.imagensUrls.length - 1)
         }
-        
+
         toast({
           title: "Imagens adicionadas com sucesso!",
         })
       } catch (error) {
-        console.error('Erro ao adicionar imagens:', error)
+        console.error("Erro ao adicionar imagens:", error)
         toast({
           title: "Erro ao adicionar imagens!",
-          description: error instanceof Error ? error.message : 'Erro desconhecido',
+          description: error instanceof Error ? error.message : "Erro desconhecido",
           variant: "destructive",
         })
       }
@@ -1406,7 +1475,9 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
                           <ObjectValue>{formatDate(object.dataAquisicao)}</ObjectValue>
                         </ObjectDetail>
 
-                        <SituationBadge situation={object.situacao}>{getSituationLabel(object.situacao)}</SituationBadge>
+                        <SituationBadge situation={object.situacao}>
+                          {getSituationLabel(object.situacao)}
+                        </SituationBadge>
                       </ObjectCardContent>
                     </ObjectCard>
                   ))}
@@ -2203,3 +2274,4 @@ const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
 }
 
 export default CadastrarTab
+
