@@ -22,9 +22,12 @@
 
 "use client"
 
-import { useState } from "react"
+import type React from "react"
+
+import { useState, useEffect } from "react"
 import styled from "styled-components"
-import { useRouter } from "next/navigation"
+import { useAuth } from "@/app/contexts/auth-context"
+import axios from "axios"
 import {
   Smile,
   Package,
@@ -96,9 +99,6 @@ const Title = styled.h1`
   font-weight: 700;
   color: #1a1a1a;
   
-  .dark & {
-    color: #f5f5f5;
-  }
 `
 
 const ButtonGroup = styled.div`
@@ -140,15 +140,6 @@ const Button = styled.button<{ variant?: "primary" | "secondary" | "outline" | "
             background-color: #e5e7eb;
           }
           
-          .dark & {
-            background-color: #374151;
-            color: #f3f4f6;
-            border-color: #4b5563;
-            
-            &:hover {
-              background-color: #4b5563;
-            }
-          }
         `
       case "outline":
         return `
@@ -160,14 +151,6 @@ const Button = styled.button<{ variant?: "primary" | "secondary" | "outline" | "
             background-color: #f9fafb;
           }
           
-          .dark & {
-            color: #f3f4f6;
-            border-color: #4b5563;
-            
-            &:hover {
-              background-color: rgba(255, 255, 255, 0.05);
-            }
-          }
         `
       case "icon":
         return `
@@ -180,15 +163,6 @@ const Button = styled.button<{ variant?: "primary" | "secondary" | "outline" | "
             background-color: #f3f4f6;
           }
           
-          .dark & {
-            background-color: #374151;
-            color: #f3f4f6;
-            border-color: #4b5563;
-            
-            &:hover {
-              background-color: #4b5563;
-            }
-          }
         `
       default:
         return `
@@ -200,14 +174,6 @@ const Button = styled.button<{ variant?: "primary" | "secondary" | "outline" | "
             background-color: #1d4ed8;
           }
           
-          .dark & {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-            
-            &:hover {
-              background-color: #2563eb;
-            }
-          }
         `
     }
   }}
@@ -248,16 +214,6 @@ const SearchInput = styled.input`
     box-shadow: 0 0 0 1px #2563eb;
   }
   
-  .dark & {
-    background-color: #1f2937;
-    border-color: #4b5563;
-    color: #f3f4f6;
-    
-    &:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 1px #3b82f6;
-    }
-  }
 `
 
 const SearchIcon = styled.div`
@@ -267,9 +223,6 @@ const SearchIcon = styled.div`
   transform: translateY(-50%);
   color: #6b7280;
   
-  .dark & {
-    color: #9ca3af;
-  }
 `
 
 const FilterContainer = styled.div`
@@ -296,17 +249,6 @@ const Select = styled.select`
     box-shadow: 0 0 0 1px #2563eb;
   }
   
-  .dark & {
-    background-color: #1f2937;
-    border-color: #4b5563;
-    color: #f3f4f6;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    
-    &:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 1px #3b82f6;
-    }
-  }
 `
 
 const CardList = styled.div`
@@ -329,10 +271,6 @@ const Card = styled.div`
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
   
-  .dark & {
-    background-color: #1f2937;
-    border-color: #374151;
-  }
 `
 
 const CardHeader = styled.div`
@@ -342,9 +280,6 @@ const CardHeader = styled.div`
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   
-  .dark & {
-    border-color: #374151;
-  }
 `
 
 const CardTitle = styled.h2`
@@ -352,9 +287,6 @@ const CardTitle = styled.h2`
   font-weight: 500;
   color: #1f2937;
   
-  .dark & {
-    color: #f3f4f6;
-  }
 `
 
 const Badge = styled.span<{
@@ -374,80 +306,48 @@ const Badge = styled.span<{
           background-color: #fef3c7;
           color: #92400e;
           
-          .dark & {
-            background-color: rgba(245, 158, 11, 0.2);
-            color: #fbbf24;
-          }
         `
       case "info":
         return `
           background-color: #dbeafe;
           color: #1e40af;
           
-          .dark & {
-            background-color: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-          }
         `
       case "success":
         return `
           background-color: #d1fae5;
           color: #065f46;
           
-          .dark & {
-            background-color: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-          }
         `
       case "danger":
         return `
           background-color: #fee2e2;
           color: #b91c1c;
           
-          .dark & {
-            background-color: rgba(220, 38, 38, 0.2);
-            color: #f87171;
-          }
         `
       case "purple":
         return `
           background-color: #ede9fe;
           color: #5b21b6;
           
-          .dark & {
-            background-color: rgba(124, 58, 237, 0.2);
-            color: #a78bfa;
-          }
         `
       case "orange":
         return `
           background-color: #ffedd5;
           color: #c2410c;
           
-          .dark & {
-            background-color: rgba(234, 88, 12, 0.2);
-            color: #fb923c;
-          }
         `
       case "gray":
         return `
           background-color: #f3f4f6;
           color: #4b5563;
           
-          .dark & {
-            background-color: rgba(75, 85, 99, 0.2);
-            color: #9ca3af;
-          }
         `
       default:
         return `
           background-color: #f3f4f6;
           color: #374151;
           
-          .dark & {
-            background-color: #374151;
-            color: #f3f4f6;
-          }
         `
     }
   }}
@@ -480,9 +380,6 @@ const IconContainer = styled.div`
   background-color: #f3f4f6;
   flex-shrink: 0;
   
-  .dark & {
-    background-color: #374151;
-  }
 `
 
 const ObjectDetails = styled.div`
@@ -494,9 +391,6 @@ const ObjectName = styled.p`
   font-weight: 500;
   color: #1f2937;
   
-  .dark & {
-    color: #f3f4f6;
-  }
 `
 
 const ObjectMeta = styled.p`
@@ -507,9 +401,6 @@ const ObjectMeta = styled.p`
   align-items: center;
   gap: 0.25rem;
   
-  .dark & {
-    color: #9ca3af;
-  }
 `
 
 const AlertBox = styled.div`
@@ -519,9 +410,6 @@ const AlertBox = styled.div`
   margin-top: 1rem;
   color: #b45309;
   
-  .dark & {
-    color: #fbbf24;
-  }
 `
 
 const EmptyState = styled.div`
@@ -533,10 +421,6 @@ const EmptyState = styled.div`
   border: 1px solid #dcfce7;
   text-align: center;
   
-  .dark & {
-    background-color: rgba(6, 78, 59, 0.2);
-    border-color: rgba(6, 78, 59, 0.3);
-  }
 `
 
 const EmptyStateTitle = styled.h2`
@@ -545,9 +429,6 @@ const EmptyStateTitle = styled.h2`
   color: #15803d;
   margin-bottom: 1rem;
   
-  .dark & {
-    color: #86efac;
-  }
 `
 
 const EmptyStateIcon = styled.div`
@@ -560,9 +441,6 @@ const EmptyStateText = styled.p`
   color: #16a34a;
   margin-bottom: 0.5rem;
   
-  .dark & {
-    color: #4ade80;
-  }
 `
 
 const Dialog = styled.div`
@@ -588,10 +466,6 @@ const DialogContent = styled.div`
   max-height: 90vh;
   overflow-y: auto;
   
-  .dark & {
-    background-color: #1f2937;
-    color: #f3f4f6;
-  }
 `
 
 const DialogHeader = styled.div`
@@ -603,9 +477,6 @@ const DialogTitle = styled.h2`
   font-weight: 600;
   color: #1f2937;
   
-  .dark & {
-    color: #f3f4f6;
-  }
 `
 
 const DialogBody = styled.div`
@@ -623,9 +494,6 @@ const Label = styled.label`
   color: #374151;
   margin-bottom: 0.5rem;
   
-  .dark & {
-    color: #d1d5db;
-  }
 `
 
 const Input = styled.input`
@@ -642,16 +510,6 @@ const Input = styled.input`
     box-shadow: 0 0 0 1px #2563eb;
   }
   
-  .dark & {
-    background-color: #1f2937;
-    border-color: #4b5563;
-    color: #f3f4f6;
-    
-    &:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 1px #3b82f6;
-    }
-  }
 `
 
 const DialogFooter = styled.div`
@@ -661,9 +519,6 @@ const DialogFooter = styled.div`
   padding: 1rem 1.5rem 1.5rem;
   border-top: 1px solid #e5e7eb;
   
-  .dark & {
-    border-color: #374151;
-  }
 `
 
 const Alert = styled.div`
@@ -679,10 +534,6 @@ const Alert = styled.div`
   margin-left: auto;
   margin-right: auto;
   
-  .dark & {
-    background-color: #374151;
-    color: #f3f4f6;
-  }
 `
 
 // Detalhes do caso
@@ -711,9 +562,6 @@ const DetailTitle = styled.h1`
   margin-top: 0.5rem;
   color: #1a1a1a;
   
-  .dark & {
-    color: #f5f5f5;
-  }
 `
 
 const DetailGrid = styled.div`
@@ -751,9 +599,6 @@ const ObjectBox = styled.div`
   gap: 1rem;
   margin-bottom: 1rem;
   
-  .dark & {
-    background-color: #374151;
-  }
 `
 
 const ObjectIconLarge = styled.div`
@@ -766,9 +611,6 @@ const ObjectIconLarge = styled.div`
   background-color: white;
   flex-shrink: 0;
   
-  .dark & {
-    background-color: #1f2937;
-  }
 `
 
 const ObjectTitle = styled.h3`
@@ -776,9 +618,6 @@ const ObjectTitle = styled.h3`
   font-weight: 500;
   color: #1f2937;
   
-  .dark & {
-    color: #f3f4f6;
-  }
 `
 
 const ObjectDescription = styled.p`
@@ -786,9 +625,6 @@ const ObjectDescription = styled.p`
   color: #6b7280;
   margin-top: 0.25rem;
   
-  .dark & {
-    color: #9ca3af;
-  }
 `
 
 const MetaGrid = styled.div`
@@ -808,9 +644,6 @@ const MetaItem = styled.div`
   font-size: 0.875rem;
   color: #374151;
   
-  .dark & {
-    color: #d1d5db;
-  }
 `
 
 const WarningBox = styled.div`
@@ -823,10 +656,6 @@ const WarningBox = styled.div`
   color: #92400e;
   margin-top: 1rem;
   
-  .dark & {
-    background-color: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
-  }
 `
 
 // Adicionar um novo componente styled para o aviso de documentos necessários
@@ -840,10 +669,6 @@ const InfoBox = styled.div`
   color: #1e40af;
   margin-top: 1rem;
   
-  .dark & {
-    background-color: rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
-  }
 `
 
 const CommentsCard = styled(Card)`
@@ -880,10 +705,6 @@ const Avatar = styled.div`
   color: #6b7280;
   flex-shrink: 0;
   
-  .dark & {
-    background-color: #374151;
-    color: #d1d5db;
-  }
 `
 
 const CommentContent = styled.div`
@@ -901,9 +722,6 @@ const CommentAuthor = styled.span`
   font-weight: 500;
   color: #1f2937;
   
-  .dark & {
-    color: #f3f4f6;
-  }
 `
 
 const CommentBadge = styled.span`
@@ -918,19 +736,12 @@ const CommentBadge = styled.span`
   border: 1px solid #d1d5db;
   color: #374151;
   
-  .dark & {
-    border-color: #4b5563;
-    color: #d1d5db;
-  }
 `
 
 const CommentDate = styled.span`
   font-size: 0.75rem;
   color: #6b7280;
   
-  .dark & {
-    color: #9ca3af;
-  }
 `
 
 const CommentText = styled.p`
@@ -938,9 +749,6 @@ const CommentText = styled.p`
   color: #374151;
   margin-top: 0.25rem;
   
-  .dark & {
-    color: #d1d5db;
-  }
 `
 
 const Textarea = styled.textarea`
@@ -959,16 +767,6 @@ const Textarea = styled.textarea`
     box-shadow: 0 0 0 1px #2563eb;
   }
   
-  .dark & {
-    background-color: #1f2937;
-    border-color: #4b5563;
-    color: #f3f4f6;
-    
-    &:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 1px #3b82f6;
-    }
-  }
 `
 
 const ChatCard = styled(Card)`
@@ -1005,10 +803,6 @@ const MessageBubble = styled.div<{ isUser: boolean }>`
   background-color: ${(props) => (props.isUser ? "#2563eb" : "#f3f4f6")};
   color: ${(props) => (props.isUser ? "white" : "#374151")};
   
-  .dark & {
-    background-color: ${(props) => (props.isUser ? "#3b82f6" : "#374151")};
-    color: ${(props) => (props.isUser ? "white" : "#f3f4f6")};
-  }
 `
 
 const MessageText = styled.p`
@@ -1021,9 +815,6 @@ const MessageTime = styled.span<{ isUser: boolean }>`
   margin-top: 0.25rem;
   color: ${(props) => (props.isUser ? "rgba(255, 255, 255, 0.7)" : "#6b7280")};
   
-  .dark & {
-    color: ${(props) => (props.isUser ? "rgba(255, 255, 255, 0.7)" : "#6b7280")};
-  }
 `
 
 const Divider = styled.hr`
@@ -1031,9 +822,6 @@ const Divider = styled.hr`
   border-top: 1px solid #e5e7eb;
   margin: 0;
   
-  .dark & {
-    border-color: #374151;
-  }
 `
 
 const ChatInputContainer = styled.div`
@@ -1042,9 +830,6 @@ const ChatInputContainer = styled.div`
   padding: 1rem;
   border-top: 1px solid #e5e7eb;
   
-  .dark & {
-    border-color: #374151;
-  }
 `
 
 const LoadingContainer = styled.div`
@@ -1072,18 +857,11 @@ const Spinner = styled.div`
     }
   }
   
-  .dark & {
-    border-color: #374151;
-    border-top-color: #3b82f6;
-  }
 `
 
 const LoadingText = styled.p`
   color: #6b7280;
   
-  .dark & {
-    color: #9ca3af;
-  }
 `
 
 const ErrorCard = styled(Card)`
@@ -1105,18 +883,12 @@ const ErrorTitle = styled.h2`
   color: #1f2937;
   margin-bottom: 0.5rem;
   
-  .dark & {
-    color: #f3f4f6;
-  }
 `
 
 const ErrorText = styled.p`
   color: #6b7280;
   margin-bottom: 1.5rem;
   
-  .dark & {
-    color: #9ca3af;
-  }
 `
 
 const MapModal = styled(Dialog)`
@@ -1153,8 +925,8 @@ const InputWithButton = styled.div`
   flex: 1;
 `
 
-export default function CasosPage() {
-  const router = useRouter()
+const CasosTab: React.FC = () => {
+  const { user, isLoading: authLoading } = useAuth()
   const [showDialog, setShowDialog] = useState(false)
 
   // Estado para controlar a visualização (lista ou detalhes)
@@ -1181,9 +953,15 @@ export default function CasosPage() {
   const [mensagens, setMensagens] = useState<Mensagem[]>([])
   const [novaMensagem, setNovaMensagem] = useState("")
   const [carregando, setCarregando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false)
   const [casoIdToUpdate, setCasoIdToUpdate] = useState<string | null>(null)
   const [showRecoveredConfirmationDialog, setShowRecoveredConfirmationDialog] = useState(false)
+
+  // Função para obter o token de autenticação
+  const getAuthToken = () => {
+    return localStorage.getItem("auth-token") || ""
+  }
 
   // Mock list of objects from the database
   const objetosDisponiveis = [
@@ -1201,14 +979,76 @@ export default function CasosPage() {
     "Óculos Ray-Ban",
   ]
 
+  // Carregar casos do usuário
+  useEffect(() => {
+    if (user) {
+      fetchCasos()
+    }
+  }, [user])
+
+  // Função para buscar casos do usuário
+  const fetchCasos = async () => {
+    setCarregando(true)
+    setError(null)
+
+    try {
+      const response = await axios.get("/api/casos", {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      })
+
+      setCasos(response.data)
+    } catch (err: any) {
+      console.error("Erro ao carregar casos:", err)
+      setError(err.response?.data?.message || "Erro ao carregar casos. Por favor, tente novamente.")
+
+      // Adicionar casos de teste para demonstração
+      adicionarCasoTeste()
+      adicionarCasoTeste()
+    } finally {
+      setCarregando(false)
+    }
+  }
+
   // Navegar para a página de detalhes do caso
-  const navegarParaDetalhes = (id: string) => {
+  const navegarParaDetalhes = async (id: string) => {
     setCasoSelecionadoId(id)
     setView("detalhes")
     setCarregando(true)
 
-    // Simular carregamento de dados
-    setTimeout(() => {
+    try {
+      // Buscar detalhes do caso
+      const casoResponse = await axios.get(`/api/casos/${id}`, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      })
+
+      setCasoAtual(casoResponse.data)
+
+      // Buscar comentários do caso
+      const comentariosResponse = await axios.get(`/api/casos/${id}/comentarios`, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      })
+
+      setComentarios(comentariosResponse.data)
+
+      // Buscar mensagens do chat
+      const mensagensResponse = await axios.get(`/api/casos/${id}/mensagens`, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      })
+
+      setMensagens(mensagensResponse.data)
+    } catch (err: any) {
+      console.error("Erro ao carregar detalhes do caso:", err)
+      setError(err.response?.data?.message || "Erro ao carregar detalhes do caso")
+
+      // Usar dados de exemplo para demonstração
       const caso = casos.find((c) => c.id === id) || null
       setCasoAtual(caso)
 
@@ -1248,9 +1088,9 @@ export default function CasosPage() {
           data: "10:45",
         },
       ])
-
+    } finally {
       setCarregando(false)
-    }, 1000)
+    }
   }
 
   // Voltar para a lista de casos
@@ -1261,29 +1101,66 @@ export default function CasosPage() {
   }
 
   // Adicionar um caso com dados reais
-  const adicionarCaso = () => {
+  const adicionarCaso = async () => {
     if (!novoObjeto.trim()) return
 
-    const novoCaso: Caso = {
-      id: Math.floor(Math.random() * 10000).toString(),
-      objeto: novoObjeto,
-      dataRoubo: new Date().toLocaleDateString("pt-BR"),
-      horarioRoubo: horarioRoubo || "Não informado",
-      status: "Em análise",
-      categoria: novaCategoria,
-      descricao: novaDescricao || undefined,
-      localizacao: novaLocalizacao || undefined,
-      coordenadas: selectedCoordinates || undefined,
-    }
+    setCarregando(true)
 
-    setCasos([...casos, novoCaso])
-    setNovoObjeto("")
-    setNovaDescricao("")
-    setNovaLocalizacao("")
-    setNovaCategoria("Outros")
-    setHorarioRoubo("")
-    setSelectedCoordinates(null)
-    setShowDialog(false)
+    try {
+      const novoCasoData = {
+        objeto: novoObjeto,
+        dataRoubo: new Date().toLocaleDateString("pt-BR"),
+        horarioRoubo: horarioRoubo || "Não informado",
+        categoria: novaCategoria,
+        descricao: novaDescricao || undefined,
+        localizacao: novaLocalizacao || undefined,
+        coordenadas: selectedCoordinates || undefined,
+      }
+
+      const response = await axios.post("/api/casos", novoCasoData, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      })
+
+      setCasos([...casos, response.data])
+
+      // Limpar formulário
+      setNovoObjeto("")
+      setNovaDescricao("")
+      setNovaLocalizacao("")
+      setNovaCategoria("Outros")
+      setHorarioRoubo("")
+      setSelectedCoordinates(null)
+      setShowDialog(false)
+    } catch (err: any) {
+      console.error("Erro ao adicionar caso:", err)
+      setError(err.response?.data?.message || "Erro ao adicionar caso")
+
+      // Adicionar caso localmente para demonstração
+      const novoCaso: Caso = {
+        id: Math.floor(Math.random() * 10000).toString(),
+        objeto: novoObjeto,
+        dataRoubo: new Date().toLocaleDateString("pt-BR"),
+        horarioRoubo: horarioRoubo || "Não informado",
+        status: "Em análise",
+        categoria: novaCategoria,
+        descricao: novaDescricao || undefined,
+        localizacao: novaLocalizacao || undefined,
+        coordenadas: selectedCoordinates || undefined,
+      }
+
+      setCasos([...casos, novoCaso])
+      setNovoObjeto("")
+      setNovaDescricao("")
+      setNovaLocalizacao("")
+      setNovaCategoria("Outros")
+      setHorarioRoubo("")
+      setSelectedCoordinates(null)
+      setShowDialog(false)
+    } finally {
+      setCarregando(false)
+    }
   }
 
   // Adicionar um caso de teste com dados predefinidos
@@ -1323,56 +1200,131 @@ export default function CasosPage() {
   }
 
   // Atualizar o status de um caso
-  const atualizarStatus = (id: string, novoStatus: "Em análise" | "Localizado" | "Recuperado") => {
-    const casosAtualizados = casos.map((caso) => (caso.id === id ? { ...caso, status: novoStatus } : caso))
-    setCasos(casosAtualizados)
+  const atualizarStatus = async (id: string, novoStatus: "Em análise" | "Localizado" | "Recuperado") => {
+    try {
+      const response = await axios.patch(
+        `/api/casos/${id}`,
+        { status: novoStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+        },
+      )
 
-    // Se estiver na página de detalhes, atualizar o caso atual também
-    if (view === "detalhes" && casoAtual && casoAtual.id === id) {
-      setCasoAtual({ ...casoAtual, status: novoStatus })
+      const casosAtualizados = casos.map((caso) => (caso.id === id ? { ...caso, status: novoStatus } : caso))
+      setCasos(casosAtualizados)
+
+      // Se estiver na página de detalhes, atualizar o caso atual também
+      if (view === "detalhes" && casoAtual && casoAtual.id === id) {
+        setCasoAtual({ ...casoAtual, status: novoStatus })
+      }
+    } catch (err: any) {
+      console.error("Erro ao atualizar status do caso:", err)
+      setError(err.response?.data?.message || "Erro ao atualizar status do caso")
+
+      // Atualizar localmente para demonstração
+      const casosAtualizados = casos.map((caso) => (caso.id === id ? { ...caso, status: novoStatus } : caso))
+      setCasos(casosAtualizados)
+
+      // Se estiver na página de detalhes, atualizar o caso atual também
+      if (view === "detalhes" && casoAtual && casoAtual.id === id) {
+        setCasoAtual({ ...casoAtual, status: novoStatus })
+      }
     }
   }
 
   // Enviar um comentário
-  const enviarComentario = () => {
-    if (!novoComentario.trim()) return
+  const enviarComentario = async () => {
+    if (!novoComentario.trim() || !casoAtual) return
 
-    const comentario: Comentario = {
-      id: Date.now().toString(),
-      autor: "Você",
-      conteudo: novoComentario,
-      data: "Agora",
-      isPolicialOuAdmin: false,
+    try {
+      const comentarioData = {
+        casoId: casoAtual.id,
+        conteudo: novoComentario,
+      }
+
+      const response = await axios.post(`/api/casos/${casoAtual.id}/comentarios`, comentarioData, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      })
+
+      setComentarios([...comentarios, response.data])
+      setNovoComentario("")
+    } catch (err: any) {
+      console.error("Erro ao enviar comentário:", err)
+      setError(err.response?.data?.message || "Erro ao enviar comentário")
+
+      // Adicionar comentário localmente para demonstração
+      const comentario: Comentario = {
+        id: Date.now().toString(),
+        autor: "Você",
+        conteudo: novoComentario,
+        data: "Agora",
+        isPolicialOuAdmin: false,
+      }
+
+      setComentarios([...comentarios, comentario])
+      setNovoComentario("")
     }
-
-    setComentarios([...comentarios, comentario])
-    setNovoComentario("")
   }
 
   // Enviar uma mensagem no chat
-  const enviarMensagem = () => {
-    if (!novaMensagem.trim()) return
+  const enviarMensagem = async () => {
+    if (!novaMensagem.trim() || !casoAtual) return
 
-    const mensagem: Mensagem = {
-      id: Date.now().toString(),
-      remetente: "usuario",
-      conteudo: novaMensagem,
-      data: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    }
+    try {
+      const mensagemData = {
+        casoId: casoAtual.id,
+        conteudo: novaMensagem,
+      }
 
-    setMensagens([...mensagens, mensagem])
-    setNovaMensagem("")
+      const response = await axios.post(`/api/casos/${casoAtual.id}/mensagens`, mensagemData, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      })
 
-    // Simular resposta da polícia após 2 segundos
-    setTimeout(() => {
-      const respostaPoliciaAutomatica: Mensagem = {
-        id: (Date.now() + 1).toString(),
-        remetente: "policia",
-        conteudo: "Recebemos sua mensagem. Um agente irá analisá-la em breve.",
+      setMensagens([...mensagens, response.data])
+      setNovaMensagem("")
+
+      // Simular resposta da polícia após 2 segundos
+      setTimeout(() => {
+        const respostaPoliciaAutomatica: Mensagem = {
+          id: (Date.now() + 1).toString(),
+          remetente: "policia",
+          conteudo: "Recebemos sua mensagem. Um agente irá analisá-la em breve.",
+          data: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        }
+        setMensagens((prev) => [...prev, respostaPoliciaAutomatica])
+      }, 2000)
+    } catch (err: any) {
+      console.error("Erro ao enviar mensagem:", err)
+      setError(err.response?.data?.message || "Erro ao enviar mensagem")
+
+      // Adicionar mensagem localmente para demonstração
+      const mensagem: Mensagem = {
+        id: Date.now().toString(),
+        remetente: "usuario",
+        conteudo: novaMensagem,
         data: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       }
-      setMensagens((prev) => [...prev, respostaPoliciaAutomatica])
-    }, 2000)
+
+      setMensagens([...mensagens, mensagem])
+      setNovaMensagem("")
+
+      // Simular resposta da polícia após 2 segundos
+      setTimeout(() => {
+        const respostaPoliciaAutomatica: Mensagem = {
+          id: (Date.now() + 1).toString(),
+          remetente: "policia",
+          conteudo: "Recebemos sua mensagem. Um agente irá analisá-la em breve.",
+          data: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        }
+        setMensagens((prev) => [...prev, respostaPoliciaAutomatica])
+      }, 2000)
+    }
   }
 
   // Obter a cor do badge para a categoria
@@ -1417,17 +1369,18 @@ export default function CasosPage() {
     }
   }
 
+  // Renderizar estado de carregamento
+  if (authLoading || carregando) {
+    return (
+      <LoadingContainer>
+        <Spinner />
+        <LoadingText>Carregando casos...</LoadingText>
+      </LoadingContainer>
+    )
+  }
+
   // Renderizar a página de detalhes do caso
   if (view === "detalhes") {
-    if (carregando) {
-      return (
-        <LoadingContainer>
-          <Spinner />
-          <LoadingText>Carregando informações do caso...</LoadingText>
-        </LoadingContainer>
-      )
-    }
-
     if (!casoAtual) {
       return (
         <DetailContainer>
@@ -2045,4 +1998,6 @@ export default function CasosPage() {
     </Container>
   )
 }
+
+export default CasosTab
 

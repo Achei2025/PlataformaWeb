@@ -24,22 +24,31 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import Sidebar from "./components/Sidebar"
-import Content from "./components/Content"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "../contexts/auth-context"
 
-const UserPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("dashboard")
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { token, isLoading } = useAuth()
+  const router = useRouter()
 
-  return (
-    <div className="flex w-full h-screen">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 overflow-auto bg-gray-50">
-        <Content activeTab={activeTab} />
+  useEffect(() => {
+    if (!isLoading && !token) {
+      router.push("/login")
+    }
+  }, [token, isLoading, router])
+
+  // Show nothing while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
-export default UserPanel
+  // If not authenticated and not loading, the useEffect will redirect
+  // If authenticated, render the children
+  return token ? <>{children}</> : null
+}
 

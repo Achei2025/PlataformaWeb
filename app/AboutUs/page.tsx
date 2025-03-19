@@ -160,7 +160,7 @@ export default function AboutUs() {
     <section className="bg-gradient-to-b from-white to-gray-100 min-h-screen">
       {/* Hero Section */}
       <div
-        className="relative text-white py-20 bg-[#002776]/80 bg-blend-overlay border-b-[5px] border-[#ffdf00]"
+        className="relative text-white py-20 bg-[#000000]/80 bg-blend-overlay border-b-[5px] border-[#ffdf00]"
         style={{
           backgroundImage: "url('/image/mapmarked.jpg')",
           backgroundSize: "cover",

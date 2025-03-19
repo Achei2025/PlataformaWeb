@@ -1,3 +1,26 @@
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ * 
+ * This file is part of Achei.
+ * 
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Contact information: teamachei.2024@gmail.com
+*/
+
+
 "use client"
 
 import type React from "react"
@@ -32,7 +55,7 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 108vh;
   background: linear-gradient(135deg, ${colors.green} 0%, ${colors.blue} 100%);
   padding: 20px;
   overflow-y: auto;
@@ -51,7 +74,7 @@ const FormCard = styled.div`
 const FormLayout = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 30px;
+  gap: 10px;
   
   @media (min-width: 768px) {
     grid-template-columns: 1fr 1fr;
@@ -393,6 +416,7 @@ export default function LoginPage() {
     return isValid
   }
 
+  // Modify the handleSubmit function to use the correct JSON format
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
@@ -400,56 +424,43 @@ export default function LoginPage() {
       setApiError(null)
 
       try {
-        // Preparar os dados para envio
-        const loginData =
-          userType === "citizen"
-            ? {
-                username: cpf.replace(/\D/g, ""), // Remove caracteres não numéricos
-                password: password,
-              }
-            : {
-                username: matricula,
-                password: password,
-              }
+        // Prepare data in the required format
+        const loginData = {
+          username: userType === "citizen" ? cpf.replace(/\D/g, "") : matricula,
+          password: password
+        }
 
-        // Usar a URL correta para autenticação
-        const apiUrl = "http://26.190.233.3:8080/auth/login"
+        // Determine the API URL based on user type
+        const apiUrl =
+          userType === "citizen" ? "http://26.190.233.3:8080/auth/login" : "http://26.190.233.3:8080/api/police/login"
 
-        console.log("Enviando dados:", loginData)
-
-        // Fazer a chamada para a API
+        // Make the API call
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(loginData),
-          mode: "cors", // Explicitamente definir o modo CORS
         })
 
-        console.log("Status da resposta:", response.status)
-
         if (!response.ok) {
-          let errorMessage = "Falha ao realizar login"
-
-          try {
-            const errorData = await response.json()
-            errorMessage = errorData.message || errorMessage
-          } catch (e) {
-            // Se não conseguir parsear o JSON, usa a mensagem padrão
-          }
-
-          throw new Error(errorMessage)
+          const errorData = await response.json().catch(() => null)
+          throw new Error(errorData?.message || `Falha ao realizar login: ${response.status} ${response.statusText}`)
         }
 
         const result = await response.json()
         console.log("Login realizado com sucesso:", result)
 
-        // Armazenar o token de autenticação se fornecido pela API
+        // Store the access token
         if (result.token) {
           localStorage.setItem("authToken", result.token)
 
-          // Se o usuário marcou "lembrar-me", armazenar as credenciais
+          // Store user data for use on other pages
+          if (result.user) {
+            localStorage.setItem("userData", JSON.stringify(result.user))
+          }
+
+          // If "remember me" is checked, store credentials
           if (rememberMe) {
             localStorage.setItem("userType", userType)
             if (userType === "citizen") {
@@ -462,18 +473,17 @@ export default function LoginPage() {
 
         setSuccess(true)
 
-        // Redirecionar com base no tipo de usuário
+        // Redirect after a brief delay to show the success message
         setTimeout(() => {
           if (userType === "citizen") {
             router.push("/System-Citizen")
           } else {
             router.push("/System-Police")
           }
-        }, 1500)
+        }, 1000)
       } catch (error) {
         console.error("Login failed:", error)
         setApiError(error instanceof Error ? error.message : "Erro ao fazer login. Por favor, tente novamente.")
-      } finally {
         setIsLoading(false)
       }
     }
@@ -503,7 +513,7 @@ export default function LoginPage() {
           <FormLayout>
             <LeftColumn>
               <LogoContainer>
-                <Image src="/image/Achei.png" alt="Logo" width={60} height={60} />
+                <Image src="/placeholder.svg?height=60&width=60" alt="Logo" width={60} height={60} />
               </LogoContainer>
               <Title>Bem-vindo de volta</Title>
               <Subtitle>Faça login para continuar</Subtitle>

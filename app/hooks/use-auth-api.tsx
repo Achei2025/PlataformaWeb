@@ -22,24 +22,28 @@
 
 "use client"
 
-import type React from "react"
+import { useAuth } from "../contexts/auth-context"
 
-import { useState } from "react"
-import Sidebar from "./components/Sidebar"
-import Content from "./components/Content"
+export function useAuthApi() {
+  const { token } = useAuth()
 
-const UserPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const authFetch = async (url: string, options: RequestInit = {}) => {
+    if (!token) {
+      throw new Error("No authentication token available")
+    }
 
-  return (
-    <div className="flex w-full h-screen">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 overflow-auto bg-gray-50">
-        <Content activeTab={activeTab} />
-      </div>
-    </div>
-  )
+    const headers = {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    }
+
+    return fetch(url, {
+      ...options,
+      headers,
+    })
+  }
+
+  return { authFetch }
 }
-
-export default UserPanel
 

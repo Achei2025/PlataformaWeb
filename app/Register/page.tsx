@@ -98,13 +98,13 @@ const StyledForm = styled(FormikForm)`
   }
 `
 
-const Section = styled.div<{ isLast?: boolean }>`
+const Section = styled.div<{ $isLast?: boolean }>`
   border-bottom: 1px solid #e1e1e1;
   padding-bottom: 20px;
   
   @media (min-width: 768px) {
     border-bottom: none;
-    border-right: ${(props) => (props.isLast ? "none" : "1px solid #e1e1e1")};
+    border-right: ${(props) => (props.$isLast ? "none" : "1px solid #e1e1e1")};
     padding-right: 20px;
     height: 100%;
     display: flex;
@@ -209,7 +209,7 @@ const PasswordStrength = styled.div<{ strength: number }>`
   border-radius: 2px;
 `
 
-const Button = styled.button<{ isLoading?: boolean }>`
+const Button = styled.button<{ $isLoading?: boolean }>`
   background: ${colors.green};
   color: ${colors.white};
   padding: 15px;
@@ -217,12 +217,12 @@ const Button = styled.button<{ isLoading?: boolean }>`
   border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
-  cursor: ${({ isLoading }) => (isLoading ? "wait" : "pointer")};
+  cursor: ${({ $isLoading }) => ($isLoading ? "wait" : "pointer")};
   transition: all 0.3s ease;
-  opacity: ${({ isLoading }) => (isLoading ? 0.7 : 1)};
+  opacity: ${({ $isLoading }) => ($isLoading ? 0.7 : 1)};
 
   &:hover {
-    transform: ${({ isLoading }) => (isLoading ? "none" : "translateY(-2px)")};
+    transform: ${({ $isLoading }) => ($isLoading ? "none" : "translateY(-2px)")};
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     background: #00b347;
   }
@@ -725,9 +725,6 @@ export default function RegisterPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(userData),
-      }).catch((error) => {
-        console.error("Erro de rede:", error)
-        throw new Error("Falha na conexão com o servidor. Verifique se o servidor está acessível.")
       })
 
       if (!response.ok) {
@@ -744,7 +741,7 @@ export default function RegisterPage() {
 
       // Redirecionar após registro bem-sucedido
       setTimeout(() => {
-        window.location.href = "/login"
+        window.location.href = "/Login"
       }, 2000)
     } catch (error) {
       console.error("Falha no registro:", error)
@@ -853,7 +850,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={() => submitToApi(confirmationValues)}
                   disabled={isLoading}
-                  isLoading={isLoading}
+                  $isLoading={isLoading}
                 >
                   {isLoading ? "Registrando..." : "Confirmar e criar conta"}{" "}
                   {!isLoading && <Check size={16} style={{ marginLeft: "5px" }} />}
@@ -1015,7 +1012,7 @@ export default function RegisterPage() {
                     </div>
                   </Section>
 
-                  <Section isLast>
+                  <Section $isLast>
                     <InputGroup>
                       <FieldLabel>
                         <label>Gênero</label>
@@ -1175,7 +1172,7 @@ export default function RegisterPage() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      isLoading={isSubmitting}
+                      $isLoading={isSubmitting}
                       style={{ marginTop: "auto" }}
                     >
                       {isSubmitting ? "Registrando..." : "Criar Conta"}
