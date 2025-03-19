@@ -21,7 +21,7 @@
 */
 
 
-import type React from "react"
+import React from "react"
 import CadastrarTab from "./tabs/CadastrarTab"
 import MapaTab from "./tabs/MapaTab"
 import CasosTab from "./tabs/CasosTab"
@@ -30,21 +30,22 @@ import DashboardTab from "./tabs/DashboardTab"
 
 interface ContentProps {
   activeTab: string
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>
 }
 
-const Content: React.FC<ContentProps> = ({ activeTab }) => {
-  const renderContent = () => {
+const Content: React.FC<ContentProps> = ({ activeTab, authFetch }) => {
+  const renderTabContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <DashboardTab />
+        return <DashboardTab authFetch={authFetch} />
       case "cadastrar":
-        return <CadastrarTab />
+        return <CadastrarTab authFetch={authFetch} />
       case "mapa":
         return <MapaTab />
       case "casos":
         return <CasosTab />
       case "configuracoes":
-        return <ConfiguracoesTab />
+        return <ConfiguracoesTab authFetch={authFetch} />
       default:
         return null
     }
@@ -52,7 +53,7 @@ const Content: React.FC<ContentProps> = ({ activeTab }) => {
 
   return (
     <main className="flex-1 h-full bg-white dark:bg-gray-900 flex flex-col z-10">
-      {renderContent()}
+      {renderTabContent()}
     </main>
   )
 }

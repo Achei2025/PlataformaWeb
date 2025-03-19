@@ -19,27 +19,26 @@
  * 
  * Contact information: teamachei.2024@gmail.com
 */
-
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Sidebar from "./components/Sidebar"
 import Content from "./components/Content"
+import { useAuthApi } from "../hooks/use-auth-api"
 
 const UserPanel: React.FC = () => {
+  const { authFetch } = useAuthApi()
   const [activeTab, setActiveTab] = useState("dashboard")
 
   return (
     <div className="flex w-full h-screen">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 overflow-auto bg-gray-50">
-        <Content activeTab={activeTab} />
+        <Content activeTab={activeTab} authFetch={authFetch} />
       </div>
     </div>
   )
 }
 
 export default UserPanel
-

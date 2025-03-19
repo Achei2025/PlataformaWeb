@@ -920,73 +920,19 @@ const ErrorMessageStyled = styled.p`
   margin-bottom: 1.5rem;
 `
 
-/* Mock data para testes
-const mockObjects: ObjectItemProps[] = [
-  {
-    id: "obj001",
-    categoria: "eletronico",
-    nome: "Smartphone X",
-    descricao: "Um smartphone moderno com câmera de alta resolução.",
-    marca: "Marca A",
-    modelo: "Modelo 1",
-    dataAquisicao: "2023-01-15",
-    numeroSerie: "SN12345",
-    imei: "IMEI12345",
-    situacao: "novo",
-    dataCadastro: "2023-01-20",
-    cpfDono: "123.456.789-00",
-    emailDono: "usuario@example.com",
-    notaFiscalUrl: "/placeholder.svg?height=600&width=800&text=Nota+Fiscal",
-    imagensUrls: [
-      "/placeholder.svg?height=600&width=800&text=Imagem+1",
-      "/placeholder.svg?height=600&width=800&text=Imagem+2",
-    ],
-    preco: "1200.00",
-  },
-  {
-    id: "obj002",
-    categoria: "veiculo",
-    nome: "Carro Y",
-    descricao: "Um carro confortável para a família.",
-    marca: "Marca B",
-    modelo: "Modelo 2",
-    dataAquisicao: "2022-11-01",
-    chassi: "Chassi67890",
-    situacao: "usado",
-    dataCadastro: "2022-11-05",
-    cpfDono: "123.456.789-00",
-    emailDono: "usuario@example.com",
-    notaFiscalUrl: "/placeholder.svg?height=600&width=800&text=Nota+Fiscal",
-    imagensUrls: ["/placeholder.svg?height=600&width=800&text=Imagem+1"],
-    preco: "25000.00",
-  },
-  {
-    id: "obj003",
-    categoria: "outro",
-    nome: "Bicicleta Z",
-    descricao: "Uma bicicleta para passeios ao ar livre.",
-    marca: "Marca C",
-    modelo: "Modelo 3",
-    dataAquisicao: "2023-05-20",
-    situacao: "novo",
-    dataCadastro: "2023-05-25",
-    cpfDono: "123.456.789-00",
-    emailDono: "usuario@example.com",
-    notaFiscalUrl: "/placeholder.svg?height=600&width=800&text=Nota+Fiscal",
-    imagensUrls: ["/placeholder.svg?height=600&width=800&text=Imagem+1"],
-    preco: "300.00",
-  },
-]*/
+interface CadastrarTabProps {
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>
+}
 
-const CadastrarTab: React.FC = () => {
+const CadastrarTab: React.FC<CadastrarTabProps> = ({ authFetch }) => {
   const { toast } = useToast()
   const { storedToken } = useAuthApi()
   const [showConfirmCadastroDialog, setShowConfirmCadastroDialog] = useState(false)
   const [showConfirmEditDialog, setShowConfirmEditDialog] = useState(false)
   const [objectToConfirmCadastro, setObjectToConfirmCadastro] = useState<FormValues | null>(null)
   const [objectToConfirmEdit, setObjectToConfirmEdit] = useState<FormValues | null>(null)
-  const [objectsData, setObjectsData] = useState<ObjectItemProps[]>(mockObjects)
-  const [filteredObjects, setFilteredObjects] = useState<ObjectItemProps[]>(mockObjects)
+  const [objectsData, setObjectsData] = useState<ObjectItemProps[]>([])
+  const [filteredObjects, setFilteredObjects] = useState<ObjectItemProps[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [showObjectList, setShowObjectList] = useState<boolean>(objectsData.length > 0)
   const [showQRDialog, setShowQRDialog] = useState<boolean>(false)
@@ -1056,29 +1002,17 @@ const CadastrarTab: React.FC = () => {
         setIsLoading(true)
         setError(null)
 
-        // Aqui seria a chamada real para a API
-        // Por enquanto, estamos usando dados mockados
-        // const response = await fetch('/api/objects', {
-        //   method: 'GET',
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //     'Content-Type': 'application/json'
-        //   }
-        // })
+        const response = await authFetch('/api/objects', {
+          method: 'GET',
+        })
 
-        // if (!response.ok) {
-        //   throw new Error('Falha ao carregar objetos. Por favor, tente novamente.')
-        // }
+        if (!response.ok) {
+          throw new Error('Falha ao carregar objetos. Por favor, tente novamente.')
+        }
 
-        // const data = await response.json()
-        
-        // Simulando uma chamada de API
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        // Usando dados mockados
-        setObjectsData(mockObjects)
-        setFilteredObjects(mockObjects)
-        setShowObjectList(mockObjects.length > 0)
+        const data = await response.json()
+        setObjectsData(data)
+        setFilteredObjects(data)
         setIsLoading(false)
       } catch (error) {
         console.error('Erro ao buscar objetos:', error)
@@ -1088,7 +1022,7 @@ const CadastrarTab: React.FC = () => {
     }
 
     fetchObjects()
-  }, [storedToken])
+  }, [authFetch])
 
   useEffect(() => {
     const filtered = objectsData.filter((object) => object.nome.toLowerCase().includes(searchTerm.toLowerCase()))

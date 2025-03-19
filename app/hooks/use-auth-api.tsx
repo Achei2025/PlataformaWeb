@@ -23,9 +23,11 @@
 "use client"
 
 import { useAuth } from "../contexts/auth-context"
+import { useRouter } from "next/navigation"
 
 export function useAuthApi() {
-  const { token } = useAuth()
+  const { token, setToken } = useAuth()
+  const router = useRouter()
 
   const authFetch = async (url: string, options: RequestInit = {}) => {
     if (!token) {
@@ -44,6 +46,27 @@ export function useAuthApi() {
     })
   }
 
-  return { authFetch }
-}
+  const logout = async () => {
+    if (!token) {
+      throw new Error("No authentication token available")
+    }
 
+    try {
+      await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error)
+    } finally {
+      setToken(null)
+      localStorage.removeItem("authToken")
+      router.push("/")
+    }
+  }
+
+  return { authFetch, logout }
+}
