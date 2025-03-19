@@ -1,25 +1,3 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- *
- * This file is part of Achei.
- *
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- *
- * Contact information: teamachei.2024@gmail.com
- */
-
 "use client"
 
 import type React from "react"
@@ -28,356 +6,121 @@ import styled, { createGlobalStyle } from "styled-components"
 import {
   Bell,
   Shield,
+  Lock,
   User,
-  Globe,
   Mail,
   Phone,
-  Lock,
+  Globe,
   Camera,
   Trash2,
+  Info,
   Save,
-  AlertTriangle,
-  CheckCircle2,
   BellRing,
   AlertCircle,
+  CheckCircle2,
+  AlertTriangle,
   FileText,
-  Info,
-  MapPin,
-  X,
 } from "lucide-react"
 
-// Cores do Brasil
-const colors = {
-  green: "#009c3b",
-  yellow: "#ffdf00",
-  blue: "#002776",
-  white: "#ffffff",
-  lightGreen: "#e6f7ef",
-  lightYellow: "#fff9e0",
-  lightBlue: "#e6eeff",
-  gray: "#f8f9fa",
-  lightGray: "#f0f0f0",
-  darkGray: "#333333",
-  red: "#e53935",
-  lightRed: "#ffebee",
-  purple: "#7c4dff",
-  lightPurple: "#f3e5f5",
-  orange: "#ff9800",
-  lightOrange: "#fff3e0",
-}
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/app/components/ui/card"
+import { Input } from "@/app/components/ui/input"
+import { Label } from "@/app/components/ui/label"
+import { Button } from "@/app/components/ui/button"
+// Adicione estes imports para os componentes Select do shadcn/ui
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { Switch } from "@/app/components/ui/switch"
+import { Alert, AlertTitle, AlertDescription } from "@/app/components/ui/alert"
+import { List, ListItem } from "@/app/components/ui/list"
+import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
+import { toast } from "@/app/components/ui/use-toast"
+import { Toaster } from "@/app/components/ui/toaster"
+import { Badge } from "@/app/components/ui/badge"
 
-// Estilos globais
 const GlobalStyle = createGlobalStyle`
   body {
-    font-family: 'Inter', sans-serif;
-    background-color: ${colors.gray};
-    color: ${colors.darkGray};
-    margin: 0;
-    padding: 0;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: 'Arial', sans-serif;
   }
 `
 
-// Container principal
 const Container = styled.div`
-  min-height: 100vh;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
+  padding: 20px;
 `
 
-// Cabeçalho
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
-`
-
-const HeaderBar = styled.div`
-  height: 40px;
-  width: 8px;
-  background-color: ${colors.green};
-  border-radius: 999px;
-  transition: background-color 0.3s ease;
-`
-
-const Title = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${colors.blue};
-  margin: 0;
-  transition: color 0.3s ease;
-`
-
-// Tabs
 const TabsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 32px;
 `
 
 const TabsList = styled.div`
   display: flex;
-  background-color: ${colors.white};
-  border-radius: 8px;
-  padding: 8px;
-  border: 1px solid ${colors.lightGray};
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  max-width: 600px;
-  margin: 0 auto;
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  border-bottom: 1px solid #ccc;
 `
 
-// Modifique a definição do TabButton para usar o atributo de forma segura
 const TabButton = styled.button<{ $active: boolean }>`
-  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  color: ${(props) => (props.$active ? "#007bff" : "#555")};
+  border-bottom: ${(props) => (props.$active ? "2px solid #007bff" : "none")};
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 12px;
-  border-radius: 6px;
-  border: none;
-  background-color: ${(props) => (props.$active ? colors.green : "transparent")};
-  color: ${(props) => (props.$active ? colors.white : colors.darkGray)};
-  font-weight: ${(props) => (props.$active ? "600" : "400")};
-  cursor: pointer;
-  transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${(props) => (props.$active ? colors.green : colors.lightGray)};
-  }
-
-  @media (min-width: 640px) {
-    span {
-      display: inline;
-    }
-  }
-
-  @media (max-width: 639px) {
-    span {
-      display: none;
-    }
+    color: #007bff;
   }
 `
 
-// Cards
-const Card = styled.div`
-  background-color: ${colors.white};
-  border-radius: 8px;
-  border: 1px solid ${colors.lightGray};
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-`
-
-const CardHeader = styled.div`
-  background-color: ${colors.blue};
-  color: ${colors.white};
-  padding: 16px 20px;
-  transition: background-color 0.3s ease;
-`
-
-const CardTitle = styled.h2`
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`
-
-const CardDescription = styled.p`
-  font-size: 14px;
-  color: ${colors.lightGray};
-  margin: 4px 0 0 0;
-  transition: color 0.3s ease;
-`
-
-const CardContent = styled.div`
-  padding: 24px 20px;
-  background-color: ${colors.white};
-  transition: background-color 0.3s ease;
-`
-
-const CardFooter = styled.div`
-  padding: 16px 20px;
-  border-top: 1px solid ${colors.lightGray};
-  background-color: ${colors.gray};
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-`
-
-// Grid layouts
-const Grid = styled.div`
-  display: grid;
-  gap: 24px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
-`
-
-// Replace TwoColumnGrid with a new style definition
-const ThreeColumnGrid = styled.div`
-  display: grid;
-  gap: 24px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media (min-width: 1024px) {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-`
-
-const TwoColumnGrid = styled.div`
-  display: grid;
-  gap: 24px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
+const TabContent = styled.div<{ $active: boolean }>`
+  display: ${(props) => (props.$active ? "block" : "none")};
+  padding: 20px;
 `
 
 const FormGrid = styled.div`
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 `
 
 const FormRow = styled.div`
-  display: grid;
+  display: flex;
   gap: 16px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
 `
 
-// Form elements
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-`
-
-const Label = styled.label`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${colors.blue};
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.3s ease;
-`
-
-const Input = styled.input`
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid ${colors.lightGray};
-  font-size: 14px;
-  transition: all 0.2s ease;
-  background-color: ${colors.white};
-  color: ${colors.darkGray};
+`
 
-  &:focus {
-    outline: none;
-    border-color: ${colors.green};
-    box-shadow: 0 0 0 2px rgba(0, 156, 59, 0.2);
+const TwoColumnGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 `
 
-const Select = styled.select`
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid ${colors.lightGray};
-  font-size: 14px;
-  background-color: ${colors.white};
-  color: ${colors.darkGray};
-  transition: all 0.2s ease;
+const ThreeColumnGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 
-  &:focus {
-    outline: none;
-    border-color: ${colors.green};
-    box-shadow: 0 0 0 2px rgba(0, 156, 59, 0.2);
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 `
 
-// Buttons
-const Button = styled.button<{ variant?: "primary" | "outline" | "ghost" | "danger" }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  ${(props) => {
-    switch (props.variant) {
-      case "outline":
-        return `
-          background-color: transparent;
-          border: 1px solid ${colors.lightGray};
-          color: ${colors.darkGray};
-          &:hover {
-            background-color: ${colors.lightGray};
-          }
-        `
-      case "ghost":
-        return `
-          background-color: transparent;
-          border: none;
-          color: ${colors.darkGray};
-          &:hover {
-            background-color: ${colors.lightGray};
-          }
-        `
-      case "danger":
-        return `
-          background-color: transparent;
-          border: 1px solid ${colors.lightRed};
-          color: ${colors.red};
-          &:hover {
-            background-color: ${colors.lightRed};
-          }
-        `
-      default:
-        return `
-          background-color: ${colors.green};
-          border: none;
-          color: ${colors.white};
-          &:hover {
-            background-color: #007c2f;
-          }
-          &:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-          }
-        `
-    }
-  }}
-`
-
-// Avatar
 const AvatarContainer = styled.div`
-  width: 128px;
-  height: 128px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  border: 4px solid ${colors.yellow};
   overflow: hidden;
   margin-bottom: 16px;
-  transition: border-color 0.3s ease;
 `
 
 const AvatarImage = styled.img`
@@ -386,330 +129,50 @@ const AvatarImage = styled.img`
   object-fit: cover;
 `
 
-const AvatarFallback = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${colors.green};
-  color: ${colors.white};
-  font-size: 24px;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-`
-
-// Switch
-const SwitchContainer = styled.label<{ disabled?: boolean }>`
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
-`
-
-const SwitchInput = styled.input`
-  opacity: 0;
-  width: 0;
-  height: 0;
-`
-
-// Modifique a definição do SwitchSlider para usar o atributo de forma segura
-const SwitchSlider = styled.span<{ checked: boolean; disabled?: boolean }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: ${(props) => (props.checked ? (props.disabled ? "#aaa" : colors.green) : colors.lightGray)};
-  border-radius: 34px;
-  transition: .4s;
-  
-  &:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    border-radius: 50%;
-    transition: .4s;
-    transform: ${(props) => (props.checked ? "translateX(20px)" : "translateX(0)")};
-  }
-`
-
-// Badge
-const Badge = styled.span<{ variant?: "primary" | "warning" | "danger" | "info" | "new" }>`
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, color 0.3s ease;
-
-  ${(props) => {
-    switch (props.variant) {
-      case "warning":
-        return `
-          background-color: ${colors.lightYellow};
-          color: ${colors.darkGray};
-        `
-      case "danger":
-        return `
-          background-color: ${colors.lightRed};
-          color: ${colors.red};
-        `
-      case "info":
-        return `
-          background-color: ${colors.lightBlue};
-          color: ${colors.blue};
-        `
-      case "new":
-        return `
-          background-color: ${colors.lightPurple};
-          color: ${colors.purple};
-        `
-      default:
-        return `
-          background-color: ${colors.green};
-          color: ${colors.white};
-        `
-    }
-  }}
-`
-
-// Alert boxes
-const AlertBox = styled.div<{ variant: "success" | "warning" | "info" | "danger" }>`
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  margin-top: 16px;
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-
-  ${(props) => {
-    switch (props.variant) {
-      case "warning":
-        return `
-          background-color: ${colors.lightYellow};
-          border: 1px solid ${colors.yellow};
-          color: ${colors.darkGray};
-        `
-      case "info":
-        return `
-          background-color: ${colors.lightBlue};
-          border: 1px solid ${colors.blue};
-          color: ${colors.blue};
-        `
-      case "danger":
-        return `
-          background-color: ${colors.lightRed};
-          border: 1px solid ${colors.red};
-          color: ${colors.red};
-        `
-      default:
-        return `
-          background-color: ${colors.lightGreen};
-          border: 1px solid ${colors.green};
-          color: ${colors.green};
-        `
-    }
-  }}
-`
-
-const AlertTitle = styled.h4<{ variant: "success" | "warning" | "info" | "danger" }>`
-  margin: 0 0 8px 0;
-  font-size: 14px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.3s ease;
-
-  ${(props) => {
-    switch (props.variant) {
-      case "warning":
-        return `color: ${colors.darkGray};`
-      case "info":
-        return `color: ${colors.blue};`
-      case "danger":
-        return `color: ${colors.red};`
-      default:
-        return `color: ${colors.green};`
-    }
-  }}
-`
-
-const AlertText = styled.p<{ variant: "success" | "warning" | "info" | "danger" }>`
-  margin: 0;
-  transition: color 0.3s ease;
-  
-  ${(props) => {
-    switch (props.variant) {
-      case "warning":
-        return `color: ${colors.darkGray};`
-      case "info":
-        return `color: ${colors.blue};`
-      case "danger":
-        return `color: ${colors.red};`
-      default:
-        return `color: ${colors.green};`
-    }
-  }}
-`
-
-// List
-const List = styled.ul`
-  list-style-type: disc;
-  padding-left: 20px;
-  margin: 8px 0;
-  color: ${colors.green};
-`
-
-const ListItem = styled.li`
-  margin-bottom: 4px;
-`
-
-// Section heading
-const SectionHeading = styled.h3`
-  font-size: 16px;
-  font-weight: 500;
-  color: ${colors.blue};
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid ${colors.lightGray};
-  margin: 0 0 16px 0;
-`
-
-// Change the SwitchItem styled component definition
-const SwitchItem = styled.div<{ $isMaster?: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: ${(props) => (props.$isMaster ? "16px" : "8px")};
-  padding: ${(props) => (props.$isMaster ? "12px" : "6px 8px")};
-  border-radius: 6px;
-  transition: background-color 0.2s;
-  ${(props) =>
-    props.$isMaster &&
-    `
-    background-color: ${colors.lightGreen};
-    border: 1px solid ${colors.green};
-    margin-bottom: 20px;
-  `}
-
-  &:hover {
-    background-color: ${(props) => (props.$isMaster ? colors.lightGreen : colors.gray)};
-  }
-`
-
-// Update the Switch component to use $isMaster
-const Switch = ({
-  checked,
-  onChange,
-  label,
-  description,
-  badge,
-  disabled,
-  isMaster,
-}: {
-  checked: boolean
-  onChange: () => void
-  label: string
-  description?: string
-  badge?: {
-    text: string
-    variant: "primary" | "warning" | "danger" | "info" | "new"
-  }
-  disabled?: boolean
-  isMaster?: boolean
-}) => {
-  return (
-    <SwitchItem $isMaster={isMaster}>
-      <SwitchInfo>
-        <SwitchLabel disabled={disabled}>{label}</SwitchLabel>
-        <div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" }}>
-          {description && <SwitchDescription disabled={disabled}>{description}</SwitchDescription>}
-          {badge && <Badge variant={badge.variant}>{badge.text}</Badge>}
-        </div>
-      </SwitchInfo>
-      <SwitchContainer disabled={disabled}>
-        <SwitchInput type="checkbox" checked={checked} onChange={onChange} disabled={disabled} />
-        <SwitchSlider checked={checked} disabled={disabled} />
-      </SwitchContainer>
-    </SwitchItem>
-  )
-}
-
-const SwitchInfo = styled.div`
+const NotificationCategory = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
-`
-
-const SwitchLabel = styled.span<{ disabled?: boolean }>`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${(props) => (props.disabled ? "#999" : "inherit")};
-  transition: color 0.3s ease;
-`
-
-const SwitchDescription = styled.span<{ disabled?: boolean }>`
-  font-size: 12px;
-  color: ${(props) => (props.disabled ? "#aaa" : "#666")};
-  transition: color 0.3s ease;
-`
-
-// Notification category
-const NotificationCategory = styled.div`
-  margin-bottom: 24px;
-  padding: 16px;
-  border-radius: 8px;
-  background-color: ${colors.white};
-  border: 1px solid ${colors.lightGray};
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  gap: 8px;
 `
 
 const CategoryHeader = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  flex-direction: column;
+  margin-bottom: 8px;
 `
 
-const CategoryTitle = styled.h4`
-  margin: 0;
+const CategoryTitle = styled.h3`
   font-size: 16px;
   font-weight: 600;
-  color: ${colors.blue};
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: color 0.3s ease;
 `
 
 const CategoryDescription = styled.p`
-  margin: 4px 0 16px 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #666;
-  transition: color 0.3s ease;
+  margin: 0;
 `
 
-// Device item
-const DeviceItem = styled.div`
+const SectionHeading = styled.h4`
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
+  gap: 8px;
+`
+
+const DeviceItem = styled.div`
+  display: flex;
   justify-content: space-between;
-  background-color: ${colors.gray};
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid ${colors.lightGray};
-  margin-bottom: 12px;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 8px;
 `
 
 const DeviceInfo = styled.div`
@@ -722,13 +185,11 @@ const DeviceIcon = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: ${colors.blue};
-  color: ${colors.white};
+  background-color: #eee;
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 12px;
-  transition: background-color 0.3s ease;
+  align-items: center;
+  font-weight: 600;
 `
 
 const DeviceDetails = styled.div`
@@ -736,330 +197,56 @@ const DeviceDetails = styled.div`
   flex-direction: column;
 `
 
-const DeviceName = styled.p`
-  margin: 0;
-  font-weight: 500;
-  font-size: 14px;
-  color: inherit;
-  transition: color 0.3s ease;
+const DeviceName = styled.div`
+  font-weight: 600;
 `
 
-const DeviceLastSeen = styled.p`
-  margin: 0;
+const DeviceLastSeen = styled.div`
   font-size: 12px;
   color: #666;
-  transition: color 0.3s ease;
 `
 
-// Update Toast for better dark mode support
-const Toast = styled.div`
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background-color: ${colors.lightGreen};
-  border: 1px solid ${colors.green};
-  color: ${colors.green};
-  padding: 16px;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 1000;
-  animation: slideIn 0.3s ease;
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-
-  @keyframes slideIn {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-`
-
-// Update TabContent for better dark mode support
-const TabContent = styled.div<{ $active: boolean }>`
-  display: ${(props) => (props.$active ? "block" : "none")};
-`
-
-// Update ModalOverlay for better dark mode support
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-  transition: background-color 0.3s ease;
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-`
-
-// Update ModalContainer for better dark mode support
-const ModalContainer = styled.div`
-  background-color: ${colors.white};
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 500px;
-  animation: scaleIn 0.2s ease;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-
-  @keyframes scaleIn {
-    from {
-      transform: scale(0.95);
-    }
-    to {
-      transform: scale(1);
-    }
-  }
-`
-
-// Update ModalHeader for better dark mode support
-const ModalHeader = styled.div`
-  padding: 16px 20px;
-  border-bottom: 1px solid ${colors.lightGray};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: border-color 0.3s ease;
-`
-
-// Update ModalTitle for better dark mode support
-const ModalTitle = styled.h3`
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: ${colors.blue};
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: color 0.3s ease;
-`
-
-// Update ModalCloseButton for better dark mode support
-const ModalCloseButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: ${colors.darkGray};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s, color 0.3s ease;
-
-  &:hover {
-    background-color: ${colors.lightGray};
-  }
-`
-
-// Update ModalContent for better dark mode support
-const ModalContent = styled.div`
-  padding: 20px;
-  color: inherit;
-  transition: color 0.3s ease;
-`
-
-// Update ModalFooter for better dark mode support
-const ModalFooter = styled.div`
-  padding: 16px 20px;
-  border-top: 1px solid ${colors.lightGray};
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  transition: border-color 0.3s ease;
-`
-
-// Update ModalIconContainer for better dark mode support
-const ModalIconContainer = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-color: ${colors.lightYellow};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px auto;
-  transition: background-color 0.3s ease;
-`
-
-// Add the LocationModal component definition after the ModalIconContainer styled component and before the ConfiguracoesTab component
-
-const LocationModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  isEnabling,
+// Custom Switch component that handles the ismaster prop correctly
+const MasterSwitch = ({
+  checked,
+  onChange,
+  label,
+  description,
+  ismaster,
+  badge,
+  disabled,
 }: {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => void
-  isEnabling: boolean
+  checked: boolean
+  onChange: () => void
+  label: string
+  description?: string
+  ismaster?: boolean
+  badge?: { text: string; variant: string }
+  disabled?: boolean
 }) => {
-  if (!isOpen) return null
-
   return (
-    <ModalOverlay>
-      <ModalContainer>
-        <ModalHeader>
-          <ModalTitle>
-            <MapPin size={18} />
-            {isEnabling ? "Ativar Localização" : "Desativar Localização"}
-          </ModalTitle>
-          <ModalCloseButton onClick={onClose}>
-            <X size={18} />
-          </ModalCloseButton>
-        </ModalHeader>
-        <ModalContent>
-          <ModalIconContainer>
-            {isEnabling ? (
-              <MapPin size={32} color={colors.orange} />
-            ) : (
-              <AlertTriangle size={32} color={colors.orange} />
-            )}
-          </ModalIconContainer>
-
-          {isEnabling ? (
-            <>
-              <AlertTitle variant="warning" style={{ textAlign: "center", marginBottom: "16px" }}>
-                Compartilhar sua localização é importante!
-              </AlertTitle>
-              <AlertText variant="warning" style={{ marginBottom: "16px", textAlign: "center" }}>
-                Ao ativar o compartilhamento de localização, você permite que o sistema:
-              </AlertText>
-              <List>
-                <ListItem>Identifique áreas de risco próximas a você</ListItem>
-                <ListItem>Envie alertas de emergência relevantes para sua região</ListItem>
-                <ListItem>Forneça informações sobre casos próximos</ListItem>
-                <ListItem>Ajude a mapear ocorrências em sua comunidade</ListItem>
-              </List>
-              <AlertBox variant="info" style={{ marginTop: "20px" }}>
-                <AlertTitle variant="info">
-                  <Info size={16} />
-                  Sua privacidade é importante
-                </AlertTitle>
-                <AlertText variant="info">
-                  Seus dados de localização são usados apenas para melhorar sua experiência e segurança. Não
-                  compartilhamos essas informações com terceiros.
-                </AlertText>
-              </AlertBox>
-            </>
-          ) : (
-            <>
-              <AlertTitle variant="warning" style={{ textAlign: "center", marginBottom: "16px" }}>
-                Tem certeza que deseja desativar a localização?
-              </AlertTitle>
-              <AlertText variant="warning" style={{ marginBottom: "16px", textAlign: "center" }}>
-                Ao desativar o compartilhamento de localização, você perderá:
-              </AlertText>
-              <List>
-                <ListItem>Alertas de emergência específicos para sua região</ListItem>
-                <ListItem>Notificações sobre áreas de risco próximas</ListItem>
-                <ListItem>Informações sobre casos em sua comunidade</ListItem>
-                <ListItem>Recursos de mapeamento e análise local</ListItem>
-              </List>
-              <AlertBox variant="danger" style={{ marginTop: "20px" }}>
-                <AlertTitle variant="danger">
-                  <AlertTriangle size={16} />
-                  Impacto na sua segurança
-                </AlertTitle>
-                <AlertText variant="danger">
-                  Sem acesso à sua localização, não poderemos enviar alertas importantes que podem afetar sua segurança
-                  em situações de emergência.
-                </AlertText>
-              </AlertBox>
-            </>
+    <div className={`flex items-center justify-between ${ismaster ? "mb-4 pb-4 border-b" : "mb-2"}`}>
+      <div className="flex flex-col">
+        <div className="flex items-center">
+          <span className="font-medium">{label}</span>
+          {badge && (
+            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full bg-${badge.variant}-100 text-${badge.variant}-800`}>
+              {badge.text}
+            </span>
           )}
-        </ModalContent>
-        <ModalFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>{isEnabling ? "Ativar Localização" : "Desativar Mesmo Assim"}</Button>
-        </ModalFooter>
-      </ModalContainer>
-    </ModalOverlay>
+        </div>
+        {description && <span className="text-sm text-gray-500">{description}</span>}
+      </div>
+      <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
+    </div>
   )
 }
 
-// Also add the ConfirmationModal component definition
-const ConfirmationModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => void
-}) => {
-  if (!isOpen) return null
-
-  return (
-    <ModalOverlay>
-      <ModalContainer>
-        <ModalHeader>
-          <ModalTitle>
-            <Save size={18} />
-            Confirmar Alterações
-          </ModalTitle>
-          <ModalCloseButton onClick={onClose}>
-            <X size={18} />
-          </ModalCloseButton>
-        </ModalHeader>
-        <ModalContent>
-          <ModalIconContainer>
-            <AlertCircle size={32} color={colors.blue} />
-          </ModalIconContainer>
-
-          <AlertTitle variant="info" style={{ textAlign: "center", marginBottom: "16px" }}>
-            Deseja salvar as alterações?
-          </AlertTitle>
-          <AlertText variant="info" style={{ marginBottom: "16px", textAlign: "center" }}>
-            Você está prestes a salvar as alterações nas suas configurações. Esta ação não pode ser desfeita.
-          </AlertText>
-
-          <AlertBox variant="info" style={{ marginTop: "20px" }}>
-            <AlertTitle variant="info">
-              <Info size={16} />
-              Lembrete de Privacidade
-            </AlertTitle>
-            <AlertText variant="info">
-              Suas informações são mantidas anônimas para outros usuários. Apenas você e os administradores do sistema
-              podem ver seus dados reais.
-            </AlertText>
-          </AlertBox>
-        </ModalContent>
-        <ModalFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>Confirmar e Salvar</Button>
-        </ModalFooter>
-      </ModalContainer>
-    </ModalOverlay>
-  )
-}
-
-// Modifique a parte do estado no componente ConfiguracoesTab para adicionar o estado do tipo de nome anônimo
-const ConfiguracoesTab: React.FC = () => {
+// Modifique a definição do componente ConfiguracoesTab para aceitar o authFetch prop
+const ConfiguracoesTab: React.FC<{
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>
+  token: string
+}> = ({ authFetch, token }) => {
   const [activeTab, setActiveTab] = useState("profile")
   const [loading, setLoading] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -1069,36 +256,86 @@ const ConfiguracoesTab: React.FC = () => {
   const [username, setUsername] = useState("Anônimo_" + Math.floor(Math.random() * 10000))
   const [useFixedAnonymous, setUseFixedAnonymous] = useState(false)
 
-  // Adicione esta função dentro do componente ConfiguracoesTab, antes do return
-  const handleFileUpload = (file: File) => {
-    // Aqui você implementaria a lógica para fazer o upload do arquivo para o servidor
-    // Por exemplo, usando FormData e fetch
+  // Adicione estados para os campos do formulário
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    secondaryPhone: "",
+    alternativeContactType: "email",
+    alternativeContact: "",
+    gender: "",
+    occupation: "",
+    occupationDetails: "",
+  })
 
-    // Exemplo de como seria o código:
-    // const formData = new FormData();
-    // formData.append('avatar', file);
-    //
-    // fetch('/api/upload-avatar', {
-    //   method: 'POST',
-    //   body: formData
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //   console.log('Upload bem-sucedido:', data);
-    //   // Atualizar a imagem do avatar
-    // })
-    // .catch(error => {
-    //   console.error('Erro no upload:', error);
-    // });
+  const [toastMessage, setToastMessage] = useState({
+    title: "Alterações salvas com sucesso!",
+    message: "Suas configurações foram atualizadas.",
+  })
 
-    // Por enquanto, apenas simularemos o upload
-    setLoading(true)
-    setTimeout(() => {
+  // Função para buscar os dados do usuário
+  const fetchUserData = async () => {
+    try {
+      setLoading(true)
+      const response = await authFetch("http://26.190.233.3:8080/api/citizens/me", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Inclui o token no cabeçalho
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar dados: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("Dados do usuário recebidos:", data)
+
+      // Preencher os campos do formulário com os dados recebidos
+      setUserData({
+        firstName: data.firstName || "",
+        lastName: data.lastName || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        secondaryPhone: data.secondaryPhone || "",
+        alternativeContactType: data.alternativeContactType || "email",
+        alternativeContact: data.alternativeContact || "",
+        gender: data.gender || "",
+        occupation: data.occupation || "",
+        occupationDetails: data.occupationDetails || "",
+      })
+
+      // Se o usuário tiver um nome de usuário anônimo definido, use-o
+      if (data.anonymousUsername) {
+        setUsername(data.anonymousUsername)
+        setUseFixedAnonymous(data.anonymousUsername === "Anônimo")
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados do usuário:", error)
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar seus dados. Tente novamente mais tarde.",
+        variant: "destructive",
+      })
+    } finally {
       setLoading(false)
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
-    }, 1500)
+    }
   }
+
+  // Função para atualizar os campos do formulário quando o usuário digita
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setUserData((prev) => ({
+      ...prev,
+      [id]: value,
+    }))
+  }
+
+  // Buscar dados do usuário ao carregar o componente
+  useEffect(() => {
+    fetchUserData()
+  }, [])
 
   // Função para gerar um novo nome de usuário
   const generateNewUsername = () => {
@@ -1227,14 +464,91 @@ const ConfiguracoesTab: React.FC = () => {
     setShowConfirmationModal(true)
   }
 
-  const handleConfirmSave = () => {
+  const handleConfirmSave = async () => {
     setShowConfirmationModal(false)
     setLoading(true)
-    // Simulando uma requisição
+
+    try {
+      // Preparar os dados para enviar à API
+      const dataToSend = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        fullName: `${userData.firstName} ${userData.lastName}`.trim(), // Adicionar fullName combinando firstName e lastName
+        email: userData.email,
+        phone: userData.phone,
+        secondaryPhone: userData.secondaryPhone,
+        alternativeContactType: userData.alternativeContactType,
+        alternativeContact: userData.alternativeContact,
+        gender: userData.gender,
+        occupation: userData.occupation,
+        occupationDetails: userData.occupationDetails,
+        anonymousUsername: username,
+        // Adicione outros campos conforme necessário
+      }
+
+      // Enviar os dados para a API
+      const response = await authFetch("http://26.190.233.3:8080/api/citizens/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Inclui o token no cabeçalho
+        },
+        body: JSON.stringify(dataToSend),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ao atualizar dados: ${response.status}`)
+      }
+
+      // Mostrar toast de sucesso
+      toast({
+        title: "Alterações salvas com sucesso!",
+        description: "Seus dados foram atualizados.",
+      })
+    } catch (error) {
+      console.error("Erro ao salvar dados:", error)
+
+      // Mostrar toast de erro
+      toast({
+        title: "Erro ao salvar dados",
+        description: "Não foi possível salvar suas alterações. Tente novamente mais tarde.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Adicione esta função dentro do componente ConfiguracoesTab, antes do return
+  const handleFileUpload = (file: File) => {
+    // Aqui você implementaria a lógica para fazer o upload do arquivo para o servidor
+    // Por exemplo, usando FormData e fetch
+
+    // Exemplo de como seria o código:
+    // const formData = new FormData();
+    // formData.append('avatar', file);
+    //
+    // fetch('/api/upload-avatar', {
+    //   method: 'POST',
+    //   body: formData
+    // })
+    // .then(response => response.json())
+    // .then(data => {
+    //   console.log('Upload bem-sucedido:', data);
+    //   // Atualizar a imagem do avatar
+    // })
+    // .catch(error => {
+    //   console.error('Erro no upload:', error);
+    // });
+
+    // Por enquanto, apenas simularemos o upload
+    setLoading(true)
     setTimeout(() => {
       setLoading(false)
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
+      toast({
+        title: "Upload concluído",
+        description: "Sua foto de perfil foi atualizada com sucesso.",
+      })
     }, 1500)
   }
 
@@ -1243,8 +557,6 @@ const ConfiguracoesTab: React.FC = () => {
       <GlobalStyle />
       <Container>
         <TabsContainer>
-          {/* Modifique a parte onde os TabButtons são renderizados */}
-          {/* Substitua o código atual por: */}
           <TabsList>
             <TabButton $active={activeTab === "profile"} onClick={() => setActiveTab("profile")}>
               <User size={16} />
@@ -1265,8 +577,6 @@ const ConfiguracoesTab: React.FC = () => {
           </TabsList>
 
           {/* Aba de Perfil */}
-          {/* Modifique a parte onde os TabContents são renderizados */}
-          {/* Substitua cada TabContent por: */}
           <TabContent $active={activeTab === "profile"}>
             <FormGrid style={{ gap: "24px" }}>
               <TwoColumnGrid>
@@ -1318,7 +628,7 @@ const ConfiguracoesTab: React.FC = () => {
                         Alterar foto (PNG/JPG até 16MB)
                       </Button>
                     </FormGroup>
-                    <Button variant="danger" style={{ width: "100%" }}>
+                    <Button variant="destructive" style={{ width: "100%" }}>
                       <Trash2 size={16} />
                       Remover foto
                     </Button>
@@ -1350,12 +660,17 @@ const ConfiguracoesTab: React.FC = () => {
                       Gerar Novo Nome Aleatório
                     </Button>
 
-                    <Switch
-                      checked={useFixedAnonymous}
-                      onChange={() => setUseFixedAnonymous(!useFixedAnonymous)}
-                      label="Usar nome fixo 'Anônimo'"
-                      description="Sem números aleatórios"
-                    />
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="fixed-anonymous"
+                        checked={useFixedAnonymous}
+                        onCheckedChange={() => setUseFixedAnonymous(!useFixedAnonymous)}
+                      />
+                      <div>
+                        <Label htmlFor="fixed-anonymous">Usar nome fixo 'Anônimo'</Label>
+                        <p className="text-sm text-muted-foreground">Sem números aleatórios</p>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </TwoColumnGrid>
@@ -1373,11 +688,16 @@ const ConfiguracoesTab: React.FC = () => {
                     <FormRow>
                       <FormGroup>
                         <Label htmlFor="firstName">Nome</Label>
-                        <Input id="firstName" placeholder="John" />
+                        <Input
+                          id="firstName"
+                          placeholder="John"
+                          value={userData.firstName}
+                          onChange={handleInputChange}
+                        />
                       </FormGroup>
                       <FormGroup>
                         <Label htmlFor="lastName">Sobrenome</Label>
-                        <Input id="lastName" placeholder="Doe" />
+                        <Input id="lastName" placeholder="Doe" value={userData.lastName} onChange={handleInputChange} />
                       </FormGroup>
                     </FormRow>
                     <TwoColumnGrid>
@@ -1386,14 +706,26 @@ const ConfiguracoesTab: React.FC = () => {
                           <Mail size={14} />
                           Email
                         </Label>
-                        <Input id="email" type="email" placeholder="john.doe@example.com" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="john.doe@example.com"
+                          value={userData.email}
+                          onChange={handleInputChange}
+                        />
                       </FormGroup>
                       <FormGroup>
                         <Label htmlFor="phone">
                           <Phone size={14} />
                           Telefone Principal
                         </Label>
-                        <Input id="phone" type="tel" placeholder="(00) 00000-0000" />
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="(00) 00000-0000"
+                          value={userData.phone}
+                          onChange={handleInputChange}
+                        />
                       </FormGroup>
                     </TwoColumnGrid>
                     <TwoColumnGrid>
@@ -1402,22 +734,41 @@ const ConfiguracoesTab: React.FC = () => {
                           <Phone size={14} />
                           Telefone Secundário
                         </Label>
-                        <Input id="secondaryPhone" type="tel" placeholder="(00) 00000-0000" />
+                        <Input
+                          id="secondaryPhone"
+                          type="tel"
+                          placeholder="(00) 00000-0000"
+                          value={userData.secondaryPhone}
+                          onChange={handleInputChange}
+                        />
                       </FormGroup>
                       <FormGroup>
-                        <Label htmlFor="alternative-contact-type">Contato Alternativo</Label>
-                        <Select id="alternative-contact-type" defaultValue="email">
-                          <option value="email">Email</option>
-                          <option value="phone">Telefone</option>
-                          <option value="whatsapp">WhatsApp</option>
-                          <option value="telegram">Telegram</option>
-                          <option value="outro">Outro</option>
+                        <Label htmlFor="alternativeContactType">Contato Alternativo</Label>
+                        <Select
+                          value={userData.alternativeContactType}
+                          onValueChange={(value) => setUserData((prev) => ({ ...prev, alternativeContactType: value }))}
+                        >
+                          <SelectTrigger id="alternativeContactType">
+                            <SelectValue placeholder="Tipo de contato alternativo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="email">Email</SelectItem>
+                            <SelectItem value="phone">Telefone</SelectItem>
+                            <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                            <SelectItem value="telegram">Telegram</SelectItem>
+                            <SelectItem value="outro">Outro</SelectItem>
+                          </SelectContent>
                         </Select>
                       </FormGroup>
                     </TwoColumnGrid>
                     <FormGroup>
-                      <Label htmlFor="alternative-contact">Informação de Contato Alternativo</Label>
-                      <Input id="alternative-contact" placeholder="Informe seu contato alternativo" />
+                      <Label htmlFor="alternativeContact">Informação de Contato Alternativo</Label>
+                      <Input
+                        id="alternativeContact"
+                        placeholder="Informe seu contato alternativo"
+                        value={userData.alternativeContact}
+                        onChange={handleInputChange}
+                      />
                       <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
                         Este contato será usado apenas para recuperação de conta em caso de emergência.
                       </p>
@@ -1426,53 +777,64 @@ const ConfiguracoesTab: React.FC = () => {
                     <TwoColumnGrid>
                       <FormGroup>
                         <Label htmlFor="gender">Gênero</Label>
-                        <Select id="gender" defaultValue="">
-                          <option value="" disabled>
-                            Selecione seu gênero
-                          </option>
-                          <option value="masculino">Masculino</option>
-                          <option value="feminino">Feminino</option>
-                          <option value="nao-binario">Não-binário</option>
-                          <option value="outro">Outro</option>
-                          <option value="prefiro-nao-informar">Prefiro não informar</option>
+                        <Select
+                          value={userData.gender}
+                          onValueChange={(value) => setUserData((prev) => ({ ...prev, gender: value }))}
+                        >
+                          <SelectTrigger id="gender">
+                            <SelectValue placeholder="Selecione seu gênero" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="masculino">Masculino</SelectItem>
+                            <SelectItem value="feminino">Feminino</SelectItem>
+                            <SelectItem value="prefiro-nao-informar">Prefiro não informar</SelectItem>
+                          </SelectContent>
                         </Select>
                       </FormGroup>
                       <FormGroup>
                         <Label htmlFor="occupation">Ocupação</Label>
-                        <Select id="occupation" defaultValue="">
-                          <option value="" disabled>
-                            Selecione sua ocupação
-                          </option>
-                          <option value="estudante">Estudante</option>
-                          <option value="profissional">Profissional</option>
-                          <option value="autonomo">Autônomo</option>
-                          <option value="outro">Outro</option>
+                        <Select
+                          value={userData.occupation}
+                          onValueChange={(value) => setUserData((prev) => ({ ...prev, occupation: value }))}
+                        >
+                          <SelectTrigger id="occupation">
+                            <SelectValue placeholder="Selecione sua ocupação" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="estudante">Estudante</SelectItem>
+                            <SelectItem value="profissional">Profissional</SelectItem>
+                            <SelectItem value="autonomo">Autônomo</SelectItem>
+                            <SelectItem value="aposentado">Aposentado</SelectItem>
+                            <SelectItem value="outro">Outro</SelectItem>
+                          </SelectContent>
                         </Select>
                       </FormGroup>
                     </TwoColumnGrid>
 
                     <FormGroup>
-                      <Label htmlFor="occupation-details">Detalhes da Ocupação</Label>
+                      <Label htmlFor="occupationDetails">Detalhes da Ocupação</Label>
                       <Input
-                        id="occupation-details"
+                        id="occupationDetails"
                         placeholder="Ex: Estudante de Medicina, Engenheiro de Software, etc."
+                        value={userData.occupationDetails}
+                        onChange={handleInputChange}
                       />
                     </FormGroup>
 
-                    <AlertBox variant="info" style={{ marginTop: "16px" }}>
-                      <AlertTitle variant="info">
-                        <Info size={16} />
-                        Contato Alternativo
-                      </AlertTitle>
-                      <AlertText variant="info">
+                    <Alert>
+                      <Info size={16} />
+                      <AlertTitle>Contato Alternativo</AlertTitle>
+                      <AlertDescription>
                         Recomendamos adicionar um contato alternativo para casos de emergência ou caso seu telefone seja
                         perdido ou roubado. Este contato será usado apenas para recuperação de conta.
-                      </AlertText>
-                    </AlertBox>
+                      </AlertDescription>
+                    </Alert>
                   </FormGrid>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline">Cancelar</Button>
+                  <Button variant="outline" onClick={fetchUserData} disabled={loading}>
+                    {loading ? "Carregando..." : "Cancelar"}
+                  </Button>
                   <Button onClick={handleSave} disabled={loading}>
                     {loading ? "Salvando..." : "Salvar alterações"}
                     {!loading && <Save size={16} />}
@@ -1507,38 +869,38 @@ const ConfiguracoesTab: React.FC = () => {
                     </CategoryDescription>
 
                     {/* Master Switch */}
-                    <Switch
+                    <MasterSwitch
                       checked={notificationSwitches.emailNotifications}
                       onChange={() => toggleSwitch("emailNotifications")}
                       label="Ativar notificações por email"
                       description="Controla todas as notificações por email"
-                      isMaster={true}
+                      ismaster={true}
                     />
 
                     {/* Replace the grid layout here */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.casesEmail}
                         onChange={() => toggleSwitch("casesEmail")}
                         label="Atualizações de casos"
                         disabled={!notificationSwitches.emailNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.interactionsEmail}
                         onChange={() => toggleSwitch("interactionsEmail")}
                         label="Interações"
                         disabled={!notificationSwitches.emailNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.systemEmail}
                         onChange={() => toggleSwitch("systemEmail")}
                         label="Sistema"
                         disabled={!notificationSwitches.emailNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.newsEmail}
                         onChange={() => toggleSwitch("newsEmail")}
                         label="Notícias"
@@ -1561,17 +923,17 @@ const ConfiguracoesTab: React.FC = () => {
                     </CategoryDescription>
 
                     {/* Master Switch */}
-                    <Switch
+                    <MasterSwitch
                       checked={notificationSwitches.pushNotifications}
                       onChange={() => toggleSwitch("pushNotifications")}
                       label="Ativar notificações push"
                       description="Controla todas as notificações push"
-                      isMaster={true}
+                      ismaster={true}
                     />
 
                     {/* Replace the grid layout here */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.nearbyCases}
                         onChange={() => toggleSwitch("nearbyCases")}
                         label="Casos próximos"
@@ -1579,14 +941,14 @@ const ConfiguracoesTab: React.FC = () => {
                         disabled={!notificationSwitches.pushNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.myCases}
                         onChange={() => toggleSwitch("myCases")}
                         label="Meus casos"
                         disabled={!notificationSwitches.pushNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.riskAreas}
                         onChange={() => toggleSwitch("riskAreas")}
                         label="Áreas de risco"
@@ -1594,7 +956,7 @@ const ConfiguracoesTab: React.FC = () => {
                         disabled={!notificationSwitches.pushNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.emergencyAlerts}
                         onChange={() => toggleSwitch("emergencyAlerts")}
                         label="Alertas de emergência"
@@ -1602,7 +964,7 @@ const ConfiguracoesTab: React.FC = () => {
                         disabled={!notificationSwitches.pushNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.communityUpdates}
                         onChange={() => toggleSwitch("communityUpdates")}
                         label="Atualizações da comunidade"
@@ -1622,24 +984,24 @@ const ConfiguracoesTab: React.FC = () => {
                     <CategoryDescription>Configure quais notificações você deseja receber por SMS</CategoryDescription>
 
                     {/* Master Switch */}
-                    <Switch
+                    <MasterSwitch
                       checked={notificationSwitches.smsNotifications}
                       onChange={() => toggleSwitch("smsNotifications")}
                       label="Ativar notificações por SMS"
                       description="Controla todas as notificações por SMS"
-                      isMaster={true}
+                      ismaster={true}
                     />
 
                     {/* Replace the grid layout here */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.casesSms}
                         onChange={() => toggleSwitch("casesSms")}
                         label="Atualizações de casos"
                         disabled={!notificationSwitches.smsNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.emergencySms}
                         onChange={() => toggleSwitch("emergencySms")}
                         label="Alertas de emergência"
@@ -1647,7 +1009,7 @@ const ConfiguracoesTab: React.FC = () => {
                         disabled={!notificationSwitches.smsNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.riskAreasSms}
                         onChange={() => toggleSwitch("riskAreasSms")}
                         label="Áreas de risco"
@@ -1655,14 +1017,14 @@ const ConfiguracoesTab: React.FC = () => {
                         disabled={!notificationSwitches.smsNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.systemSms}
                         onChange={() => toggleSwitch("systemSms")}
                         label="Sistema"
                         disabled={!notificationSwitches.smsNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.communitySms}
                         onChange={() => toggleSwitch("communitySms")}
                         label="Atualizações da comunidade"
@@ -1672,16 +1034,14 @@ const ConfiguracoesTab: React.FC = () => {
                   </NotificationCategory>
                 </ThreeColumnGrid>
 
-                <AlertBox variant="info" style={{ marginTop: "24px" }}>
-                  <AlertTitle variant="info">
-                    <AlertCircle size={16} />
-                    Dica de notificações
-                  </AlertTitle>
-                  <AlertText variant="info">
+                <Alert className="mt-6">
+                  <AlertCircle size={16} />
+                  <AlertTitle>Dica de notificações</AlertTitle>
+                  <AlertDescription>
                     Recomendamos manter os alertas de emergência e áreas de risco sempre ativos para sua segurança. Você
                     pode personalizar todas as outras notificações conforme sua preferência.
-                  </AlertText>
-                </AlertBox>
+                  </AlertDescription>
+                </Alert>
               </CardContent>
               <CardFooter>
                 <Button onClick={handleSave} disabled={loading}>
@@ -1718,18 +1078,16 @@ const ConfiguracoesTab: React.FC = () => {
                       <Input id="confirm-password" type="password" />
                     </FormGroup>
 
-                    <AlertBox variant="success">
-                      <AlertTitle variant="success">
-                        <CheckCircle2 size={14} />
-                        Dicas para uma senha forte:
-                      </AlertTitle>
+                    <Alert variant="success">
+                      <CheckCircle2 size={14} />
+                      <AlertTitle>Dicas para uma senha forte:</AlertTitle>
                       <List>
                         <ListItem>Use pelo menos 8 caracteres</ListItem>
                         <ListItem>Combine letras maiúsculas e minúsculas</ListItem>
                         <ListItem>Inclua números e símbolos</ListItem>
                         <ListItem>Evite informações pessoais óbvias</ListItem>
                       </List>
-                    </AlertBox>
+                    </Alert>
                   </FormGrid>
                 </CardContent>
                 <CardFooter>
@@ -1749,16 +1107,14 @@ const ConfiguracoesTab: React.FC = () => {
                   <CardDescription>Configure camadas extras de proteção para sua conta</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <AlertBox variant="warning">
-                    <AlertTitle variant="warning">
-                      <AlertTriangle size={16} />
-                      Autenticação em Duas Etapas (2FA)
-                    </AlertTitle>
-                    <AlertText variant="warning">
+                  <Alert variant="warning">
+                    <AlertTriangle size={16} />
+                    <AlertTitle>Autenticação em Duas Etapas (2FA)</AlertTitle>
+                    <AlertDescription>
                       Adicione uma camada extra de segurança exigindo um código além da senha ao fazer login.
-                    </AlertText>
-                    <div style={{ marginTop: "12px" }}>
-                      <Switch
+                    </AlertDescription>
+                    <div className="mt-3">
+                      <MasterSwitch
                         checked={notificationSwitches.twoFactorAuth}
                         onChange={() => toggleSwitch("twoFactorAuth")}
                         label="Ativar 2FA"
@@ -1766,7 +1122,7 @@ const ConfiguracoesTab: React.FC = () => {
                         badge={{ text: "Recomendado", variant: "warning" }}
                       />
                     </div>
-                  </AlertBox>
+                  </Alert>
 
                   <div style={{ marginTop: "24px" }}>
                     <SectionHeading>Dispositivos Conectados</SectionHeading>
@@ -1789,7 +1145,7 @@ const ConfiguracoesTab: React.FC = () => {
                           <DeviceLastSeen>Último acesso: Ontem, 18:30</DeviceLastSeen>
                         </DeviceDetails>
                       </DeviceInfo>
-                      <Button variant="danger" style={{ padding: "4px 8px", fontSize: "12px" }}>
+                      <Button variant="destructive" size="sm">
                         Desconectar
                       </Button>
                     </DeviceItem>
@@ -1802,14 +1158,14 @@ const ConfiguracoesTab: React.FC = () => {
                           <DeviceLastSeen>Último acesso: 15/06/2023</DeviceLastSeen>
                         </DeviceDetails>
                       </DeviceInfo>
-                      <Button variant="danger" style={{ padding: "4px 8px", fontSize: "12px" }}>
+                      <Button variant="destructive" size="sm">
                         Desconectar
                       </Button>
                     </DeviceItem>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="danger">Desconectar todos</Button>
+                  <Button variant="destructive">Desconectar todos</Button>
                   <Button onClick={handleSave} disabled={loading}>
                     {loading ? "Salvando..." : "Salvar configurações"}
                     {!loading && <Save size={16} />}
@@ -1840,7 +1196,7 @@ const ConfiguracoesTab: React.FC = () => {
 
                   <TwoColumnGrid>
                     <div>
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.shareLocation}
                         onChange={() => toggleSwitch("shareLocation")}
                         label="Compartilhar Localização"
@@ -1848,14 +1204,14 @@ const ConfiguracoesTab: React.FC = () => {
                         badge={{ text: "Importante", variant: "warning" }}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.anonymousData}
                         onChange={() => toggleSwitch("anonymousData")}
                         label="Dados para Melhorias"
                         description="Compartilhar dados anônimos para melhorar o serviço"
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.showOnlineStatus}
                         onChange={() => toggleSwitch("showOnlineStatus")}
                         label="Mostrar Status Online"
@@ -1863,31 +1219,27 @@ const ConfiguracoesTab: React.FC = () => {
                       />
                     </div>
 
-                    <AlertBox variant="success">
-                      <AlertTitle variant="success">
-                        <CheckCircle2 size={14} />
-                        Seus dados estão seguros
-                      </AlertTitle>
-                      <AlertText variant="success">
+                    <Alert variant="success">
+                      <CheckCircle2 size={14} />
+                      <AlertTitle>Seus dados estão seguros</AlertTitle>
+                      <AlertDescription>
                         Respeitamos sua privacidade e nunca compartilhamos seus dados pessoais com terceiros sem sua
                         permissão explícita.
-                      </AlertText>
-                    </AlertBox>
+                      </AlertDescription>
+                    </Alert>
                   </TwoColumnGrid>
 
-                  <AlertBox variant="info">
-                    <AlertTitle variant="info">
-                      <FileText size={14} />
-                      Política de Privacidade
-                    </AlertTitle>
-                    <AlertText variant="info">
+                  <Alert>
+                    <FileText size={14} />
+                    <AlertTitle>Política de Privacidade</AlertTitle>
+                    <AlertDescription>
                       Nossa política de privacidade foi atualizada recentemente. Recomendamos que você revise as
                       mudanças.
-                    </AlertText>
-                    <Button variant="outline" style={{ marginTop: "12px", padding: "6px 12px" }}>
+                    </AlertDescription>
+                    <Button variant="outline" className="mt-3">
                       Ver política de privacidade
                     </Button>
-                  </AlertBox>
+                  </Alert>
                 </FormGrid>
               </CardContent>
               <CardFooter>
@@ -1916,15 +1268,7 @@ const ConfiguracoesTab: React.FC = () => {
         onConfirm={handleConfirmSave}
       />
 
-      {showToast && (
-        <Toast>
-          <CheckCircle2 size={18} />
-          <div>
-            <strong>Alterações salvas com sucesso!</strong>
-            <p style={{ margin: "0", fontSize: "12px" }}>Suas configurações foram atualizadas.</p>
-          </div>
-        </Toast>
-      )}
+      <Toaster />
     </>
   )
 }

@@ -24,6 +24,7 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import styled from "styled-components"
 
 import { cn } from "@/app/lib/utils"
 
@@ -66,3 +67,25 @@ AlertDescription.displayName = "AlertDescription"
 
 export { Alert, AlertTitle, AlertDescription }
 
+export const AlertBox = styled.div`
+  padding: 16px;
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.colors[props.variant]};
+  color: ${(props) => props.theme.colors[`${props.variant}Foreground`]};
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`
+
+export const AlertTitleStyled = styled.h4`
+  margin: 0;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
+export const AlertTextStyled = styled.p`
+  margin: 0;
+  font-size: 1rem;
+` 
