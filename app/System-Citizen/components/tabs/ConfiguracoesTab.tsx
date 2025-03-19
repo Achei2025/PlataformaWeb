@@ -1,384 +1,124 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- *
- * This file is part of Achei.
- *
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- *
- * Contact information: teamachei.2024@gmail.com
- */
-
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import styled, { createGlobalStyle } from "styled-components"
 import {
   Bell,
   Shield,
+  Lock,
   User,
-  Globe,
   Mail,
   Phone,
-  Lock,
+  Globe,
   Camera,
   Trash2,
+  Info,
   Save,
-  AlertTriangle,
-  CheckCircle2,
   BellRing,
   AlertCircle,
+  CheckCircle2,
+  AlertTriangle,
   FileText,
-  Info,
-  MapPin,
-  X,
 } from "lucide-react"
 
-// Cores do Brasil
-const colors = {
-  green: "#009c3b",
-  yellow: "#ffdf00",
-  blue: "#002776",
-  white: "#ffffff",
-  lightGreen: "#e6f7ef",
-  lightYellow: "#fff9e0",
-  lightBlue: "#e6eeff",
-  gray: "#f8f9fa",
-  lightGray: "#f0f0f0",
-  darkGray: "#333333",
-  red: "#e53935",
-  lightRed: "#ffebee",
-  purple: "#7c4dff",
-  lightPurple: "#f3e5f5",
-  orange: "#ff9800",
-  lightOrange: "#fff3e0",
-}
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/app/components/ui/card"
+import { Input } from "@/app/components/ui/input"
+import { Label } from "@/app/components/ui/label"
+import { Button } from "@/app/components/ui/button"
+import { Select } from "@/app/components/ui/select"
+import { Switch } from "@/app/components/ui/switch"
+import { AlertBox, AlertTitle, AlertText } from "@/app/components/ui/alert"
+import { List, ListItem } from "@/app/components/ui/list"
+import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
+import { Toast } from "@/app/components/ui/toast"
+import { Badge } from "@/app/components/ui/badge"
 
-// Estilos globais
 const GlobalStyle = createGlobalStyle`
   body {
-    font-family: 'Inter', sans-serif;
-    background-color: ${colors.gray};
-    color: ${colors.darkGray};
-    margin: 0;
-    padding: 0;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: 'Arial', sans-serif;
   }
 `
 
-// Container principal
 const Container = styled.div`
-  min-height: 100vh;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
+  padding: 20px;
 `
 
-// Cabeçalho
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
-`
-
-const HeaderBar = styled.div`
-  height: 40px;
-  width: 8px;
-  background-color: ${colors.green};
-  border-radius: 999px;
-  transition: background-color 0.3s ease;
-`
-
-const Title = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${colors.blue};
-  margin: 0;
-  transition: color 0.3s ease;
-`
-
-// Tabs
 const TabsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 32px;
 `
 
 const TabsList = styled.div`
   display: flex;
-  background-color: ${colors.white};
-  border-radius: 8px;
-  padding: 8px;
-  border: 1px solid ${colors.lightGray};
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  max-width: 600px;
-  margin: 0 auto;
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  border-bottom: 1px solid #ccc;
 `
 
-// Modifique a definição do TabButton para usar o atributo de forma segura
 const TabButton = styled.button<{ $active: boolean }>`
-  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  color: ${(props) => (props.$active ? "#007bff" : "#555")};
+  border-bottom: ${(props) => (props.$active ? "2px solid #007bff" : "none")};
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 12px;
-  border-radius: 6px;
-  border: none;
-  background-color: ${(props) => (props.$active ? colors.green : "transparent")};
-  color: ${(props) => (props.$active ? colors.white : colors.darkGray)};
-  font-weight: ${(props) => (props.$active ? "600" : "400")};
-  cursor: pointer;
-  transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${(props) => (props.$active ? colors.green : colors.lightGray)};
-  }
-
-  @media (min-width: 640px) {
-    span {
-      display: inline;
-    }
-  }
-
-  @media (max-width: 639px) {
-    span {
-      display: none;
-    }
+    color: #007bff;
   }
 `
 
-// Cards
-const Card = styled.div`
-  background-color: ${colors.white};
-  border-radius: 8px;
-  border: 1px solid ${colors.lightGray};
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-`
-
-const CardHeader = styled.div`
-  background-color: ${colors.blue};
-  color: ${colors.white};
-  padding: 16px 20px;
-  transition: background-color 0.3s ease;
-`
-
-const CardTitle = styled.h2`
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`
-
-const CardDescription = styled.p`
-  font-size: 14px;
-  color: ${colors.lightGray};
-  margin: 4px 0 0 0;
-  transition: color 0.3s ease;
-`
-
-const CardContent = styled.div`
-  padding: 24px 20px;
-  background-color: ${colors.white};
-  transition: background-color 0.3s ease;
-`
-
-const CardFooter = styled.div`
-  padding: 16px 20px;
-  border-top: 1px solid ${colors.lightGray};
-  background-color: ${colors.gray};
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-`
-
-// Grid layouts
-const Grid = styled.div`
-  display: grid;
-  gap: 24px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
-`
-
-// Replace TwoColumnGrid with a new style definition
-const ThreeColumnGrid = styled.div`
-  display: grid;
-  gap: 24px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media (min-width: 1024px) {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-`
-
-const TwoColumnGrid = styled.div`
-  display: grid;
-  gap: 24px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
+const TabContent = styled.div<{ $active: boolean }>`
+  display: ${(props) => (props.$active ? "block" : "none")};
+  padding: 20px;
 `
 
 const FormGrid = styled.div`
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 `
 
 const FormRow = styled.div`
-  display: grid;
+  display: flex;
   gap: 16px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
 `
 
-// Form elements
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-`
-
-const Label = styled.label`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${colors.blue};
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.3s ease;
-`
-
-const Input = styled.input`
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid ${colors.lightGray};
-  font-size: 14px;
-  transition: all 0.2s ease;
-  background-color: ${colors.white};
-  color: ${colors.darkGray};
+`
 
-  &:focus {
-    outline: none;
-    border-color: ${colors.green};
-    box-shadow: 0 0 0 2px rgba(0, 156, 59, 0.2);
+const TwoColumnGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 `
 
-const Select = styled.select`
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid ${colors.lightGray};
-  font-size: 14px;
-  background-color: ${colors.white};
-  color: ${colors.darkGray};
-  transition: all 0.2s ease;
+const ThreeColumnGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 
-  &:focus {
-    outline: none;
-    border-color: ${colors.green};
-    box-shadow: 0 0 0 2px rgba(0, 156, 59, 0.2);
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 `
 
-// Buttons
-const Button = styled.button<{ variant?: "primary" | "outline" | "ghost" | "danger" }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  ${(props) => {
-    switch (props.variant) {
-      case "outline":
-        return `
-          background-color: transparent;
-          border: 1px solid ${colors.lightGray};
-          color: ${colors.darkGray};
-          &:hover {
-            background-color: ${colors.lightGray};
-          }
-        `
-      case "ghost":
-        return `
-          background-color: transparent;
-          border: none;
-          color: ${colors.darkGray};
-          &:hover {
-            background-color: ${colors.lightGray};
-          }
-        `
-      case "danger":
-        return `
-          background-color: transparent;
-          border: 1px solid ${colors.lightRed};
-          color: ${colors.red};
-          &:hover {
-            background-color: ${colors.lightRed};
-          }
-        `
-      default:
-        return `
-          background-color: ${colors.green};
-          border: none;
-          color: ${colors.white};
-          &:hover {
-            background-color: #007c2f;
-          }
-          &:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-          }
-        `
-    }
-  }}
-`
-
-// Avatar
 const AvatarContainer = styled.div`
-  width: 128px;
-  height: 128px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  border: 4px solid ${colors.yellow};
   overflow: hidden;
   margin-bottom: 16px;
-  transition: border-color 0.3s ease;
 `
 
 const AvatarImage = styled.img`
@@ -387,330 +127,50 @@ const AvatarImage = styled.img`
   object-fit: cover;
 `
 
-const AvatarFallback = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${colors.green};
-  color: ${colors.white};
-  font-size: 24px;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-`
-
-// Switch
-const SwitchContainer = styled.label<{ disabled?: boolean }>`
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
-`
-
-const SwitchInput = styled.input`
-  opacity: 0;
-  width: 0;
-  height: 0;
-`
-
-// Modifique a definição do SwitchSlider para usar o atributo de forma segura
-const SwitchSlider = styled.span<{ checked: boolean; disabled?: boolean }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: ${(props) => (props.checked ? (props.disabled ? "#aaa" : colors.green) : colors.lightGray)};
-  border-radius: 34px;
-  transition: .4s;
-  
-  &:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    border-radius: 50%;
-    transition: .4s;
-    transform: ${(props) => (props.checked ? "translateX(20px)" : "translateX(0)")};
-  }
-`
-
-// Badge
-const Badge = styled.span<{ variant?: "primary" | "warning" | "danger" | "info" | "new" }>`
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, color 0.3s ease;
-
-  ${(props) => {
-    switch (props.variant) {
-      case "warning":
-        return `
-          background-color: ${colors.lightYellow};
-          color: ${colors.darkGray};
-        `
-      case "danger":
-        return `
-          background-color: ${colors.lightRed};
-          color: ${colors.red};
-        `
-      case "info":
-        return `
-          background-color: ${colors.lightBlue};
-          color: ${colors.blue};
-        `
-      case "new":
-        return `
-          background-color: ${colors.lightPurple};
-          color: ${colors.purple};
-        `
-      default:
-        return `
-          background-color: ${colors.green};
-          color: ${colors.white};
-        `
-    }
-  }}
-`
-
-// Alert boxes
-const AlertBox = styled.div<{ variant: "success" | "warning" | "info" | "danger" }>`
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  margin-top: 16px;
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-
-  ${(props) => {
-    switch (props.variant) {
-      case "warning":
-        return `
-          background-color: ${colors.lightYellow};
-          border: 1px solid ${colors.yellow};
-          color: ${colors.darkGray};
-        `
-      case "info":
-        return `
-          background-color: ${colors.lightBlue};
-          border: 1px solid ${colors.blue};
-          color: ${colors.blue};
-        `
-      case "danger":
-        return `
-          background-color: ${colors.lightRed};
-          border: 1px solid ${colors.red};
-          color: ${colors.red};
-        `
-      default:
-        return `
-          background-color: ${colors.lightGreen};
-          border: 1px solid ${colors.green};
-          color: ${colors.green};
-        `
-    }
-  }}
-`
-
-const AlertTitle = styled.h4<{ variant: "success" | "warning" | "info" | "danger" }>`
-  margin: 0 0 8px 0;
-  font-size: 14px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.3s ease;
-
-  ${(props) => {
-    switch (props.variant) {
-      case "warning":
-        return `color: ${colors.darkGray};`
-      case "info":
-        return `color: ${colors.blue};`
-      case "danger":
-        return `color: ${colors.red};`
-      default:
-        return `color: ${colors.green};`
-    }
-  }}
-`
-
-const AlertText = styled.p<{ variant: "success" | "warning" | "info" | "danger" }>`
-  margin: 0;
-  transition: color 0.3s ease;
-  
-  ${(props) => {
-    switch (props.variant) {
-      case "warning":
-        return `color: ${colors.darkGray};`
-      case "info":
-        return `color: ${colors.blue};`
-      case "danger":
-        return `color: ${colors.red};`
-      default:
-        return `color: ${colors.green};`
-    }
-  }}
-`
-
-// List
-const List = styled.ul`
-  list-style-type: disc;
-  padding-left: 20px;
-  margin: 8px 0;
-  color: ${colors.green};
-`
-
-const ListItem = styled.li`
-  margin-bottom: 4px;
-`
-
-// Section heading
-const SectionHeading = styled.h3`
-  font-size: 16px;
-  font-weight: 500;
-  color: ${colors.blue};
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid ${colors.lightGray};
-  margin: 0 0 16px 0;
-`
-
-// Change the SwitchItem styled component definition
-const SwitchItem = styled.div<{ $isMaster?: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: ${(props) => (props.$isMaster ? "16px" : "8px")};
-  padding: ${(props) => (props.$isMaster ? "12px" : "6px 8px")};
-  border-radius: 6px;
-  transition: background-color 0.2s;
-  ${(props) =>
-    props.$isMaster &&
-    `
-    background-color: ${colors.lightGreen};
-    border: 1px solid ${colors.green};
-    margin-bottom: 20px;
-  `}
-
-  &:hover {
-    background-color: ${(props) => (props.$isMaster ? colors.lightGreen : colors.gray)};
-  }
-`
-
-// Update the Switch component to use $isMaster
-const Switch = ({
-  checked,
-  onChange,
-  label,
-  description,
-  badge,
-  disabled,
-  isMaster,
-}: {
-  checked: boolean
-  onChange: () => void
-  label: string
-  description?: string
-  badge?: {
-    text: string
-    variant: "primary" | "warning" | "danger" | "info" | "new"
-  }
-  disabled?: boolean
-  isMaster?: boolean
-}) => {
-  return (
-    <SwitchItem $isMaster={isMaster}>
-      <SwitchInfo>
-        <SwitchLabel disabled={disabled}>{label}</SwitchLabel>
-        <div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" }}>
-          {description && <SwitchDescription disabled={disabled}>{description}</SwitchDescription>}
-          {badge && <Badge variant={badge.variant}>{badge.text}</Badge>}
-        </div>
-      </SwitchInfo>
-      <SwitchContainer disabled={disabled}>
-        <SwitchInput type="checkbox" checked={checked} onChange={onChange} disabled={disabled} />
-        <SwitchSlider checked={checked} disabled={disabled} />
-      </SwitchContainer>
-    </SwitchItem>
-  )
-}
-
-const SwitchInfo = styled.div`
+const NotificationCategory = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
-`
-
-const SwitchLabel = styled.span<{ disabled?: boolean }>`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${(props) => (props.disabled ? "#999" : "inherit")};
-  transition: color 0.3s ease;
-`
-
-const SwitchDescription = styled.span<{ disabled?: boolean }>`
-  font-size: 12px;
-  color: ${(props) => (props.disabled ? "#aaa" : "#666")};
-  transition: color 0.3s ease;
-`
-
-// Notification category
-const NotificationCategory = styled.div`
-  margin-bottom: 24px;
-  padding: 16px;
-  border-radius: 8px;
-  background-color: ${colors.white};
-  border: 1px solid ${colors.lightGray};
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  gap: 8px;
 `
 
 const CategoryHeader = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  flex-direction: column;
+  margin-bottom: 8px;
 `
 
-const CategoryTitle = styled.h4`
-  margin: 0;
+const CategoryTitle = styled.h3`
   font-size: 16px;
   font-weight: 600;
-  color: ${colors.blue};
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: color 0.3s ease;
 `
 
 const CategoryDescription = styled.p`
-  margin: 4px 0 16px 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #666;
-  transition: color 0.3s ease;
+  margin: 0;
 `
 
-// Device item
-const DeviceItem = styled.div`
+const SectionHeading = styled.h4`
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
+  gap: 8px;
+`
+
+const DeviceItem = styled.div`
+  display: flex;
   justify-content: space-between;
-  background-color: ${colors.gray};
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid ${colors.lightGray};
-  margin-bottom: 12px;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 8px;
 `
 
 const DeviceInfo = styled.div`
@@ -723,13 +183,11 @@ const DeviceIcon = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: ${colors.blue};
-  color: ${colors.white};
+  background-color: #eee;
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 12px;
-  transition: background-color 0.3s ease;
+  align-items: center;
+  font-weight: 600;
 `
 
 const DeviceDetails = styled.div`
@@ -737,330 +195,20 @@ const DeviceDetails = styled.div`
   flex-direction: column;
 `
 
-const DeviceName = styled.p`
-  margin: 0;
-  font-weight: 500;
-  font-size: 14px;
-  color: inherit;
-  transition: color 0.3s ease;
+const DeviceName = styled.div`
+  font-weight: 600;
 `
 
-const DeviceLastSeen = styled.p`
-  margin: 0;
+const DeviceLastSeen = styled.div`
   font-size: 12px;
   color: #666;
-  transition: color 0.3s ease;
 `
 
-// Update Toast for better dark mode support
-const Toast = styled.div`
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background-color: ${colors.lightGreen};
-  border: 1px solid ${colors.green};
-  color: ${colors.green};
-  padding: 16px;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 1000;
-  animation: slideIn 0.3s ease;
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-
-  @keyframes slideIn {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-`
-
-// Update TabContent for better dark mode support
-const TabContent = styled.div<{ $active: boolean }>`
-  display: ${(props) => (props.$active ? "block" : "none")};
-`
-
-// Update ModalOverlay for better dark mode support
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-  transition: background-color 0.3s ease;
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-`
-
-// Update ModalContainer for better dark mode support
-const ModalContainer = styled.div`
-  background-color: ${colors.white};
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 500px;
-  animation: scaleIn 0.2s ease;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-
-  @keyframes scaleIn {
-    from {
-      transform: scale(0.95);
-    }
-    to {
-      transform: scale(1);
-    }
-  }
-`
-
-// Update ModalHeader for better dark mode support
-const ModalHeader = styled.div`
-  padding: 16px 20px;
-  border-bottom: 1px solid ${colors.lightGray};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: border-color 0.3s ease;
-`
-
-// Update ModalTitle for better dark mode support
-const ModalTitle = styled.h3`
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: ${colors.blue};
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: color 0.3s ease;
-`
-
-// Update ModalCloseButton for better dark mode support
-const ModalCloseButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: ${colors.darkGray};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s, color 0.3s ease;
-
-  &:hover {
-    background-color: ${colors.lightGray};
-  }
-`
-
-// Update ModalContent for better dark mode support
-const ModalContent = styled.div`
-  padding: 20px;
-  color: inherit;
-  transition: color 0.3s ease;
-`
-
-// Update ModalFooter for better dark mode support
-const ModalFooter = styled.div`
-  padding: 16px 20px;
-  border-top: 1px solid ${colors.lightGray};
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  transition: border-color 0.3s ease;
-`
-
-// Update ModalIconContainer for better dark mode support
-const ModalIconContainer = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-color: ${colors.lightYellow};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px auto;
-  transition: background-color 0.3s ease;
-`
-
-// Add the LocationModal component definition after the ModalIconContainer styled component and before the ConfiguracoesTab component
-
-const LocationModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  isEnabling,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => void
-  isEnabling: boolean
+// Modifique a definição do componente ConfiguracoesTab para aceitar o authFetch prop
+const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestInit) => Promise<Response>; token: string }> = ({
+  authFetch,
+  token,
 }) => {
-  if (!isOpen) return null
-
-  return (
-    <ModalOverlay>
-      <ModalContainer>
-        <ModalHeader>
-          <ModalTitle>
-            <MapPin size={18} />
-            {isEnabling ? "Ativar Localização" : "Desativar Localização"}
-          </ModalTitle>
-          <ModalCloseButton onClick={onClose}>
-            <X size={18} />
-          </ModalCloseButton>
-        </ModalHeader>
-        <ModalContent>
-          <ModalIconContainer>
-            {isEnabling ? (
-              <MapPin size={32} color={colors.orange} />
-            ) : (
-              <AlertTriangle size={32} color={colors.orange} />
-            )}
-          </ModalIconContainer>
-
-          {isEnabling ? (
-            <>
-              <AlertTitle variant="warning" style={{ textAlign: "center", marginBottom: "16px" }}>
-                Compartilhar sua localização é importante!
-              </AlertTitle>
-              <AlertText variant="warning" style={{ marginBottom: "16px", textAlign: "center" }}>
-                Ao ativar o compartilhamento de localização, você permite que o sistema:
-              </AlertText>
-              <List>
-                <ListItem>Identifique áreas de risco próximas a você</ListItem>
-                <ListItem>Envie alertas de emergência relevantes para sua região</ListItem>
-                <ListItem>Forneça informações sobre casos próximos</ListItem>
-                <ListItem>Ajude a mapear ocorrências em sua comunidade</ListItem>
-              </List>
-              <AlertBox variant="info" style={{ marginTop: "20px" }}>
-                <AlertTitle variant="info">
-                  <Info size={16} />
-                  Sua privacidade é importante
-                </AlertTitle>
-                <AlertText variant="info">
-                  Seus dados de localização são usados apenas para melhorar sua experiência e segurança. Não
-                  compartilhamos essas informações com terceiros.
-                </AlertText>
-              </AlertBox>
-            </>
-          ) : (
-            <>
-              <AlertTitle variant="warning" style={{ textAlign: "center", marginBottom: "16px" }}>
-                Tem certeza que deseja desativar a localização?
-              </AlertTitle>
-              <AlertText variant="warning" style={{ marginBottom: "16px", textAlign: "center" }}>
-                Ao desativar o compartilhamento de localização, você perderá:
-              </AlertText>
-              <List>
-                <ListItem>Alertas de emergência específicos para sua região</ListItem>
-                <ListItem>Notificações sobre áreas de risco próximas</ListItem>
-                <ListItem>Informações sobre casos em sua comunidade</ListItem>
-                <ListItem>Recursos de mapeamento e análise local</ListItem>
-              </List>
-              <AlertBox variant="danger" style={{ marginTop: "20px" }}>
-                <AlertTitle variant="danger">
-                  <AlertTriangle size={16} />
-                  Impacto na sua segurança
-                </AlertTitle>
-                <AlertText variant="danger">
-                  Sem acesso à sua localização, não poderemos enviar alertas importantes que podem afetar sua segurança
-                  em situações de emergência.
-                </AlertText>
-              </AlertBox>
-            </>
-          )}
-        </ModalContent>
-        <ModalFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>{isEnabling ? "Ativar Localização" : "Desativar Mesmo Assim"}</Button>
-        </ModalFooter>
-      </ModalContainer>
-    </ModalOverlay>
-  )
-}
-
-// Also add the ConfirmationModal component definition
-const ConfirmationModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => void
-}) => {
-  if (!isOpen) return null
-
-  return (
-    <ModalOverlay>
-      <ModalContainer>
-        <ModalHeader>
-          <ModalTitle>
-            <Save size={18} />
-            Confirmar Alterações
-          </ModalTitle>
-          <ModalCloseButton onClick={onClose}>
-            <X size={18} />
-          </ModalCloseButton>
-        </ModalHeader>
-        <ModalContent>
-          <ModalIconContainer>
-            <AlertCircle size={32} color={colors.blue} />
-          </ModalIconContainer>
-
-          <AlertTitle variant="info" style={{ textAlign: "center", marginBottom: "16px" }}>
-            Deseja salvar as alterações?
-          </AlertTitle>
-          <AlertText variant="info" style={{ marginBottom: "16px", textAlign: "center" }}>
-            Você está prestes a salvar as alterações nas suas configurações. Esta ação não pode ser desfeita.
-          </AlertText>
-
-          <AlertBox variant="info" style={{ marginTop: "20px" }}>
-            <AlertTitle variant="info">
-              <Info size={16} />
-              Lembrete de Privacidade
-            </AlertTitle>
-            <AlertText variant="info">
-              Suas informações são mantidas anônimas para outros usuários. Apenas você e os administradores do sistema
-              podem ver seus dados reais.
-            </AlertText>
-          </AlertBox>
-        </ModalContent>
-        <ModalFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>Confirmar e Salvar</Button>
-        </ModalFooter>
-      </ModalContainer>
-    </ModalOverlay>
-  )
-}
-
-// Modifique a parte do estado no componente ConfiguracoesTab para adicionar o estado do tipo de nome anônimo
-const ConfiguracoesTab: React.FC = () => {
   const [activeTab, setActiveTab] = useState("profile")
   const [loading, setLoading] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -1070,195 +218,87 @@ const ConfiguracoesTab: React.FC = () => {
   const [username, setUsername] = useState("Anônimo_" + Math.floor(Math.random() * 10000))
   const [useFixedAnonymous, setUseFixedAnonymous] = useState(false)
 
-  // Adicione esta função dentro do componente ConfiguracoesTab, antes do return
-  const handleFileUpload = (file: File) => {
-    // Aqui você implementaria a lógica para fazer o upload do arquivo para o servidor
-    // Por exemplo, usando FormData e fetch
-
-    // Exemplo de como seria o código:
-    // const formData = new FormData();
-    // formData.append('avatar', file);
-    //
-    // fetch('/api/upload-avatar', {
-    //   method: 'POST',
-    //   body: formData
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //   console.log('Upload bem-sucedido:', data);
-    //   // Atualizar a imagem do avatar
-    // })
-    // .catch(error => {
-    //   console.error('Erro no upload:', error);
-    // });
-
-    // Por enquanto, apenas simularemos o upload
-    setLoading(true)
-    setTimeout(() => {
-import { User, Mail, Save, Bell, Shield, Lock, LogOut } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
-import { Button } from "@/app/components/ui/button"
-import { Input } from "@/app/components/ui/input"
-import { Label } from "@/app/components/ui/label"
-import { Switch } from "@/app/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { useToast } from "@/app/components/ui/use-toast"
-import { useAuth } from "@/app/contexts/auth-context"
-import axios from "axios"
-
-interface UserPreferences {
-  notifications: {
-    email: boolean
-    push: boolean
-    sms: boolean
-  }
-  privacy: {
-    showProfile: boolean
-    shareLocation: boolean
-    allowDataCollection: boolean
-  }
-  security: {
-    twoFactorAuth: boolean
-    loginNotifications: boolean
-    sessionTimeout: string
-  }
-}
-
-export default function ConfiguracoesTab() {
-  const { user, isLoading: authLoading, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState("profile")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [username, setUsername] = useState("")
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [phone, setPhone] = useState("")
-  const [address, setAddress] = useState("")
-  const [preferences, setPreferences] = useState<UserPreferences>({
-    notifications: {
-      email: true,
-      push: true,
-      sms: false,
-    },
-    privacy: {
-      showProfile: true,
-      shareLocation: false,
-      allowDataCollection: true,
-    },
-    security: {
-      twoFactorAuth: false,
-      loginNotifications: true,
-      sessionTimeout: "30",
-    },
+  // Adicione estados para os campos do formulário
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    secondaryPhone: "",
+    alternativeContactType: "email",
+    alternativeContact: "",
+    gender: "",
+    occupation: "",
+    occupationDetails: "",
   })
-  const [profileImage, setProfileImage] = useState<File | null>(null)
-  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null)
 
-  // Função para obter o token de autenticação
-  const getAuthToken = () => {
-    return localStorage.getItem("auth-token") || ""
-  }
+  const [toastMessage, setToastMessage] = useState({
+    title: "Alterações salvas com sucesso!",
+    message: "Suas configurações foram atualizadas.",
+  })
 
-  // Carregar dados do usuário
-  useEffect(() => {
-    if (user) {
-      // Preencher campos com dados do usuário
-      setUsername(user.name)
-
-      const nameParts = user.name.split(" ")
-      setFirstName(nameParts[0] || "")
-      setLastName(nameParts.slice(1).join(" ") || "")
-
-      // Carregar preferências do usuário
-      fetchUserPreferences()
-    }
-  }, [user])
-
-  // Função para carregar preferências do usuário
-  const fetchUserPreferences = async () => {
-    setLoading(true)
-    setError(null)
-
+  // Função para buscar os dados do usuário
+  const fetchUserData = async () => {
     try {
-      // Usando o endpoint fornecido para obter dados do usuário
-      const response = await axios.get("http://26.190.233.3:8080/api/citizens/me", {
+      setLoading(true)
+      const response = await authFetch("http://26.190.233.3:8080/api/citizens/me", {
         headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
+          Authorization: `Bearer ${token}`, // Inclui o token no cabeçalho
         },
       })
 
-      // Atualizar estado com as preferências do usuário
-      if (response.data.preferences) {
-        setPreferences(response.data.preferences)
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar dados: ${response.status}`)
       }
 
-      // Carregar outros dados do perfil
-      setPhone(response.data.phone || "")
-      setAddress(response.data.address || "")
+      const data = await response.json()
+      console.log("Dados do usuário recebidos:", data)
 
-      // Carregar imagem de perfil
-      if (response.data.profileImageUrl) {
-        setProfileImagePreview(response.data.profileImageUrl)
+      // Preencher os campos do formulário com os dados recebidos
+      setUserData({
+        firstName: data.firstName || "",
+        lastName: data.lastName || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        secondaryPhone: data.secondaryPhone || "",
+        alternativeContactType: data.alternativeContactType || "email",
+        alternativeContact: data.alternativeContact || "",
+        gender: data.gender || "",
+        occupation: data.occupation || "",
+        occupationDetails: data.occupationDetails || "",
+      })
+
+      // Se o usuário tiver um nome de usuário anônimo definido, use-o
+      if (data.anonymousUsername) {
+        setUsername(data.anonymousUsername)
+        setUseFixedAnonymous(data.anonymousUsername === "Anônimo")
       }
-    } catch (err: any) {
-      console.error("Erro ao carregar preferências:", err)
-      setError(err.response?.data?.message || "Erro ao carregar preferências. Por favor, tente novamente.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Função para salvar configurações
-  const handleSaveProfile = async () => {
-    if (!user) return
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      // Criar FormData para enviar arquivos
-      const formData = new FormData()
-
-      // Adicionar campos de texto
-      formData.append("firstName", firstName)
-      formData.append("lastName", lastName)
-      formData.append("phone", phone)
-      formData.append("address", address)
-
-      // Adicionar imagem de perfil se existir
-      if (profileImage) {
-        formData.append("profileImage", profileImage)
-      }
-
-      // Enviar para a API usando o endpoint fornecido
-      await axios.put("http://26.190.233.3:8080/api/citizens/id", formData, {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-          "Content-Type": "multipart/form-data",
-        },
+    } catch (error) {
+      console.error("Erro ao buscar dados do usuário:", error)
+      setToastMessage({
+        title: "Erro ao carregar dados",
+        message: "Não foi possível carregar seus dados. Tente novamente mais tarde.",
       })
-      // Toast is already initialized at the top level
-      const { toast } = useToast()
-      toast({
-        title: "Sucesso",
-        description: "Perfil atualizado com sucesso!",
-        variant: "default",
-      })
-    } catch (err: any) {
-      console.error("Erro ao atualizar perfil:", err)
-      setError(err.response?.data?.message || "Erro ao atualizar perfil. Por favor, tente novamente.")
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar perfil. Por favor, tente novamente.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
-    }, 1500)
+    } finally {
+      setLoading(false)
+    }
   }
+
+  // Função para atualizar os campos do formulário quando o usuário digita
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { id, value } = e.target
+    setUserData((prev) => ({
+      ...prev,
+      [id]: value,
+    }))
+  }
+
+  // Buscar dados do usuário ao carregar o componente
+  useEffect(() => {
+    fetchUserData()
+  }, [])
 
   // Função para gerar um novo nome de usuário
   const generateNewUsername = () => {
@@ -1363,77 +403,6 @@ export default function ConfiguracoesTab() {
 
     // Para outros switches, comportamento normal
     setNotificationSwitches((prev) => ({
-  // Função para salvar preferências
-  const handleSavePreferences = async (section: keyof UserPreferences) => {
-    if (!user) return
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      // Enviar para a API
-      await axios.put(
-        "http://26.190.233.3:8080/api/citizens/id",
-        {
-          preferences: {
-            [section]: preferences[section],
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${getAuthToken()}`,
-            "Content-Type": "application/json",
-          },
-        },
-      )
-
-      toast({
-        title: "Sucesso",
-        description: "Preferências atualizadas com sucesso!",
-        variant: "default",
-      })
-    } catch (err: any) {
-      console.error("Erro ao atualizar preferências:", err)
-      setError(err.response?.data?.message || "Erro ao atualizar preferências. Por favor, tente novamente.")
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar preferências. Por favor, tente novamente.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Função para lidar com o upload de imagem
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setProfileImage(file)
-
-      // Criar preview da imagem
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setProfileImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  // Função para lidar com alterações nas preferências de notificação
-  const handleNotificationChange = (key: keyof typeof preferences.notifications, value: boolean) => {
-    setPreferences((prev) => ({
-      ...prev,
-      notifications: {
-        ...prev.notifications,
-        [key]: value,
-      },
-    }))
-  }
-
-  // Função para lidar com alterações nas preferências de privacidade
-  const handlePrivacyChange = (key: keyof typeof preferences.privacy, value: boolean) => {
-    setPreferences((prev) => ({
       ...prev,
       [key]: !prev[key],
     }))
@@ -1458,10 +427,92 @@ export default function ConfiguracoesTab() {
     setShowConfirmationModal(true)
   }
 
-  const handleConfirmSave = () => {
+  const handleConfirmSave = async () => {
     setShowConfirmationModal(false)
     setLoading(true)
-    // Simulando uma requisição
+
+    try {
+      // Preparar os dados para enviar à API
+      const dataToSend = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        fullName: `${userData.firstName} ${userData.lastName}`.trim(), // Adicionar fullName combinando firstName e lastName
+        email: userData.email,
+        phone: userData.phone,
+        secondaryPhone: userData.secondaryPhone,
+        alternativeContactType: userData.alternativeContactType,
+        alternativeContact: userData.alternativeContact,
+        gender: userData.gender,
+        occupation: userData.occupation,
+        occupationDetails: userData.occupationDetails,
+        anonymousUsername: username,
+        // Adicione outros campos conforme necessário
+      }
+
+      // Enviar os dados para a API
+      const response = await authFetch("http://26.190.233.3:8080/api/citizens/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Inclui o token no cabeçalho
+        },
+        body: JSON.stringify(dataToSend),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ao atualizar dados: ${response.status}`)
+      }
+
+      // Atualizar mensagem de sucesso
+      setToastMessage({
+        title: "Alterações salvas com sucesso!",
+        message: "Seus dados foram atualizados.",
+      })
+
+      // Mostrar toast de sucesso
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    } catch (error) {
+      console.error("Erro ao salvar dados:", error)
+
+      // Atualizar mensagem de erro
+      setToastMessage({
+        title: "Erro ao salvar dados",
+        message: "Não foi possível salvar suas alterações. Tente novamente mais tarde.",
+      })
+
+      // Mostrar toast de erro
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Adicione esta função dentro do componente ConfiguracoesTab, antes do return
+  const handleFileUpload = (file: File) => {
+    // Aqui você implementaria a lógica para fazer o upload do arquivo para o servidor
+    // Por exemplo, usando FormData e fetch
+
+    // Exemplo de como seria o código:
+    // const formData = new FormData();
+    // formData.append('avatar', file);
+    //
+    // fetch('/api/upload-avatar', {
+    //   method: 'POST',
+    //   body: formData
+    // })
+    // .then(response => response.json())
+    // .then(data => {
+    //   console.log('Upload bem-sucedido:', data);
+    //   // Atualizar a imagem do avatar
+    // })
+    // .catch(error => {
+    //   console.error('Erro no upload:', error);
+    // });
+
+    // Por enquanto, apenas simularemos o upload
+    setLoading(true)
     setTimeout(() => {
       setLoading(false)
       setShowToast(true)
@@ -1469,45 +520,11 @@ export default function ConfiguracoesTab() {
     }, 1500)
   }
 
-      security: {
-        ...prev.security,
-        [key]: value,
-      },
-    }))
-  }
-
-  // Função para lidar com o logout
-  const handleLogout = async () => {
-    try {
-      await logout()
-      // Redirecionamento é tratado no contexto de autenticação
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error)
-      toast({
-        title: "Erro",
-        description: "Erro ao fazer logout. Por favor, tente novamente.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // Renderizar estado de carregamento
-  if (authLoading) {
-    return (
-      <div className="flex justify-center items-center h-[200px] text-lg text-muted-foreground">
-        Carregando configurações...
-      </div>
-    )
-  }
-
-  // Renderizar o conteúdo das configurações
   return (
     <>
       <GlobalStyle />
       <Container>
         <TabsContainer>
-          {/* Modifique a parte onde os TabButtons são renderizados */}
-          {/* Substitua o código atual por: */}
           <TabsList>
             <TabButton $active={activeTab === "profile"} onClick={() => setActiveTab("profile")}>
               <User size={16} />
@@ -1526,28 +543,8 @@ export default function ConfiguracoesTab() {
               <span>Privacidade</span>
             </TabButton>
           </TabsList>
-    <div className="w-full max-w-[1200px] mx-auto p-5">
-      {error && (
-        <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-5 flex items-center gap-3">
-          <Shield size={20} />
-          <span>{error}</span>
-          <Button variant="outline" size="sm" onClick={fetchUserPreferences}>
-            Tentar novamente
-          </Button>
-        </div>
-      )}
-
-      <Tabs defaultValue="profile" onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="profile">Perfil</TabsTrigger>
-          <TabsTrigger value="notifications">Notificações</TabsTrigger>
-          <TabsTrigger value="privacy">Privacidade</TabsTrigger>
-          <TabsTrigger value="security">Segurança</TabsTrigger>
-        </TabsList>
 
           {/* Aba de Perfil */}
-          {/* Modifique a parte onde os TabContents são renderizados */}
-          {/* Substitua cada TabContent por: */}
           <TabContent $active={activeTab === "profile"}>
             <FormGrid style={{ gap: "24px" }}>
               <TwoColumnGrid>
@@ -1605,31 +602,6 @@ export default function ConfiguracoesTab() {
                     </Button>
                   </CardContent>
                 </Card>
-        {/* Aba de Perfil */}
-        <TabsContent value="profile">
-          <div className="grid gap-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User size={18} />
-                    Foto de Perfil
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center">
-                  <div className="w-[100px] h-[100px] rounded-full overflow-hidden mb-4">
-                    <img
-                      src={profileImagePreview || "/placeholder.svg?height=100&width=100"}
-                      alt="Foto de perfil"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="space-y-2 w-full">
-                    <Label htmlFor="profileImage">Alterar foto</Label>
-                    <Input id="profileImage" type="file" accept="image/*" onChange={handleImageUpload} />
-                  </div>
-                </CardContent>
-              </Card>
 
                 <Card>
                   <CardHeader>
@@ -1665,35 +637,6 @@ export default function ConfiguracoesTab() {
                   </CardContent>
                 </Card>
               </TwoColumnGrid>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lock size={18} />
-                    Segurança da Conta
-                  </CardTitle>
-                  <CardDescription>Gerencie suas credenciais de acesso</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" value={user?.email || ""} disabled />
-                      <p className="text-xs text-muted-foreground">
-                        Para alterar seu email, entre em contato com o suporte.
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Senha</Label>
-                      <div className="flex gap-2">
-                        <Input id="password" type="password" value="••••••••" disabled />
-                        <Button variant="outline">Alterar</Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
 
               <Card>
                 <CardHeader>
@@ -1708,11 +651,16 @@ export default function ConfiguracoesTab() {
                     <FormRow>
                       <FormGroup>
                         <Label htmlFor="firstName">Nome</Label>
-                        <Input id="firstName" placeholder="John" />
+                        <Input
+                          id="firstName"
+                          placeholder="John"
+                          value={userData.firstName}
+                          onChange={handleInputChange}
+                        />
                       </FormGroup>
                       <FormGroup>
                         <Label htmlFor="lastName">Sobrenome</Label>
-                        <Input id="lastName" placeholder="Doe" />
+                        <Input id="lastName" placeholder="Doe" value={userData.lastName} onChange={handleInputChange} />
                       </FormGroup>
                     </FormRow>
                     <TwoColumnGrid>
@@ -1721,14 +669,26 @@ export default function ConfiguracoesTab() {
                           <Mail size={14} />
                           Email
                         </Label>
-                        <Input id="email" type="email" placeholder="john.doe@example.com" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="john.doe@example.com"
+                          value={userData.email}
+                          onChange={handleInputChange}
+                        />
                       </FormGroup>
                       <FormGroup>
                         <Label htmlFor="phone">
                           <Phone size={14} />
                           Telefone Principal
                         </Label>
-                        <Input id="phone" type="tel" placeholder="(00) 00000-0000" />
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="(00) 00000-0000"
+                          value={userData.phone}
+                          onChange={handleInputChange}
+                        />
                       </FormGroup>
                     </TwoColumnGrid>
                     <TwoColumnGrid>
@@ -1737,11 +697,21 @@ export default function ConfiguracoesTab() {
                           <Phone size={14} />
                           Telefone Secundário
                         </Label>
-                        <Input id="secondaryPhone" type="tel" placeholder="(00) 00000-0000" />
+                        <Input
+                          id="secondaryPhone"
+                          type="tel"
+                          placeholder="(00) 00000-0000"
+                          value={userData.secondaryPhone}
+                          onChange={handleInputChange}
+                        />
                       </FormGroup>
                       <FormGroup>
-                        <Label htmlFor="alternative-contact-type">Contato Alternativo</Label>
-                        <Select id="alternative-contact-type" defaultValue="email">
+                        <Label htmlFor="alternativeContactType">Contato Alternativo</Label>
+                        <Select
+                          id="alternativeContactType"
+                          value={userData.alternativeContactType}
+                          onChange={handleInputChange}
+                        >
                           <option value="email">Email</option>
                           <option value="phone">Telefone</option>
                           <option value="whatsapp">WhatsApp</option>
@@ -1751,8 +721,13 @@ export default function ConfiguracoesTab() {
                       </FormGroup>
                     </TwoColumnGrid>
                     <FormGroup>
-                      <Label htmlFor="alternative-contact">Informação de Contato Alternativo</Label>
-                      <Input id="alternative-contact" placeholder="Informe seu contato alternativo" />
+                      <Label htmlFor="alternativeContact">Informação de Contato Alternativo</Label>
+                      <Input
+                        id="alternativeContact"
+                        placeholder="Informe seu contato alternativo"
+                        value={userData.alternativeContact}
+                        onChange={handleInputChange}
+                      />
                       <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
                         Este contato será usado apenas para recuperação de conta em caso de emergência.
                       </p>
@@ -1761,7 +736,7 @@ export default function ConfiguracoesTab() {
                     <TwoColumnGrid>
                       <FormGroup>
                         <Label htmlFor="gender">Gênero</Label>
-                        <Select id="gender" defaultValue="">
+                        <Select id="gender" value={userData.gender} onChange={handleInputChange}>
                           <option value="" disabled>
                             Selecione seu gênero
                           </option>
@@ -1774,23 +749,26 @@ export default function ConfiguracoesTab() {
                       </FormGroup>
                       <FormGroup>
                         <Label htmlFor="occupation">Ocupação</Label>
-                        <Select id="occupation" defaultValue="">
+                        <Select id="occupation" value={userData.occupation} onChange={handleInputChange}>
                           <option value="" disabled>
                             Selecione sua ocupação
                           </option>
                           <option value="estudante">Estudante</option>
                           <option value="profissional">Profissional</option>
                           <option value="autonomo">Autônomo</option>
+                          <option value="aposentado">Aposentado</option>
                           <option value="outro">Outro</option>
                         </Select>
                       </FormGroup>
                     </TwoColumnGrid>
 
                     <FormGroup>
-                      <Label htmlFor="occupation-details">Detalhes da Ocupação</Label>
+                      <Label htmlFor="occupationDetails">Detalhes da Ocupação</Label>
                       <Input
-                        id="occupation-details"
+                        id="occupationDetails"
                         placeholder="Ex: Estudante de Medicina, Engenheiro de Software, etc."
+                        value={userData.occupationDetails}
+                        onChange={handleInputChange}
                       />
                     </FormGroup>
 
@@ -1807,7 +785,9 @@ export default function ConfiguracoesTab() {
                   </FormGrid>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline">Cancelar</Button>
+                  <Button variant="outline" onClick={fetchUserData} disabled={loading}>
+                    {loading ? "Carregando..." : "Cancelar"}
+                  </Button>
                   <Button onClick={handleSave} disabled={loading}>
                     {loading ? "Salvando..." : "Salvar alterações"}
                     {!loading && <Save size={16} />}
@@ -1816,83 +796,6 @@ export default function ConfiguracoesTab() {
               </Card>
             </FormGrid>
           </TabContent>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail size={18} />
-                  Informações Pessoais
-                </CardTitle>
-                <CardDescription>Atualize suas informações pessoais</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">Nome</Label>
-                      <Input
-                        id="firstName"
-                        placeholder="John"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Sobrenome</Label>
-                      <Input
-                        id="lastName"
-                        placeholder="Doe"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center gap-1">
-                        <Mail size={14} />
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="john.doe@example.com"
-                        value={user?.email || ""}
-                        disabled
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Telefone</Label>
-                      <Input
-                        id="phone"
-                        placeholder="(11) 99999-9999"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Endereço</Label>
-                    <Input
-                      id="address"
-                      placeholder="Rua, número, bairro, cidade, estado, CEP"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="mr-2">
-                  Cancelar
-                </Button>
-                <Button onClick={handleSaveProfile} disabled={loading} className="flex items-center gap-2">
-                  {loading ? "Salvando..." : "Salvar alterações"}
-                  {!loading && <Save size={16} />}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </TabsContent>
 
           {/* Aba de Notificações */}
           <TabContent $active={activeTab === "notifications"}>
@@ -2103,64 +1006,6 @@ export default function ConfiguracoesTab() {
               </CardFooter>
             </Card>
           </TabContent>
-        {/* Aba de Notificações */}
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell size={18} />
-                Preferências de Notificação
-              </CardTitle>
-              <CardDescription>Controle como você recebe notificações</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b">
-                  <div className="space-y-0.5">
-                    <div className="font-medium">Notificações por Email</div>
-                    <div className="text-sm text-muted-foreground">Receba atualizações sobre seus casos por email</div>
-                  </div>
-                  <Switch
-                    checked={preferences.notifications.email}
-                    onCheckedChange={(checked) => handleNotificationChange("email", checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between py-3 border-b">
-                  <div className="space-y-0.5">
-                    <div className="font-medium">Notificações Push</div>
-                    <div className="text-sm text-muted-foreground">Receba notificações no navegador</div>
-                  </div>
-                  <Switch
-                    checked={preferences.notifications.push}
-                    onCheckedChange={(checked) => handleNotificationChange("push", checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between py-3">
-                  <div className="space-y-0.5">
-                    <div className="font-medium">Notificações por SMS</div>
-                    <div className="text-sm text-muted-foreground">Receba alertas importantes por SMS</div>
-                  </div>
-                  <Switch
-                    checked={preferences.notifications.sms}
-                    onCheckedChange={(checked) => handleNotificationChange("sms", checked)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={() => handleSavePreferences("notifications")}
-                disabled={loading}
-                className="flex items-center gap-2"
-              >
-                {loading ? "Salvando..." : "Salvar preferências"}
-                {!loading && <Save size={16} />}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
 
           {/* Aba de Segurança */}
           <TabContent $active={activeTab === "security"}>
@@ -2209,68 +1054,6 @@ export default function ConfiguracoesTab() {
                   </Button>
                 </CardFooter>
               </Card>
-        {/* Aba de Privacidade */}
-        <TabsContent value="privacy">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield size={18} />
-                Configurações de Privacidade
-              </CardTitle>
-              <CardDescription>Controle quem pode ver suas informações</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b">
-                  <div className="space-y-0.5">
-                    <div className="font-medium">Mostrar Perfil</div>
-                    <div className="text-sm text-muted-foreground">Permitir que outros usuários vejam seu perfil</div>
-                  </div>
-                  <Switch
-                    checked={preferences.privacy.showProfile}
-                    onCheckedChange={(checked) => handlePrivacyChange("showProfile", checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between py-3 border-b">
-                  <div className="space-y-0.5">
-                    <div className="font-medium">Compartilhar Localização</div>
-                    <div className="text-sm text-muted-foreground">
-                      Permitir que o sistema use sua localização para melhorar os serviços
-                    </div>
-                  </div>
-                  <Switch
-                    checked={preferences.privacy.shareLocation}
-                    onCheckedChange={(checked) => handlePrivacyChange("shareLocation", checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between py-3">
-                  <div className="space-y-0.5">
-                    <div className="font-medium">Coleta de Dados</div>
-                    <div className="text-sm text-muted-foreground">
-                      Permitir a coleta de dados para melhorar a experiência do usuário
-                    </div>
-                  </div>
-                  <Switch
-                    checked={preferences.privacy.allowDataCollection}
-                    onCheckedChange={(checked) => handlePrivacyChange("allowDataCollection", checked)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={() => handleSavePreferences("privacy")}
-                disabled={loading}
-                className="flex items-center gap-2"
-              >
-                {loading ? "Salvando..." : "Salvar preferências"}
-                {!loading && <Save size={16} />}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
 
               <Card>
                 <CardHeader>
@@ -2350,75 +1133,6 @@ export default function ConfiguracoesTab() {
               </Card>
             </TwoColumnGrid>
           </TabContent>
-        {/* Aba de Segurança */}
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock size={18} />
-                Configurações de Segurança
-              </CardTitle>
-              <CardDescription>Proteja sua conta com medidas de segurança adicionais</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b">
-                  <div className="space-y-0.5">
-                    <div className="font-medium">Autenticação de Dois Fatores</div>
-                    <div className="text-sm text-muted-foreground">
-                      Adicione uma camada extra de segurança à sua conta
-                    </div>
-                  </div>
-                  <Switch
-                    checked={preferences.security.twoFactorAuth}
-                    onCheckedChange={(checked) => handleSecurityChange("twoFactorAuth", checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between py-3 border-b">
-                  <div className="space-y-0.5">
-                    <div className="font-medium">Notificações de Login</div>
-                    <div className="text-sm text-muted-foreground">
-                      Receba notificações quando sua conta for acessada
-                    </div>
-                  </div>
-                  <Switch
-                    checked={preferences.security.loginNotifications}
-                    onCheckedChange={(checked) => handleSecurityChange("loginNotifications", checked)}
-                  />
-                </div>
-
-                <div className="space-y-2 py-3">
-                  <Label htmlFor="sessionTimeout">Tempo Limite da Sessão (minutos)</Label>
-                  <Select
-                    value={preferences.security.sessionTimeout}
-                    onValueChange={(value) => handleSecurityChange("sessionTimeout", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tempo limite" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="15">15 minutos</SelectItem>
-                      <SelectItem value="30">30 minutos</SelectItem>
-                      <SelectItem value="60">1 hora</SelectItem>
-                      <SelectItem value="120">2 horas</SelectItem>
-                      <SelectItem value="240">4 horas</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={() => handleSavePreferences("security")}
-                disabled={loading}
-                className="flex items-center gap-2"
-              >
-                {loading ? "Salvando..." : "Salvar preferências"}
-                {!loading && <Save size={16} />}
-              </Button>
-            </CardFooter>
-          </Card>
 
           {/* Aba de Privacidade */}
           <TabContent $active={activeTab === "privacy"}>
@@ -2521,34 +1235,14 @@ export default function ConfiguracoesTab() {
         <Toast>
           <CheckCircle2 size={18} />
           <div>
-            <strong>Alterações salvas com sucesso!</strong>
-            <p style={{ margin: "0", fontSize: "12px" }}>Suas configurações foram atualizadas.</p>
+            <strong>{toastMessage.title}</strong>
+            <p style={{ margin: "0", fontSize: "12px" }}>{toastMessage.message}</p>
           </div>
         </Toast>
       )}
     </>
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <LogOut size={18} />
-                Sair da Conta
-              </CardTitle>
-              <CardDescription>Encerre sua sessão atual</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Ao sair, você será redirecionado para a página de login. Você precisará inserir suas credenciais
-                novamente para acessar sua conta.
-              </p>
-              <Button variant="destructive" onClick={handleLogout} className="flex items-center gap-2">
-                <LogOut size={16} />
-                Sair da Conta
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
   )
 }
+
+export default ConfiguracoesTab
 
