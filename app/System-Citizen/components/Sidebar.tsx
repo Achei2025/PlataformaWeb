@@ -99,7 +99,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
                   activeTab === item.id && [
                     "bg-green-50 text-green-600",
                     "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
-                    "before:h-8 before:w-1 before:rounded-r-full before:bg-green-600",
                   ],
                 )}
                 onClick={() => setActiveTab(item.id)}

@@ -77,7 +77,6 @@ import { useToast } from "../../../components/ui/use-toast"
 const categories = [
   { value: "eletronico", label: "Eletrônico" },
   { value: "veiculo", label: "Veículo" },
-  { value: "imovel", label: "Imóvel" },
   { value: "outro", label: "Outro" },
 ]
 
