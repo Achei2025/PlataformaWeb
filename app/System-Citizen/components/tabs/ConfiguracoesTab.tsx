@@ -26,12 +26,23 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Button } from "@/app/components/ui/button"
+<<<<<<< HEAD
 import { Select } from "@/app/components/ui/select"
 import { Switch } from "@/app/components/ui/switch"
 import { AlertBox, AlertTitle, AlertText } from "@/app/components/ui/alert"
 import { List, ListItem } from "@/app/components/ui/list"
 import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
 import { Toast } from "@/app/components/ui/toast"
+=======
+// Adicione estes imports para os componentes Select do shadcn/ui
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { Switch } from "@/app/components/ui/switch"
+import { Alert, AlertTitle, AlertDescription } from "@/app/components/ui/alert"
+import { List, ListItem } from "@/app/components/ui/list"
+import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
+import { toast } from "@/app/components/ui/use-toast"
+import { Toaster } from "@/app/components/ui/toaster"
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
 import { Badge } from "@/app/components/ui/badge"
 
 const GlobalStyle = createGlobalStyle`
@@ -204,11 +215,55 @@ const DeviceLastSeen = styled.div`
   color: #666;
 `
 
+<<<<<<< HEAD
 // Modifique a definição do componente ConfiguracoesTab para aceitar o authFetch prop
 const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestInit) => Promise<Response>; token: string }> = ({
   authFetch,
   token,
 }) => {
+=======
+// Custom Switch component that handles the ismaster prop correctly
+const MasterSwitch = ({
+  checked,
+  onChange,
+  label,
+  description,
+  ismaster,
+  badge,
+  disabled,
+}: {
+  checked: boolean
+  onChange: () => void
+  label: string
+  description?: string
+  ismaster?: boolean
+  badge?: { text: string; variant: string }
+  disabled?: boolean
+}) => {
+  return (
+    <div className={`flex items-center justify-between ${ismaster ? "mb-4 pb-4 border-b" : "mb-2"}`}>
+      <div className="flex flex-col">
+        <div className="flex items-center">
+          <span className="font-medium">{label}</span>
+          {badge && (
+            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full bg-${badge.variant}-100 text-${badge.variant}-800`}>
+              {badge.text}
+            </span>
+          )}
+        </div>
+        {description && <span className="text-sm text-gray-500">{description}</span>}
+      </div>
+      <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
+    </div>
+  )
+}
+
+// Modifique a definição do componente ConfiguracoesTab para aceitar o authFetch prop
+const ConfiguracoesTab: React.FC<{
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>
+  token: string
+}> = ({ authFetch, token }) => {
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
   const [activeTab, setActiveTab] = useState("profile")
   const [loading, setLoading] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -275,19 +330,31 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
       }
     } catch (error) {
       console.error("Erro ao buscar dados do usuário:", error)
+<<<<<<< HEAD
       setToastMessage({
         title: "Erro ao carregar dados",
         message: "Não foi possível carregar seus dados. Tente novamente mais tarde.",
       })
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
+=======
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar seus dados. Tente novamente mais tarde.",
+        variant: "destructive",
+      })
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     } finally {
       setLoading(false)
     }
   }
 
   // Função para atualizar os campos do formulário quando o usuário digita
+<<<<<<< HEAD
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+=======
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     const { id, value } = e.target
     setUserData((prev) => ({
       ...prev,
@@ -463,6 +530,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
         throw new Error(`Erro ao atualizar dados: ${response.status}`)
       }
 
+<<<<<<< HEAD
       // Atualizar mensagem de sucesso
       setToastMessage({
         title: "Alterações salvas com sucesso!",
@@ -484,6 +552,22 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
       // Mostrar toast de erro
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
+=======
+      // Mostrar toast de sucesso
+      toast({
+        title: "Alterações salvas com sucesso!",
+        description: "Seus dados foram atualizados.",
+      })
+    } catch (error) {
+      console.error("Erro ao salvar dados:", error)
+
+      // Mostrar toast de erro
+      toast({
+        title: "Erro ao salvar dados",
+        description: "Não foi possível salvar suas alterações. Tente novamente mais tarde.",
+        variant: "destructive",
+      })
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     } finally {
       setLoading(false)
     }
@@ -515,8 +599,10 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
+      toast({
+        title: "Upload concluído",
+        description: "Sua foto de perfil foi atualizada com sucesso.",
+      })
     }, 1500)
   }
 
@@ -596,7 +682,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                         Alterar foto (PNG/JPG até 16MB)
                       </Button>
                     </FormGroup>
-                    <Button variant="danger" style={{ width: "100%" }}>
+                    <Button variant="destructive" style={{ width: "100%" }}>
                       <Trash2 size={16} />
                       Remover foto
                     </Button>
@@ -628,12 +714,17 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                       Gerar Novo Nome Aleatório
                     </Button>
 
-                    <Switch
-                      checked={useFixedAnonymous}
-                      onChange={() => setUseFixedAnonymous(!useFixedAnonymous)}
-                      label="Usar nome fixo 'Anônimo'"
-                      description="Sem números aleatórios"
-                    />
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="fixed-anonymous"
+                        checked={useFixedAnonymous}
+                        onCheckedChange={() => setUseFixedAnonymous(!useFixedAnonymous)}
+                      />
+                      <div>
+                        <Label htmlFor="fixed-anonymous">Usar nome fixo 'Anônimo'</Label>
+                        <p className="text-sm text-muted-foreground">Sem números aleatórios</p>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </TwoColumnGrid>
@@ -708,6 +799,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                       <FormGroup>
                         <Label htmlFor="alternativeContactType">Contato Alternativo</Label>
                         <Select
+<<<<<<< HEAD
                           id="alternativeContactType"
                           value={userData.alternativeContactType}
                           onChange={handleInputChange}
@@ -717,6 +809,21 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                           <option value="whatsapp">WhatsApp</option>
                           <option value="telegram">Telegram</option>
                           <option value="outro">Outro</option>
+=======
+                          value={userData.alternativeContactType}
+                          onValueChange={(value) => setUserData((prev) => ({ ...prev, alternativeContactType: value }))}
+                        >
+                          <SelectTrigger id="alternativeContactType">
+                            <SelectValue placeholder="Tipo de contato alternativo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="email">Email</SelectItem>
+                            <SelectItem value="phone">Telefone</SelectItem>
+                            <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                            <SelectItem value="telegram">Telegram</SelectItem>
+                            <SelectItem value="outro">Outro</SelectItem>
+                          </SelectContent>
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
                         </Select>
                       </FormGroup>
                     </TwoColumnGrid>
@@ -736,6 +843,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                     <TwoColumnGrid>
                       <FormGroup>
                         <Label htmlFor="gender">Gênero</Label>
+<<<<<<< HEAD
                         <Select id="gender" value={userData.gender} onChange={handleInputChange}>
                           <option value="" disabled>
                             Selecione seu gênero
@@ -745,10 +853,25 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                           <option value="nao-binario">Não-binário</option>
                           <option value="outro">Outro</option>
                           <option value="prefiro-nao-informar">Prefiro não informar</option>
+=======
+                        <Select
+                          value={userData.gender}
+                          onValueChange={(value) => setUserData((prev) => ({ ...prev, gender: value }))}
+                        >
+                          <SelectTrigger id="gender">
+                            <SelectValue placeholder="Selecione seu gênero" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="masculino">Masculino</SelectItem>
+                            <SelectItem value="feminino">Feminino</SelectItem>
+                            <SelectItem value="prefiro-nao-informar">Prefiro não informar</SelectItem>
+                          </SelectContent>
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
                         </Select>
                       </FormGroup>
                       <FormGroup>
                         <Label htmlFor="occupation">Ocupação</Label>
+<<<<<<< HEAD
                         <Select id="occupation" value={userData.occupation} onChange={handleInputChange}>
                           <option value="" disabled>
                             Selecione sua ocupação
@@ -758,6 +881,22 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                           <option value="autonomo">Autônomo</option>
                           <option value="aposentado">Aposentado</option>
                           <option value="outro">Outro</option>
+=======
+                        <Select
+                          value={userData.occupation}
+                          onValueChange={(value) => setUserData((prev) => ({ ...prev, occupation: value }))}
+                        >
+                          <SelectTrigger id="occupation">
+                            <SelectValue placeholder="Selecione sua ocupação" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="estudante">Estudante</SelectItem>
+                            <SelectItem value="profissional">Profissional</SelectItem>
+                            <SelectItem value="autonomo">Autônomo</SelectItem>
+                            <SelectItem value="aposentado">Aposentado</SelectItem>
+                            <SelectItem value="outro">Outro</SelectItem>
+                          </SelectContent>
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
                         </Select>
                       </FormGroup>
                     </TwoColumnGrid>
@@ -772,16 +911,14 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                       />
                     </FormGroup>
 
-                    <AlertBox variant="info" style={{ marginTop: "16px" }}>
-                      <AlertTitle variant="info">
-                        <Info size={16} />
-                        Contato Alternativo
-                      </AlertTitle>
-                      <AlertText variant="info">
+                    <Alert>
+                      <Info size={16} />
+                      <AlertTitle>Contato Alternativo</AlertTitle>
+                      <AlertDescription>
                         Recomendamos adicionar um contato alternativo para casos de emergência ou caso seu telefone seja
                         perdido ou roubado. Este contato será usado apenas para recuperação de conta.
-                      </AlertText>
-                    </AlertBox>
+                      </AlertDescription>
+                    </Alert>
                   </FormGrid>
                 </CardContent>
                 <CardFooter>
@@ -822,38 +959,38 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                     </CategoryDescription>
 
                     {/* Master Switch */}
-                    <Switch
+                    <MasterSwitch
                       checked={notificationSwitches.emailNotifications}
                       onChange={() => toggleSwitch("emailNotifications")}
                       label="Ativar notificações por email"
                       description="Controla todas as notificações por email"
-                      isMaster={true}
+                      ismaster={true}
                     />
 
                     {/* Replace the grid layout here */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.casesEmail}
                         onChange={() => toggleSwitch("casesEmail")}
                         label="Atualizações de casos"
                         disabled={!notificationSwitches.emailNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.interactionsEmail}
                         onChange={() => toggleSwitch("interactionsEmail")}
                         label="Interações"
                         disabled={!notificationSwitches.emailNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.systemEmail}
                         onChange={() => toggleSwitch("systemEmail")}
                         label="Sistema"
                         disabled={!notificationSwitches.emailNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.newsEmail}
                         onChange={() => toggleSwitch("newsEmail")}
                         label="Notícias"
@@ -876,17 +1013,17 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                     </CategoryDescription>
 
                     {/* Master Switch */}
-                    <Switch
+                    <MasterSwitch
                       checked={notificationSwitches.pushNotifications}
                       onChange={() => toggleSwitch("pushNotifications")}
                       label="Ativar notificações push"
                       description="Controla todas as notificações push"
-                      isMaster={true}
+                      ismaster={true}
                     />
 
                     {/* Replace the grid layout here */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.nearbyCases}
                         onChange={() => toggleSwitch("nearbyCases")}
                         label="Casos próximos"
@@ -894,14 +1031,14 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                         disabled={!notificationSwitches.pushNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.myCases}
                         onChange={() => toggleSwitch("myCases")}
                         label="Meus casos"
                         disabled={!notificationSwitches.pushNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.riskAreas}
                         onChange={() => toggleSwitch("riskAreas")}
                         label="Áreas de risco"
@@ -909,7 +1046,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                         disabled={!notificationSwitches.pushNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.emergencyAlerts}
                         onChange={() => toggleSwitch("emergencyAlerts")}
                         label="Alertas de emergência"
@@ -917,7 +1054,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                         disabled={!notificationSwitches.pushNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.communityUpdates}
                         onChange={() => toggleSwitch("communityUpdates")}
                         label="Atualizações da comunidade"
@@ -937,24 +1074,24 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                     <CategoryDescription>Configure quais notificações você deseja receber por SMS</CategoryDescription>
 
                     {/* Master Switch */}
-                    <Switch
+                    <MasterSwitch
                       checked={notificationSwitches.smsNotifications}
                       onChange={() => toggleSwitch("smsNotifications")}
                       label="Ativar notificações por SMS"
                       description="Controla todas as notificações por SMS"
-                      isMaster={true}
+                      ismaster={true}
                     />
 
                     {/* Replace the grid layout here */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.casesSms}
                         onChange={() => toggleSwitch("casesSms")}
                         label="Atualizações de casos"
                         disabled={!notificationSwitches.smsNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.emergencySms}
                         onChange={() => toggleSwitch("emergencySms")}
                         label="Alertas de emergência"
@@ -962,7 +1099,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                         disabled={!notificationSwitches.smsNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.riskAreasSms}
                         onChange={() => toggleSwitch("riskAreasSms")}
                         label="Áreas de risco"
@@ -970,14 +1107,14 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                         disabled={!notificationSwitches.smsNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.systemSms}
                         onChange={() => toggleSwitch("systemSms")}
                         label="Sistema"
                         disabled={!notificationSwitches.smsNotifications}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.communitySms}
                         onChange={() => toggleSwitch("communitySms")}
                         label="Atualizações da comunidade"
@@ -987,16 +1124,14 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                   </NotificationCategory>
                 </ThreeColumnGrid>
 
-                <AlertBox variant="info" style={{ marginTop: "24px" }}>
-                  <AlertTitle variant="info">
-                    <AlertCircle size={16} />
-                    Dica de notificações
-                  </AlertTitle>
-                  <AlertText variant="info">
+                <Alert className="mt-6">
+                  <AlertCircle size={16} />
+                  <AlertTitle>Dica de notificações</AlertTitle>
+                  <AlertDescription>
                     Recomendamos manter os alertas de emergência e áreas de risco sempre ativos para sua segurança. Você
                     pode personalizar todas as outras notificações conforme sua preferência.
-                  </AlertText>
-                </AlertBox>
+                  </AlertDescription>
+                </Alert>
               </CardContent>
               <CardFooter>
                 <Button onClick={handleSave} disabled={loading}>
@@ -1033,18 +1168,16 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                       <Input id="confirm-password" type="password" />
                     </FormGroup>
 
-                    <AlertBox variant="success">
-                      <AlertTitle variant="success">
-                        <CheckCircle2 size={14} />
-                        Dicas para uma senha forte:
-                      </AlertTitle>
+                    <Alert variant="success">
+                      <CheckCircle2 size={14} />
+                      <AlertTitle>Dicas para uma senha forte:</AlertTitle>
                       <List>
                         <ListItem>Use pelo menos 8 caracteres</ListItem>
                         <ListItem>Combine letras maiúsculas e minúsculas</ListItem>
                         <ListItem>Inclua números e símbolos</ListItem>
                         <ListItem>Evite informações pessoais óbvias</ListItem>
                       </List>
-                    </AlertBox>
+                    </Alert>
                   </FormGrid>
                 </CardContent>
                 <CardFooter>
@@ -1064,16 +1197,14 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                   <CardDescription>Configure camadas extras de proteção para sua conta</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <AlertBox variant="warning">
-                    <AlertTitle variant="warning">
-                      <AlertTriangle size={16} />
-                      Autenticação em Duas Etapas (2FA)
-                    </AlertTitle>
-                    <AlertText variant="warning">
+                  <Alert variant="warning">
+                    <AlertTriangle size={16} />
+                    <AlertTitle>Autenticação em Duas Etapas (2FA)</AlertTitle>
+                    <AlertDescription>
                       Adicione uma camada extra de segurança exigindo um código além da senha ao fazer login.
-                    </AlertText>
-                    <div style={{ marginTop: "12px" }}>
-                      <Switch
+                    </AlertDescription>
+                    <div className="mt-3">
+                      <MasterSwitch
                         checked={notificationSwitches.twoFactorAuth}
                         onChange={() => toggleSwitch("twoFactorAuth")}
                         label="Ativar 2FA"
@@ -1081,7 +1212,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                         badge={{ text: "Recomendado", variant: "warning" }}
                       />
                     </div>
-                  </AlertBox>
+                  </Alert>
 
                   <div style={{ marginTop: "24px" }}>
                     <SectionHeading>Dispositivos Conectados</SectionHeading>
@@ -1104,7 +1235,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                           <DeviceLastSeen>Último acesso: Ontem, 18:30</DeviceLastSeen>
                         </DeviceDetails>
                       </DeviceInfo>
-                      <Button variant="danger" style={{ padding: "4px 8px", fontSize: "12px" }}>
+                      <Button variant="destructive" size="sm">
                         Desconectar
                       </Button>
                     </DeviceItem>
@@ -1117,14 +1248,14 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                           <DeviceLastSeen>Último acesso: 15/06/2023</DeviceLastSeen>
                         </DeviceDetails>
                       </DeviceInfo>
-                      <Button variant="danger" style={{ padding: "4px 8px", fontSize: "12px" }}>
+                      <Button variant="destructive" size="sm">
                         Desconectar
                       </Button>
                     </DeviceItem>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="danger">Desconectar todos</Button>
+                  <Button variant="destructive">Desconectar todos</Button>
                   <Button onClick={handleSave} disabled={loading}>
                     {loading ? "Salvando..." : "Salvar configurações"}
                     {!loading && <Save size={16} />}
@@ -1155,7 +1286,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
 
                   <TwoColumnGrid>
                     <div>
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.shareLocation}
                         onChange={() => toggleSwitch("shareLocation")}
                         label="Compartilhar Localização"
@@ -1163,14 +1294,14 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                         badge={{ text: "Importante", variant: "warning" }}
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.anonymousData}
                         onChange={() => toggleSwitch("anonymousData")}
                         label="Dados para Melhorias"
                         description="Compartilhar dados anônimos para melhorar o serviço"
                       />
 
-                      <Switch
+                      <MasterSwitch
                         checked={notificationSwitches.showOnlineStatus}
                         onChange={() => toggleSwitch("showOnlineStatus")}
                         label="Mostrar Status Online"
@@ -1178,31 +1309,27 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
                       />
                     </div>
 
-                    <AlertBox variant="success">
-                      <AlertTitle variant="success">
-                        <CheckCircle2 size={14} />
-                        Seus dados estão seguros
-                      </AlertTitle>
-                      <AlertText variant="success">
+                    <Alert variant="success">
+                      <CheckCircle2 size={14} />
+                      <AlertTitle>Seus dados estão seguros</AlertTitle>
+                      <AlertDescription>
                         Respeitamos sua privacidade e nunca compartilhamos seus dados pessoais com terceiros sem sua
                         permissão explícita.
-                      </AlertText>
-                    </AlertBox>
+                      </AlertDescription>
+                    </Alert>
                   </TwoColumnGrid>
 
-                  <AlertBox variant="info">
-                    <AlertTitle variant="info">
-                      <FileText size={14} />
-                      Política de Privacidade
-                    </AlertTitle>
-                    <AlertText variant="info">
+                  <Alert>
+                    <FileText size={14} />
+                    <AlertTitle>Política de Privacidade</AlertTitle>
+                    <AlertDescription>
                       Nossa política de privacidade foi atualizada recentemente. Recomendamos que você revise as
                       mudanças.
-                    </AlertText>
-                    <Button variant="outline" style={{ marginTop: "12px", padding: "6px 12px" }}>
+                    </AlertDescription>
+                    <Button variant="outline" className="mt-3">
                       Ver política de privacidade
                     </Button>
-                  </AlertBox>
+                  </Alert>
                 </FormGrid>
               </CardContent>
               <CardFooter>
@@ -1231,6 +1358,7 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
         onConfirm={handleConfirmSave}
       />
 
+<<<<<<< HEAD
       {showToast && (
         <Toast>
           <CheckCircle2 size={18} />
@@ -1240,6 +1368,9 @@ const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestIni
           </div>
         </Toast>
       )}
+=======
+      <Toaster />
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     </>
   )
 }

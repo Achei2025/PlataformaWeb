@@ -738,7 +738,7 @@ const Modal = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.13);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -748,7 +748,7 @@ const Modal = styled.div`
 `
 
 const ModalContent = styled.div`
-  background-color: ${(props) => props.theme.background};
+  background-color: rgb(255, 255, 255);
   padding: ${theme.spacing[6]};
   border-radius: ${theme.borderRadius.lg};
   max-width: 600px;

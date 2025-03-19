@@ -20,6 +20,7 @@ const AlertBoxContainer = styled.div<{ variant: "success" | "warning" | "info" |
   margin-bottom: 16px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 
+<<<<<<< HEAD
   ${(props) => {
     switch (props.variant) {
       case "warning":
@@ -45,6 +46,11 @@ const AlertBoxContainer = styled.div<{ variant: "success" | "warning" | "info" |
     }
   }}
 `
+=======
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import styled from "styled-components"
+>>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
 
 const AlertTitleContainer = styled.h4<{ variant: "success" | "warning" | "info" | "danger" }>`
   margin: 0 0 8px 0;
@@ -127,3 +133,25 @@ export const AlertText: React.FC<AlertTextProps> = ({ variant, children, ...prop
   )
 }
 
+export const AlertBox = styled.div`
+  padding: 16px;
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.colors[props.variant]};
+  color: ${(props) => props.theme.colors[`${props.variant}Foreground`]};
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`
+
+export const AlertTitleStyled = styled.h4`
+  margin: 0;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
+export const AlertTextStyled = styled.p`
+  margin: 0;
+  font-size: 1rem;
+` 
