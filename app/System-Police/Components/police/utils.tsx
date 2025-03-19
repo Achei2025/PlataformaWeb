@@ -129,3 +129,62 @@ export function formatarValor(valor: number): string {
     currency: 'BRL'
   });
 }
+
+/**
+ * Retorna a variante de badge apropriada para cada status de caso
+ */
+export const getStatusBadge = (status: string): "default" | "outline" | "secondary" | "destructive" => {
+  switch (status.toLowerCase()) {
+    case "em investigação":
+    case "em investigacao":
+      return "default"
+    case "resolvido":
+      return "secondary"
+    case "arquivado":
+      return "outline"
+    case "pendente":
+      return "destructive"
+    default:
+      return "default"
+  }
+}
+
+/**
+ * Retorna a cor de texto apropriada para cada status de caso
+ */
+export const getStatusTextColor = (status: string): string => {
+  switch (status.toLowerCase()) {
+    case "em investigação":
+    case "em investigacao":
+      return "text-blue-700"
+    case "resolvido":
+      return "text-green-700"
+    case "arquivado":
+      return "text-gray-700"
+    case "pendente":
+      return "text-red-700"
+    default:
+      return "text-gray-700"
+  }
+}
+
+/**
+ * Retorna a cor de fundo apropriada para cada status de caso
+ */
+export const getStatusBgColor = (status: string): string => {
+  switch (status.toLowerCase()) {
+    case "em investigação":
+    case "em investigacao":
+      return "bg-blue-50"
+    case "resolvido":
+      return "bg-green-50"
+    case "arquivado":
+      return "bg-gray-50"
+    case "pendente":
+      return "bg-red-50"
+    default:
+      return "bg-gray-50"
+  }
+}
+
+

@@ -1,72 +1,134 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- * 
- * This file is part of Achei.
- * 
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
- * Contact information: teamachei.2024@gmail.com
-*/
-
 "use client"
 
-import { useAuth } from "../contexts/auth-context"
-import { useRouter } from "next/navigation"
+import { useAuth } from "@/app/contexts/auth-context"
 
-export function useAuthApi() {
-  const { token, setToken } = useAuth()
-  const router = useRouter()
+export const useAuthApi = () => {
+  const { token, setToken, setUser, setUserType, logout } = useAuth()
 
+  // Função para fazer requisições autenticadas
   const authFetch = async (url: string, options: RequestInit = {}) => {
-    if (!token) {
-      throw new Error("No authentication token available")
+    // Obter o token armazenado
+    const storedToken = localStorage.getItem("authToken") || token
+
+    // Configurar headers com autenticação
+    const headers = new Headers(options.headers || {})
+
+    if (storedToken) {
+      headers.set("Authorization", `Bearer ${storedToken}`)
     }
 
-    const headers = {
-      ...options.headers,
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    }
-
-    return fetch(url, {
-      ...options,
-      headers,
-    })
-  }
-
-  const logout = async () => {
-    if (!token) {
-      throw new Error("No authentication token available")
+    // Verificar se a URL é relativa e adicionar o host da API se necessário
+    let fullUrl = url
+    if (url.startsWith("/api/") && !url.includes("localhost")) {
+      fullUrl = `http://26.190.233.3:8080${url}`
+      console.log(`API Request: Convertendo URL relativa para absoluta: ${fullUrl}`)
     }
 
     try {
-      await fetch('/api/logout', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      // Fazer a requisição
+      const response = await fetch(fullUrl, {
+        ...options,
+        headers,
       })
+
+      // Tratar respostas 401 Unauthorized
+      if (response.status === 401) {
+        console.error("API Request: Token inválido ou expirado, fazendo logout")
+        // Token expirado ou inválido, fazer logout
+        logout()
+        return response
+      }
+
+      if (!response.ok) {
+        console.error(`API Request: Erro ${response.status} ao acessar ${fullUrl}`)
+      } else {
+        console.log(`API Request: Sucesso ao acessar ${fullUrl}`)
+      }
+
+      return response
     } catch (error) {
-      console.error("Erro ao fazer logout:", error)
-    } finally {
-      setToken(null)
-      localStorage.removeItem("authToken")
-      router.push("/")
+      console.error(`API Request: Erro ao acessar ${fullUrl}`, error)
+      throw error
     }
   }
 
-  return { authFetch, logout }
+  // Login function
+  const login = async (username: string, password: string, userType: "citizen" | "police") => {
+    try {
+      console.log("Login - Tentando login com:", { username, userType })
+
+      // Determine the API URL based on user type
+      const apiUrl =
+        userType === "citizen" ? "http://26.190.233.3:8080/auth/login" : "http://26.190.233.3:8080/api/police/login"
+
+      // Make the API call
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        console.error("Login - Falha na resposta:", { status: response.status, errorData })
+        throw new Error(errorData?.message || `Login failed: ${response.status} ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      console.log("Login - Resposta da API:", {
+        success: true,
+        hasToken: !!result.token,
+        hasUser: !!result.user,
+      })
+
+      // Store the access token
+      if (result.token) {
+        // Update context
+        setToken(result.token)
+        setUserType(userType)
+
+        // Store in localStorage
+        localStorage.setItem("authToken", result.token)
+        localStorage.setItem("userType", userType)
+        console.log("Login - Token e userType salvos no localStorage")
+
+        // Store user data
+        if (result.user) {
+          setUser(result.user)
+          localStorage.setItem("userData", JSON.stringify(result.user))
+          console.log("Login - Dados do usuário salvos no localStorage:", result.user)
+        } else {
+          // Criar dados mínimos do usuário com base no username
+          const minimalUser = {
+            id: username,
+            username: username,
+          }
+          setUser(minimalUser)
+          localStorage.setItem("userData", JSON.stringify(minimalUser))
+          console.log("Login - Dados mínimos do usuário criados e salvos:", minimalUser)
+        }
+
+        return { success: true, data: result }
+      }
+
+      console.warn("Login - Nenhum token recebido na resposta")
+      return { success: false, error: "No token received" }
+    } catch (error) {
+      console.error("Login failed:", error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+      }
+    }
+  }
+
+  return {
+    login,
+    logout,
+    authFetch,
+    storedToken: localStorage.getItem("authToken") || token,
+  }
 }
+

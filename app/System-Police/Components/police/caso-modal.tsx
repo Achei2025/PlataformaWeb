@@ -30,7 +30,7 @@ import { Button } from "@/app/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
 import { Badge } from "@/app/components/ui/badge"
-import { FileText } from "lucide-react"
+import { FileText, Search, ShoppingBag } from "lucide-react"
 import { formatarData } from "./utils"
 import type { Caso } from "./types"
 import {
@@ -44,20 +44,23 @@ import {
   AlertDialogTitle,
 } from "@/app/components/ui/alert-dialog"
 import { SuccessDialog } from "@/app/components/ui/success-dialog"
+import EcommerceDemo from "./e-commerce-examples"
 
 interface CasoModalProps {
   caso: Caso | null
   isOpen: boolean
   onClose: () => void
   onUpdateStatus: (casoId: string, newStatus: string) => void
+  userType?: "visitor" | "citizen" | "police"
 }
 
 type ModalState = "details" | "confirm" | "success"
 
-export const CasoModal: React.FC<CasoModalProps> = ({ caso, isOpen, onClose, onUpdateStatus }) => {
+export const CasoModal: React.FC<CasoModalProps> = ({ caso, isOpen, onClose, onUpdateStatus, userType = "police" }) => {
   const [newStatus, setNewStatus] = useState(caso?.status || "")
   const [modalState, setModalState] = useState<ModalState>("details")
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [showEcommerceDemo, setShowEcommerceDemo] = useState(false)
 
   if (!caso) return null
 
@@ -75,6 +78,11 @@ export const CasoModal: React.FC<CasoModalProps> = ({ caso, isOpen, onClose, onU
     setTimeout(() => {
       onClose()
     }, 5000)
+  }
+
+  const handleCheckSimilarItems = () => {
+    // Abrir o modal de demonstração de e-commerce
+    setShowEcommerceDemo(true)
   }
 
   return (
@@ -100,6 +108,16 @@ export const CasoModal: React.FC<CasoModalProps> = ({ caso, isOpen, onClose, onU
         isOpen={showSuccessDialog}
         onClose={() => setShowSuccessDialog(false)}
         message={`Status do incidente atualizado para &ldquo;${newStatus}&rdquo; com sucesso!`}
+      />
+
+      {/* E-commerce Demo */}
+      <EcommerceDemo
+        isOpen={showEcommerceDemo}
+        onClose={() => setShowEcommerceDemo(false)}
+        casoId={caso.id}
+        categoria={caso.categoriaObjeto}
+        marca={caso.marca}
+        modelo={caso.modelo}
       />
 
       {/* Main Modal */}
@@ -208,6 +226,23 @@ export const CasoModal: React.FC<CasoModalProps> = ({ caso, isOpen, onClose, onU
                     </Button>
                   </div>
                 </div>
+
+                {/* Botão para verificar itens similares - apenas para policiais */}
+                {userType === "police" && (
+                  <div className="col-span-2 mt-4">
+                    <Button
+                      onClick={handleCheckSimilarItems}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
+                      <ShoppingBag className="h-4 w-4 mr-2" />
+                      Verificar Itens Similares em E-commerces Parceiros
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Esta ferramenta permite verificar itens similares em e-commerces parceiros para auxiliar na
+                      investigação.
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -273,6 +308,14 @@ export const CasoModal: React.FC<CasoModalProps> = ({ caso, isOpen, onClose, onU
                 </SelectContent>
               </Select>
               <Button onClick={handleStatusUpdate}>Atualizar Status</Button>
+
+              {/* Botão adicional para verificar itens similares - versão compacta */}
+              {userType === "police" && (
+                <Button onClick={handleCheckSimilarItems} variant="outline" className="ml-2">
+                  <Search className="h-4 w-4 mr-2" />
+                  Verificar E-commerces
+                </Button>
+              )}
             </div>
             <Button variant="outline" onClick={onClose}>
               Fechar

@@ -1,26 +1,3 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- * 
- * This file is part of Achei.
- * 
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
- * Contact information: teamachei.2024@gmail.com
-*/
-
-
 "use client"
 
 import type React from "react"
@@ -31,6 +8,8 @@ import { Eye, EyeOff, User, Lock, ChromeIcon as Google, FlagIcon as Gov, Loader2
 import Link from "next/link"
 import Image from "next/image"
 import DefaultLayout from "../layouts/layout"
+import { useAuth } from "@/app/contexts/auth-context"
+import { useAuthApi } from "@/app/hooks/use-auth-api"
 
 // Brazilian flag colors
 const colors = {
@@ -40,6 +19,7 @@ const colors = {
   white: "#ffffff",
 }
 
+// Componentes estilizados (mantidos como no original)
 const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -354,7 +334,9 @@ const UserTypeButton = styled.button<{ $active: boolean }>`
 
 export default function LoginPage() {
   const router = useRouter()
-  const [userType, setUserType] = useState<"citizen" | "police">("citizen")
+  const { setToken, setUser, setUserType } = useAuth()
+  const { login } = useAuthApi()
+  const [userTypeState, setUserTypeState] = useState<"citizen" | "police">("citizen")
   const [showPassword, setShowPassword] = useState(false)
   const [cpf, setCpf] = useState("")
   const [matricula, setMatricula] = useState("")
@@ -369,7 +351,7 @@ export default function LoginPage() {
   useEffect(() => {
     const savedUserType = localStorage.getItem("userType") as "citizen" | "police" | null
     if (savedUserType) {
-      setUserType(savedUserType)
+      setUserTypeState(savedUserType)
       if (savedUserType === "citizen") {
         const savedCpf = localStorage.getItem("cpf")
         if (savedCpf) setCpf(savedCpf)
@@ -385,7 +367,7 @@ export default function LoginPage() {
     const newErrors = { cpf: "", password: "" }
     let isValid = true
 
-    if (userType === "citizen") {
+    if (userTypeState === "citizen") {
       if (!cpf) {
         newErrors.cpf = "CPF é obrigatório"
         isValid = false
@@ -416,7 +398,7 @@ export default function LoginPage() {
     return isValid
   }
 
-  // Modify the handleSubmit function to use the correct JSON format
+  // Handle form submission using the auth context
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
@@ -424,58 +406,37 @@ export default function LoginPage() {
       setApiError(null)
 
       try {
-        // Prepare data in the required format
-        const loginData = {
-          username: userType === "citizen" ? cpf.replace(/\D/g, "") : matricula,
-          password: password
+        // Get username based on user type
+        const username = userTypeState === "citizen" ? cpf.replace(/\D/g, "") : matricula
+
+        // Use the login function from useAuthApi
+        const result = await login(username, password, userTypeState)
+
+        if (!result.success) {
+          throw new Error(result.error)
         }
 
-        // Determine the API URL based on user type
-        const apiUrl =
-          userType === "citizen" ? "http://26.190.233.3:8080/auth/login" : "http://26.190.233.3:8080/api/police/login"
-
-        // Make the API call
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(loginData),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null)
-          throw new Error(errorData?.message || `Falha ao realizar login: ${response.status} ${response.statusText}`)
-        }
-
-        const result = await response.json()
-        console.log("Login realizado com sucesso:", result)
-
-        // Store the access token
-        if (result.token) {
-          localStorage.setItem("authToken", result.token)
-
-          // Store user data for use on other pages
-          if (result.user) {
-            localStorage.setItem("userData", JSON.stringify(result.user))
-          }
-
-          // If "remember me" is checked, store credentials
-          if (rememberMe) {
-            localStorage.setItem("userType", userType)
-            if (userType === "citizen") {
-              localStorage.setItem("cpf", cpf)
-            } else {
-              localStorage.setItem("matricula", matricula)
-            }
+        // If "remember me" is checked, store credentials
+        if (rememberMe) {
+          if (userTypeState === "citizen") {
+            localStorage.setItem("cpf", cpf)
+          } else {
+            localStorage.setItem("matricula", matricula)
           }
         }
 
         setSuccess(true)
 
+        // Verificar se os dados foram salvos corretamente
+        console.log("Verificando dados salvos:", {
+          token: localStorage.getItem("authToken"),
+          userType: localStorage.getItem("userType"),
+          userData: localStorage.getItem("userData"),
+        })
+
         // Redirect after a brief delay to show the success message
         setTimeout(() => {
-          if (userType === "citizen") {
+          if (userTypeState === "citizen") {
             router.push("/System-Citizen")
           } else {
             router.push("/System-Police")
@@ -484,6 +445,7 @@ export default function LoginPage() {
       } catch (error) {
         console.error("Login failed:", error)
         setApiError(error instanceof Error ? error.message : "Erro ao fazer login. Por favor, tente novamente.")
+      } finally {
         setIsLoading(false)
       }
     }
@@ -524,9 +486,9 @@ export default function LoginPage() {
               <UserTypeContainer>
                 <UserTypeButton
                   type="button"
-                  $active={userType === "citizen"}
+                  $active={userTypeState === "citizen"}
                   onClick={() => {
-                    setUserType("citizen")
+                    setUserTypeState("citizen")
                     setMatricula("") // Clear matrícula when switching to citizen
                   }}
                 >
@@ -534,9 +496,9 @@ export default function LoginPage() {
                 </UserTypeButton>
                 <UserTypeButton
                   type="button"
-                  $active={userType === "police"}
+                  $active={userTypeState === "police"}
                   onClick={() => {
-                    setUserType("police")
+                    setUserTypeState("police")
                     setCpf("") // Clear CPF when switching to police
                   }}
                 >
@@ -549,7 +511,7 @@ export default function LoginPage() {
                   <Icon>
                     <User size={20} />
                   </Icon>
-                  {userType === "citizen" ? (
+                  {userTypeState === "citizen" ? (
                     <Input
                       type="text"
                       placeholder="CPF"
