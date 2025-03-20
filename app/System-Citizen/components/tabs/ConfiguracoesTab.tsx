@@ -1,3 +1,25 @@
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ * 
+ * This file is part of Achei.
+ * 
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Contact information: teamachei.2024@gmail.com
+*/
+
 "use client"
 
 import type React from "react"
@@ -13,26 +35,26 @@ import {
   Globe,
   Camera,
   Trash2,
-  Info,
   Save,
   BellRing,
   AlertCircle,
   CheckCircle2,
   AlertTriangle,
   FileText,
+  MapPin,
+  Search,
 } from "lucide-react"
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/app/components/ui/card"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Button } from "@/app/components/ui/button"
-// Adicione estes imports para os componentes Select do shadcn/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Switch } from "@/app/components/ui/switch"
 import { Alert, AlertTitle, AlertDescription } from "@/app/components/ui/alert"
 import { List, ListItem } from "@/app/components/ui/list"
 import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
-import { toast } from "@/app/components/ui/use-toast"
+import { useToast } from "@/app/components/ui/use-toast"
 import { Toaster } from "@/app/components/ui/toaster"
 import { Badge } from "@/app/components/ui/badge"
 
@@ -250,24 +272,34 @@ const ConfiguracoesTab: React.FC<{
   const [activeTab, setActiveTab] = useState("profile")
   const [loading, setLoading] = useState(false)
   const [showToast, setShowToast] = useState(false)
+  const { toast } = useToast()
   const [showLocationModal, setShowLocationModal] = useState(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [pendingLocationState, setPendingLocationState] = useState(false)
-  const [username, setUsername] = useState("Anônimo_" + Math.floor(Math.random() * 10000))
-  const [useFixedAnonymous, setUseFixedAnonymous] = useState(false)
+  const [anonymousName, setAnonymousName] = useState("")
+  const [loadingCep, setLoadingCep] = useState(false)
 
   // Adicione estados para os campos do formulário
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
+    fullName: "",
     email: "",
     phone: "",
-    secondaryPhone: "",
-    alternativeContactType: "email",
-    alternativeContact: "",
     gender: "",
     occupation: "",
-    occupationDetails: "",
+    birthDate: "",
+  })
+
+  // Estado para os dados de endereço
+  const [addressData, setAddressData] = useState({
+    zipCode: "",
+    stateCode: "",
+    city: "",
+    neighborhood: "",
+    street: "",
+    complement: "",
+    complementNumber: "",
   })
 
   const [toastMessage, setToastMessage] = useState({
@@ -292,24 +324,52 @@ const ConfiguracoesTab: React.FC<{
       const data = await response.json()
       console.log("Dados do usuário recebidos:", data)
 
+      // Normalizar o valor da ocupação para corresponder aos valores do Select
+      let normalizedOccupation = data.occupation?.toLowerCase() || ""
+
+      // Verificar se a ocupação corresponde a uma das opções disponíveis
+      const validOccupations = ["estudante", "profissional", "autonomo", "aposentado", "outro"]
+      if (!validOccupations.includes(normalizedOccupation)) {
+        // Se a primeira letra for maiúscula, converter para minúscula
+        if (data.occupation && data.occupation.charAt(0) === data.occupation.charAt(0).toUpperCase()) {
+          normalizedOccupation = data.occupation.toLowerCase()
+        }
+
+        // Se ainda não corresponder, definir como "outro"
+        if (!validOccupations.includes(normalizedOccupation)) {
+          console.log(`Ocupação não reconhecida: ${data.occupation}, usando "outro" como padrão`)
+          normalizedOccupation = "outro"
+        }
+      }
+
       // Preencher os campos do formulário com os dados recebidos
       setUserData({
         firstName: data.firstName || "",
         lastName: data.lastName || "",
+        fullName: data.fullName || "",
         email: data.email || "",
         phone: data.phone || "",
-        secondaryPhone: data.secondaryPhone || "",
-        alternativeContactType: data.alternativeContactType || "email",
-        alternativeContact: data.alternativeContact || "",
-        gender: data.gender || "",
-        occupation: data.occupation || "",
-        occupationDetails: data.occupationDetails || "",
+        gender: data.gender?.toLowerCase() || "",
+        occupation: normalizedOccupation,
+        birthDate: data.birthDate || "",
       })
 
-      // Se o usuário tiver um nome de usuário anônimo definido, use-o
-      if (data.anonymousUsername) {
-        setUsername(data.anonymousUsername)
-        setUseFixedAnonymous(data.anonymousUsername === "Anônimo")
+      // Preencher os dados de endereço se disponíveis
+      if (data.address) {
+        setAddressData({
+          zipCode: data.address.zipCode || "",
+          stateCode: data.address.stateCode || "",
+          city: data.address.city || "",
+          neighborhood: data.address.neighborhood || "",
+          street: data.address.street || "",
+          complement: data.address.complement || "",
+          complementNumber: data.address.complementNumber || "",
+        })
+      }
+
+      // Obter o nome anônimo do backend
+      if (data.anonymousName) {
+        setAnonymousName(data.anonymousName)
       }
     } catch (error) {
       console.error("Erro ao buscar dados do usuário:", error)
@@ -323,6 +383,90 @@ const ConfiguracoesTab: React.FC<{
     }
   }
 
+  // Função para buscar dados do CEP usando a API ViaCEP
+  const fetchAddressByCep = async (cep: string) => {
+    if (!cep || cep.length !== 8) {
+      return
+    }
+
+    try {
+      setLoadingCep(true)
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar CEP: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.erro) {
+        toast({
+          title: "CEP não encontrado",
+          description: "O CEP informado não foi encontrado.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Atualizar os campos de endereço com os dados retornados
+      setAddressData((prev) => ({
+        ...prev,
+        street: data.logradouro || "",
+        neighborhood: data.bairro || "",
+        city: data.localidade || "",
+        stateCode: data.uf || "",
+        complement: data.complemento || "",
+        // Formatar o CEP com hífen (12345-678)
+        zipCode: data.cep ? data.cep.replace(/^(\d{5})(\d{3})$/, "$1-$2") : prev.zipCode,
+      }))
+
+      toast({
+        title: "Endereço encontrado",
+        description: "Os dados de endereço foram preenchidos automaticamente.",
+      })
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error)
+      toast({
+        title: "Erro ao buscar CEP",
+        description: "Não foi possível buscar os dados do CEP. Verifique se o CEP está correto.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingCep(false)
+    }
+  }
+
+  // Função para lidar com a mudança no campo de CEP
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target
+    // Remover caracteres não numéricos
+    const cepValue = value.replace(/\D/g, "")
+
+    // Formatar o CEP para exibição (opcional)
+    const formattedCep = cepValue.length <= 5 ? cepValue : `${cepValue.slice(0, 5)}-${cepValue.slice(5, 8)}`
+
+    setAddressData((prev) => ({
+      ...prev,
+      zipCode: formattedCep,
+    }))
+  }
+
+  // Função para buscar o CEP quando o usuário clicar no botão
+  const handleSearchCep = () => {
+    // Remover o hífen para a busca
+    const cepForSearch = addressData.zipCode.replace(/\D/g, "")
+
+    if (cepForSearch.length === 8) {
+      fetchAddressByCep(cepForSearch)
+    } else {
+      toast({
+        title: "CEP inválido",
+        description: "O CEP deve conter 8 dígitos numéricos.",
+        variant: "destructive",
+      })
+    }
+  }
+
   // Função para atualizar os campos do formulário quando o usuário digita
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
@@ -332,24 +476,19 @@ const ConfiguracoesTab: React.FC<{
     }))
   }
 
+  // Função para atualizar os campos de endereço quando o usuário digita
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setAddressData((prev) => ({
+      ...prev,
+      [id]: value,
+    }))
+  }
+
   // Buscar dados do usuário ao carregar o componente
   useEffect(() => {
     fetchUserData()
   }, [])
-
-  // Função para gerar um novo nome de usuário
-  const generateNewUsername = () => {
-    if (useFixedAnonymous) {
-      setUsername("Anônimo")
-    } else {
-      setUsername("Anônimo_" + Math.floor(Math.random() * 10000))
-    }
-  }
-
-  // Efeito para atualizar o nome quando o tipo de anonimato muda
-  useEffect(() => {
-    generateNewUsername()
-  }, [useFixedAnonymous])
 
   // Switches state - Notificações
   const [notificationSwitches, setNotificationSwitches] = useState({
@@ -473,17 +612,21 @@ const ConfiguracoesTab: React.FC<{
       const dataToSend = {
         firstName: userData.firstName,
         lastName: userData.lastName,
-        fullName: `${userData.firstName} ${userData.lastName}`.trim(), // Adicionar fullName combinando firstName e lastName
+        fullName: userData.fullName,
         email: userData.email,
         phone: userData.phone,
-        secondaryPhone: userData.secondaryPhone,
-        alternativeContactType: userData.alternativeContactType,
-        alternativeContact: userData.alternativeContact,
         gender: userData.gender,
         occupation: userData.occupation,
-        occupationDetails: userData.occupationDetails,
-        anonymousUsername: username,
-        // Adicione outros campos conforme necessário
+        birthDate: userData.birthDate,
+        address: {
+          zipCode: addressData.zipCode,
+          stateCode: addressData.stateCode,
+          city: addressData.city,
+          neighborhood: addressData.neighborhood,
+          street: addressData.street,
+          complement: addressData.complement,
+          complementNumber: addressData.complementNumber,
+        },
       }
 
       // Enviar os dados para a API
@@ -644,33 +787,13 @@ const ConfiguracoesTab: React.FC<{
                   </CardHeader>
                   <CardContent>
                     <FormGroup style={{ marginBottom: "16px" }}>
-                      <Label htmlFor="username">Seu Nome de Usuário Anônimo</Label>
-                      <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} disabled />
+                      <Label htmlFor="anonymousName">Seu Nome de Usuário Anônimo</Label>
+                      <Input id="anonymousName" value={anonymousName} disabled />
                       <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-                        Este é o nome que outros usuários verão. Ele foi gerado automaticamente para proteger sua
-                        identidade.
+                        Este é o nome que outros usuários verão. Ele é gerado automaticamente pelo sistema para proteger
+                        sua identidade.
                       </p>
                     </FormGroup>
-
-                    <Button
-                      variant="outline"
-                      style={{ marginBottom: "16px", width: "100%" }}
-                      onClick={() => setUsername("Anônimo_" + Math.floor(Math.random() * 10000))}
-                    >
-                      Gerar Novo Nome Aleatório
-                    </Button>
-
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="fixed-anonymous"
-                        checked={useFixedAnonymous}
-                        onCheckedChange={() => setUseFixedAnonymous(!useFixedAnonymous)}
-                      />
-                      <div>
-                        <Label htmlFor="fixed-anonymous">Usar nome fixo 'Anônimo'</Label>
-                        <p className="text-sm text-muted-foreground">Sem números aleatórios</p>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               </TwoColumnGrid>
@@ -685,21 +808,16 @@ const ConfiguracoesTab: React.FC<{
                 </CardHeader>
                 <CardContent>
                   <FormGrid>
-                    <FormRow>
-                      <FormGroup>
-                        <Label htmlFor="firstName">Nome</Label>
-                        <Input
-                          id="firstName"
-                          placeholder="John"
-                          value={userData.firstName}
-                          onChange={handleInputChange}
-                        />
-                      </FormGroup>
-                      <FormGroup>
-                        <Label htmlFor="lastName">Sobrenome</Label>
-                        <Input id="lastName" placeholder="Doe" value={userData.lastName} onChange={handleInputChange} />
-                      </FormGroup>
-                    </FormRow>
+                    <FormGroup>
+                      <Label htmlFor="fullName">Nome Completo</Label>
+                      <Input
+                        id="fullName"
+                        placeholder="João da Silva"
+                        value={userData.fullName}
+                        onChange={handleInputChange}
+                      />
+                    </FormGroup>
+
                     <TwoColumnGrid>
                       <FormGroup>
                         <Label htmlFor="email">
@@ -709,7 +827,7 @@ const ConfiguracoesTab: React.FC<{
                         <Input
                           id="email"
                           type="email"
-                          placeholder="john.doe@example.com"
+                          placeholder="joao.silva@example.com"
                           value={userData.email}
                           onChange={handleInputChange}
                         />
@@ -717,7 +835,7 @@ const ConfiguracoesTab: React.FC<{
                       <FormGroup>
                         <Label htmlFor="phone">
                           <Phone size={14} />
-                          Telefone Principal
+                          Telefone
                         </Label>
                         <Input
                           id="phone"
@@ -728,53 +846,12 @@ const ConfiguracoesTab: React.FC<{
                         />
                       </FormGroup>
                     </TwoColumnGrid>
-                    <TwoColumnGrid>
-                      <FormGroup>
-                        <Label htmlFor="secondaryPhone">
-                          <Phone size={14} />
-                          Telefone Secundário
-                        </Label>
-                        <Input
-                          id="secondaryPhone"
-                          type="tel"
-                          placeholder="(00) 00000-0000"
-                          value={userData.secondaryPhone}
-                          onChange={handleInputChange}
-                        />
-                      </FormGroup>
-                      <FormGroup>
-                        <Label htmlFor="alternativeContactType">Contato Alternativo</Label>
-                        <Select
-                          value={userData.alternativeContactType}
-                          onValueChange={(value) => setUserData((prev) => ({ ...prev, alternativeContactType: value }))}
-                        >
-                          <SelectTrigger id="alternativeContactType">
-                            <SelectValue placeholder="Tipo de contato alternativo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="phone">Telefone</SelectItem>
-                            <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                            <SelectItem value="telegram">Telegram</SelectItem>
-                            <SelectItem value="outro">Outro</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormGroup>
-                    </TwoColumnGrid>
-                    <FormGroup>
-                      <Label htmlFor="alternativeContact">Informação de Contato Alternativo</Label>
-                      <Input
-                        id="alternativeContact"
-                        placeholder="Informe seu contato alternativo"
-                        value={userData.alternativeContact}
-                        onChange={handleInputChange}
-                      />
-                      <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-                        Este contato será usado apenas para recuperação de conta em caso de emergência.
-                      </p>
-                    </FormGroup>
 
                     <TwoColumnGrid>
+                      <FormGroup>
+                        <Label htmlFor="birthDate">Data de Nascimento</Label>
+                        <Input id="birthDate" type="date" value={userData.birthDate} onChange={handleInputChange} />
+                      </FormGroup>
                       <FormGroup>
                         <Label htmlFor="gender">Gênero</Label>
                         <Select
@@ -791,44 +868,141 @@ const ConfiguracoesTab: React.FC<{
                           </SelectContent>
                         </Select>
                       </FormGroup>
+                    </TwoColumnGrid>
+
+                    <FormGroup>
+                      <Label htmlFor="occupation">Ocupação</Label>
+                      <Select
+                        value={userData.occupation}
+                        onValueChange={(value) => setUserData((prev) => ({ ...prev, occupation: value }))}
+                      >
+                        <SelectTrigger id="occupation">
+                          <SelectValue placeholder="Selecione sua ocupação" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="estudante">Estudante</SelectItem>
+                          <SelectItem value="profissional">Profissional</SelectItem>
+                          <SelectItem value="autonomo">Autônomo</SelectItem>
+                          <SelectItem value="aposentado">Aposentado</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {userData.occupation &&
+                        !["estudante", "profissional", "autonomo", "aposentado", "outro"].includes(
+                          userData.occupation,
+                        ) && (
+                          <p className="text-sm text-amber-600 mt-1">
+                            Ocupação original: {userData.occupation} (será salva como "{userData.occupation}")
+                          </p>
+                        )}
+                    </FormGroup>
+                  </FormGrid>
+                </CardContent>
+              </Card>
+
+              {/* Nova seção de Endereço */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    <MapPin size={18} />
+                    Endereço
+                  </CardTitle>
+                  <CardDescription>Atualize suas informações de endereço</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormGrid>
+                    <FormRow>
+                      <FormGroup style={{ width: "40%" }}>
+                        <Label htmlFor="zipCode">CEP</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="zipCode"
+                            placeholder="12345-678"
+                            value={addressData.zipCode}
+                            onChange={handleCepChange}
+                            maxLength={9}
+                          />
+                          <Button
+                            onClick={handleSearchCep}
+                            disabled={loadingCep || addressData.zipCode.replace(/\D/g, "").length !== 8}
+                            type="button"
+                          >
+                            {loadingCep ? (
+                              <span>Buscando...</span>
+                            ) : (
+                              <>
+                                <Search size={16} className="mr-2" />
+                                <span>Buscar</span>
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Formato: 12345-678</p>
+                      </FormGroup>
+                    </FormRow>
+
+                    <TwoColumnGrid>
                       <FormGroup>
-                        <Label htmlFor="occupation">Ocupação</Label>
-                        <Select
-                          value={userData.occupation}
-                          onValueChange={(value) => setUserData((prev) => ({ ...prev, occupation: value }))}
-                        >
-                          <SelectTrigger id="occupation">
-                            <SelectValue placeholder="Selecione sua ocupação" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="estudante">Estudante</SelectItem>
-                            <SelectItem value="profissional">Profissional</SelectItem>
-                            <SelectItem value="autonomo">Autônomo</SelectItem>
-                            <SelectItem value="aposentado">Aposentado</SelectItem>
-                            <SelectItem value="outro">Outro</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Label htmlFor="street">Logradouro</Label>
+                        <Input
+                          id="street"
+                          placeholder="Rua, Avenida, etc."
+                          value={addressData.street}
+                          onChange={handleAddressChange}
+                        />
+                      </FormGroup>
+                      <FormGroup>
+                        <Label htmlFor="complementNumber">Número</Label>
+                        <Input
+                          id="complementNumber"
+                          placeholder="123"
+                          value={addressData.complementNumber}
+                          onChange={handleAddressChange}
+                        />
                       </FormGroup>
                     </TwoColumnGrid>
 
                     <FormGroup>
-                      <Label htmlFor="occupationDetails">Detalhes da Ocupação</Label>
+                      <Label htmlFor="complement">Complemento</Label>
                       <Input
-                        id="occupationDetails"
-                        placeholder="Ex: Estudante de Medicina, Engenheiro de Software, etc."
-                        value={userData.occupationDetails}
-                        onChange={handleInputChange}
+                        id="complement"
+                        placeholder="Apto, Bloco, etc."
+                        value={addressData.complement}
+                        onChange={handleAddressChange}
                       />
                     </FormGroup>
 
-                    <Alert>
-                      <Info size={16} />
-                      <AlertTitle>Contato Alternativo</AlertTitle>
-                      <AlertDescription>
-                        Recomendamos adicionar um contato alternativo para casos de emergência ou caso seu telefone seja
-                        perdido ou roubado. Este contato será usado apenas para recuperação de conta.
-                      </AlertDescription>
-                    </Alert>
+                    <TwoColumnGrid>
+                      <FormGroup>
+                        <Label htmlFor="neighborhood">Bairro</Label>
+                        <Input
+                          id="neighborhood"
+                          placeholder="Seu bairro"
+                          value={addressData.neighborhood}
+                          onChange={handleAddressChange}
+                        />
+                      </FormGroup>
+                      <FormGroup>
+                        <Label htmlFor="city">Cidade</Label>
+                        <Input
+                          id="city"
+                          placeholder="Sua cidade"
+                          value={addressData.city}
+                          onChange={handleAddressChange}
+                        />
+                      </FormGroup>
+                    </TwoColumnGrid>
+
+                    <FormGroup>
+                      <Label htmlFor="stateCode">Estado</Label>
+                      <Input
+                        id="stateCode"
+                        placeholder="UF"
+                        value={addressData.stateCode}
+                        onChange={handleAddressChange}
+                        maxLength={2}
+                      />
+                    </FormGroup>
                   </FormGrid>
                 </CardContent>
                 <CardFooter>

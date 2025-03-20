@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUserType(null)
 
     // Redirect to login page
-    router.push("/login")
+    router.push("/Login")
   }
 
   return (

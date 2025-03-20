@@ -20,72 +20,147 @@
  * Contact information: teamachei.2024@gmail.com
 */
 
+import type React from "react";
+import styled from "styled-components";
 
+// Cores do Brasil
+const colors = {
+  green: "#009c3b",
+  yellow: "#ffdf00",
+  blue: "#002776",
+  white: "#ffffff",
+  lightGreen: "#e6f7ef",
+  lightYellow: "#fff9e0",
+  lightBlue: "#e6eeff",
+  lightRed: "#ffebee",
+  red: "#e53935",
+};
 
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import styled from "styled-components"
+const AlertBoxContainer = styled.div<{ variant: "success" | "warning" | "info" | "danger" }>`
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 
-import { cn } from "@/app/lib/utils"
+  ${(props) => {
+    switch (props.variant) {
+      case "warning":
+        return `background-color: ${colors.lightYellow}; border-color: #ffeeba;`;
+      case "info":
+        return `background-color: ${colors.lightBlue}; border-color: #bee5eb;`;
+      case "danger":
+        return `background-color: ${colors.lightRed}; border-color: #f5c6cb;`;
+      default:
+        return `background-color: ${colors.lightGreen}; border-color: #c3e6cb;`;
+    }
+  }}
+`;
 
-const alertVariants = cva(
-  "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
-  {
-    variants: {
-      variant: {
-        default: "bg-background text-foreground",
-        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
-)
-
-const Alert = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
-  <div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props} />
-))
-Alert.displayName = "Alert"
-
-const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h5 ref={ref} className={cn("mb-1 font-medium leading-none tracking-tight", className)} {...props} />
-  ),
-)
-AlertTitle.displayName = "AlertTitle"
-
-const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-sm [&_p]:leading-relaxed", className)} {...props} />
-  ),
-)
-AlertDescription.displayName = "AlertDescription"
-
-export { Alert, AlertTitle, AlertDescription }
-
-export const AlertBox = styled.div`
-  padding: 16px;
-  border-radius: 8px;
-  background-color: ${(props) => props.theme.colors[props.variant]};
-  color: ${(props) => props.theme.colors[`${props.variant}Foreground`]};
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`
-
-export const AlertTitleStyled = styled.h4`
-  margin: 0;
-  font-size: 1.25rem;
+const AlertTitleContainer = styled.h4<{ variant: "success" | "warning" | "info" | "danger" }>`
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
-`
+  transition: color 0.3s ease;
 
-export const AlertTextStyled = styled.p`
+  ${(props) => {
+    switch (props.variant) {
+      case "warning":
+        return `color: #856404;`;
+      case "info":
+        return `color: ${colors.blue};`;
+      case "danger":
+        return `color: ${colors.red};`;
+      default:
+        return `color: ${colors.green};`;
+    }
+  }}
+`;
+
+const AlertTextContainer = styled.p<{ variant: "success" | "warning" | "info" | "danger" }>`
   margin: 0;
-  font-size: 1rem;
-` 
+  font-size: 14px;
+  transition: color 0.3s ease;
+
+  ${(props) => {
+    switch (props.variant) {
+      case "warning":
+        return `color: #856404;`;
+      case "info":
+        return `color: ${colors.blue};`;
+      case "danger":
+        return `color: ${colors.red};`;
+      default:
+        return `color: ${colors.green};`;
+    }
+  }}
+`;
+
+interface AlertBoxProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
+}
+
+export const AlertBox: React.FC<AlertBoxProps> = ({ variant, children, ...props }) => {
+  return (
+    <AlertBoxContainer variant={variant} {...props}>
+      {children}
+    </AlertBoxContainer>
+  );
+};
+
+interface AlertTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
+}
+
+export const AlertTitle: React.FC<AlertTitleProps> = ({ variant, children, ...props }) => {
+  return (
+    <AlertTitleContainer variant={variant} {...props}>
+      {children}
+    </AlertTitleContainer>
+  );
+};
+
+interface AlertTextProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
+}
+
+export const AlertText: React.FC<AlertTextProps> = ({ variant, children, ...props }) => {
+  return (
+    <AlertTextContainer variant={variant} {...props}>
+      {children}
+    </AlertTextContainer>
+  );
+};
+
+// Adicionando a definição para AlertDescription
+interface AlertDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
+}
+
+export const AlertDescription: React.FC<AlertDescriptionProps> = ({ variant, children, ...props }) => {
+  return (
+    <AlertTextContainer variant={variant} {...props}>
+      {children}
+    </AlertTextContainer>
+  );
+};
+
+// Adicionando a definição para Alert
+interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
+}
+
+export const Alert: React.FC<AlertProps> = ({ variant, children, ...props }) => {
+  return (
+    <AlertBoxContainer variant={variant} {...props}>
+      {children}
+    </AlertBoxContainer>
+  );
+};
