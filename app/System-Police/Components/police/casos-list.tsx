@@ -15,6 +15,7 @@ import { ArrowUpDown, Eye, CheckCircle, Archive, Trash2 } from "lucide-react"
 import { getIconForObjectType, getStatusBadge, formatarData } from "./utils"
 import type { Caso } from "./types"
 import type { CheckedState } from "@radix-ui/react-checkbox"
+import Image from "next/image"
 
 interface CasosListProps {
   casos: Caso[]
@@ -22,7 +23,6 @@ interface CasosListProps {
   handleSelectAll: (checked: CheckedState) => void
   handleSelectCaso: (id: string) => void
   handleSort: (key: keyof Caso) => void
-  // Removendo sortConfig se não for usado
   currentPage: number
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>
   totalPages: number
@@ -38,7 +38,6 @@ export const CasosList: React.FC<CasosListProps> = ({
   handleSelectAll,
   handleSelectCaso,
   handleSort,
-  // Removendo sortConfig dos parâmetros
   currentPage,
   setCurrentPage,
   totalPages,
@@ -49,7 +48,6 @@ export const CasosList: React.FC<CasosListProps> = ({
 }) => {
   // Função auxiliar para determinar a direção da seta de ordenação
   const getSortIndicator = (key: keyof Caso) => {
-    // Você pode implementar a lógica para mostrar a direção da ordenação aqui
     return <ArrowUpDown className="ml-1 h-4 w-4" />
   }
 
@@ -102,6 +100,7 @@ export const CasosList: React.FC<CasosListProps> = ({
                     {getSortIndicator("id")}
                   </div>
                 </TableHead>
+                <TableHead className="w-[80px]">Imagem</TableHead>
                 <TableHead className="cursor-pointer" onClick={() => handleSort("nomeObjeto")}>
                   <div className="flex items-center">
                     Objeto
@@ -136,6 +135,23 @@ export const CasosList: React.FC<CasosListProps> = ({
                   </TableCell>
                   <TableCell className="font-medium">{caso.id}</TableCell>
                   <TableCell>
+                    {caso.imagemObjeto ? (
+                      <div className="relative h-12 w-12 overflow-hidden rounded-md">
+                        <Image
+                          src={caso.imagemObjeto || "/placeholder.svg"}
+                          alt={`Imagem de ${caso.nomeObjeto}`}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted">
+                        {getIconForObjectType(caso.tipoObjeto)}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       {getIconForObjectType(caso.tipoObjeto)}
                       <span>{caso.nomeObjeto}</span>
@@ -146,7 +162,12 @@ export const CasosList: React.FC<CasosListProps> = ({
                   <TableCell>{caso.vitima}</TableCell>
                   <TableCell>{getStatusBadge(caso.status)}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => onOpenModal(caso)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onOpenModal(caso)}
+                      className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border-blue-200 transition-colors"
+                    >
                       <Eye className="h-4 w-4 mr-2" />
                       Ver detalhes
                     </Button>

@@ -26,14 +26,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Button } from "@/app/components/ui/button"
-<<<<<<< HEAD
-import { Select } from "@/app/components/ui/select"
-import { Switch } from "@/app/components/ui/switch"
-import { AlertBox, AlertTitle, AlertText } from "@/app/components/ui/alert"
-import { List, ListItem } from "@/app/components/ui/list"
-import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
-import { Toast } from "@/app/components/ui/toast"
-=======
 // Adicione estes imports para os componentes Select do shadcn/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Switch } from "@/app/components/ui/switch"
@@ -42,7 +34,6 @@ import { List, ListItem } from "@/app/components/ui/list"
 import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
 import { toast } from "@/app/components/ui/use-toast"
 import { Toaster } from "@/app/components/ui/toaster"
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
 import { Badge } from "@/app/components/ui/badge"
 
 const GlobalStyle = createGlobalStyle`
@@ -215,13 +206,6 @@ const DeviceLastSeen = styled.div`
   color: #666;
 `
 
-<<<<<<< HEAD
-// Modifique a definição do componente ConfiguracoesTab para aceitar o authFetch prop
-const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestInit) => Promise<Response>; token: string }> = ({
-  authFetch,
-  token,
-}) => {
-=======
 // Custom Switch component that handles the ismaster prop correctly
 const MasterSwitch = ({
   checked,
@@ -263,7 +247,6 @@ const ConfiguracoesTab: React.FC<{
   authFetch: (url: string, options?: RequestInit) => Promise<Response>
   token: string
 }> = ({ authFetch, token }) => {
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
   const [activeTab, setActiveTab] = useState("profile")
   const [loading, setLoading] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -330,31 +313,18 @@ const ConfiguracoesTab: React.FC<{
       }
     } catch (error) {
       console.error("Erro ao buscar dados do usuário:", error)
-<<<<<<< HEAD
-      setToastMessage({
-        title: "Erro ao carregar dados",
-        message: "Não foi possível carregar seus dados. Tente novamente mais tarde.",
-      })
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
-=======
       toast({
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar seus dados. Tente novamente mais tarde.",
         variant: "destructive",
       })
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     } finally {
       setLoading(false)
     }
   }
 
   // Função para atualizar os campos do formulário quando o usuário digita
-<<<<<<< HEAD
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-=======
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     const { id, value } = e.target
     setUserData((prev) => ({
       ...prev,
@@ -530,29 +500,6 @@ const ConfiguracoesTab: React.FC<{
         throw new Error(`Erro ao atualizar dados: ${response.status}`)
       }
 
-<<<<<<< HEAD
-      // Atualizar mensagem de sucesso
-      setToastMessage({
-        title: "Alterações salvas com sucesso!",
-        message: "Seus dados foram atualizados.",
-      })
-
-      // Mostrar toast de sucesso
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
-    } catch (error) {
-      console.error("Erro ao salvar dados:", error)
-
-      // Atualizar mensagem de erro
-      setToastMessage({
-        title: "Erro ao salvar dados",
-        message: "Não foi possível salvar suas alterações. Tente novamente mais tarde.",
-      })
-
-      // Mostrar toast de erro
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
-=======
       // Mostrar toast de sucesso
       toast({
         title: "Alterações salvas com sucesso!",
@@ -567,7 +514,6 @@ const ConfiguracoesTab: React.FC<{
         description: "Não foi possível salvar suas alterações. Tente novamente mais tarde.",
         variant: "destructive",
       })
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     } finally {
       setLoading(false)
     }
@@ -799,17 +745,6 @@ const ConfiguracoesTab: React.FC<{
                       <FormGroup>
                         <Label htmlFor="alternativeContactType">Contato Alternativo</Label>
                         <Select
-<<<<<<< HEAD
-                          id="alternativeContactType"
-                          value={userData.alternativeContactType}
-                          onChange={handleInputChange}
-                        >
-                          <option value="email">Email</option>
-                          <option value="phone">Telefone</option>
-                          <option value="whatsapp">WhatsApp</option>
-                          <option value="telegram">Telegram</option>
-                          <option value="outro">Outro</option>
-=======
                           value={userData.alternativeContactType}
                           onValueChange={(value) => setUserData((prev) => ({ ...prev, alternativeContactType: value }))}
                         >
@@ -823,7 +758,6 @@ const ConfiguracoesTab: React.FC<{
                             <SelectItem value="telegram">Telegram</SelectItem>
                             <SelectItem value="outro">Outro</SelectItem>
                           </SelectContent>
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
                         </Select>
                       </FormGroup>
                     </TwoColumnGrid>
@@ -843,17 +777,6 @@ const ConfiguracoesTab: React.FC<{
                     <TwoColumnGrid>
                       <FormGroup>
                         <Label htmlFor="gender">Gênero</Label>
-<<<<<<< HEAD
-                        <Select id="gender" value={userData.gender} onChange={handleInputChange}>
-                          <option value="" disabled>
-                            Selecione seu gênero
-                          </option>
-                          <option value="masculino">Masculino</option>
-                          <option value="feminino">Feminino</option>
-                          <option value="nao-binario">Não-binário</option>
-                          <option value="outro">Outro</option>
-                          <option value="prefiro-nao-informar">Prefiro não informar</option>
-=======
                         <Select
                           value={userData.gender}
                           onValueChange={(value) => setUserData((prev) => ({ ...prev, gender: value }))}
@@ -866,22 +789,10 @@ const ConfiguracoesTab: React.FC<{
                             <SelectItem value="feminino">Feminino</SelectItem>
                             <SelectItem value="prefiro-nao-informar">Prefiro não informar</SelectItem>
                           </SelectContent>
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
                         </Select>
                       </FormGroup>
                       <FormGroup>
                         <Label htmlFor="occupation">Ocupação</Label>
-<<<<<<< HEAD
-                        <Select id="occupation" value={userData.occupation} onChange={handleInputChange}>
-                          <option value="" disabled>
-                            Selecione sua ocupação
-                          </option>
-                          <option value="estudante">Estudante</option>
-                          <option value="profissional">Profissional</option>
-                          <option value="autonomo">Autônomo</option>
-                          <option value="aposentado">Aposentado</option>
-                          <option value="outro">Outro</option>
-=======
                         <Select
                           value={userData.occupation}
                           onValueChange={(value) => setUserData((prev) => ({ ...prev, occupation: value }))}
@@ -896,7 +807,6 @@ const ConfiguracoesTab: React.FC<{
                             <SelectItem value="aposentado">Aposentado</SelectItem>
                             <SelectItem value="outro">Outro</SelectItem>
                           </SelectContent>
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
                         </Select>
                       </FormGroup>
                     </TwoColumnGrid>
@@ -1358,19 +1268,7 @@ const ConfiguracoesTab: React.FC<{
         onConfirm={handleConfirmSave}
       />
 
-<<<<<<< HEAD
-      {showToast && (
-        <Toast>
-          <CheckCircle2 size={18} />
-          <div>
-            <strong>{toastMessage.title}</strong>
-            <p style={{ margin: "0", fontSize: "12px" }}>{toastMessage.message}</p>
-          </div>
-        </Toast>
-      )}
-=======
       <Toaster />
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     </>
   )
 }
