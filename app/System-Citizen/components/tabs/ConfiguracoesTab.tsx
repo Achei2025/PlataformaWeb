@@ -27,15 +27,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Button } from "@/app/components/ui/button"
-<<<<<<< HEAD
-import { Select } from "@/app/components/ui/select"
-import { Switch } from "@/app/components/ui/switch"
-import { AlertBox, AlertTitle, AlertText } from "@/app/components/ui/alert"
-import { List, ListItem } from "@/app/components/ui/list"
-import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
-import { Toast } from "@/app/components/ui/toast"
-=======
-// Adicione estes imports para os componentes Select do shadcn/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Switch } from "@/app/components/ui/switch"
 import { Alert, AlertTitle, AlertDescription } from "@/app/components/ui/alert"
@@ -43,7 +34,6 @@ import { List, ListItem } from "@/app/components/ui/list"
 import { LocationModal, ConfirmationModal } from "@/app/components/ui/modal"
 import { useToast } from "@/app/components/ui/use-toast"
 import { Toaster } from "@/app/components/ui/toaster"
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
 import { Badge } from "@/app/components/ui/badge"
 
 const GlobalStyle = createGlobalStyle`
@@ -216,13 +206,6 @@ const DeviceLastSeen = styled.div`
   color: #666;
 `
 
-<<<<<<< HEAD
-// Modifique a definição do componente ConfiguracoesTab para aceitar o authFetch prop
-const ConfiguracoesTab: React.FC<{ authFetch: (url: string, options?: RequestInit) => Promise<Response>; token: string }> = ({
-  authFetch,
-  token,
-}) => {
-=======
 // Custom Switch component that handles the ismaster prop correctly
 const MasterSwitch = ({
   checked,
@@ -264,7 +247,6 @@ const ConfiguracoesTab: React.FC<{
   authFetch: (url: string, options?: RequestInit) => Promise<Response>
   token: string
 }> = ({ authFetch, token }) => {
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
   const [activeTab, setActiveTab] = useState("profile")
   const [loading, setLoading] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -369,20 +351,11 @@ const ConfiguracoesTab: React.FC<{
       }
     } catch (error) {
       console.error("Erro ao buscar dados do usuário:", error)
-<<<<<<< HEAD
-      setToastMessage({
-        title: "Erro ao carregar dados",
-        message: "Não foi possível carregar seus dados. Tente novamente mais tarde.",
-      })
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
-=======
       toast({
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar seus dados. Tente novamente mais tarde.",
         variant: "destructive",
       })
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     } finally {
       setLoading(false)
     }
@@ -473,11 +446,7 @@ const ConfiguracoesTab: React.FC<{
   }
 
   // Função para atualizar os campos do formulário quando o usuário digita
-<<<<<<< HEAD
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-=======
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     const { id, value } = e.target
     setUserData((prev) => ({
       ...prev,
@@ -652,29 +621,6 @@ const ConfiguracoesTab: React.FC<{
         throw new Error(`Erro ao atualizar dados: ${response.status}`)
       }
 
-<<<<<<< HEAD
-      // Atualizar mensagem de sucesso
-      setToastMessage({
-        title: "Alterações salvas com sucesso!",
-        message: "Seus dados foram atualizados.",
-      })
-
-      // Mostrar toast de sucesso
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
-    } catch (error) {
-      console.error("Erro ao salvar dados:", error)
-
-      // Atualizar mensagem de erro
-      setToastMessage({
-        title: "Erro ao salvar dados",
-        message: "Não foi possível salvar suas alterações. Tente novamente mais tarde.",
-      })
-
-      // Mostrar toast de erro
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
-=======
       // Mostrar toast de sucesso
       toast({
         title: "Alterações salvas com sucesso!",
@@ -689,7 +635,6 @@ const ConfiguracoesTab: React.FC<{
         description: "Não foi possível salvar suas alterações. Tente novamente mais tarde.",
         variant: "destructive",
       })
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     } finally {
       setLoading(false)
     }
@@ -886,63 +831,7 @@ const ConfiguracoesTab: React.FC<{
                         <Input id="birthDate" type="date" value={userData.birthDate} onChange={handleInputChange} />
                       </FormGroup>
                       <FormGroup>
-                        <Label htmlFor="alternativeContactType">Contato Alternativo</Label>
-                        <Select
-<<<<<<< HEAD
-                          id="alternativeContactType"
-                          value={userData.alternativeContactType}
-                          onChange={handleInputChange}
-                        >
-                          <option value="email">Email</option>
-                          <option value="phone">Telefone</option>
-                          <option value="whatsapp">WhatsApp</option>
-                          <option value="telegram">Telegram</option>
-                          <option value="outro">Outro</option>
-=======
-                          value={userData.alternativeContactType}
-                          onValueChange={(value) => setUserData((prev) => ({ ...prev, alternativeContactType: value }))}
-                        >
-                          <SelectTrigger id="alternativeContactType">
-                            <SelectValue placeholder="Tipo de contato alternativo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="phone">Telefone</SelectItem>
-                            <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                            <SelectItem value="telegram">Telegram</SelectItem>
-                            <SelectItem value="outro">Outro</SelectItem>
-                          </SelectContent>
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
-                        </Select>
-                      </FormGroup>
-                    </TwoColumnGrid>
-                    <FormGroup>
-                      <Label htmlFor="alternativeContact">Informação de Contato Alternativo</Label>
-                      <Input
-                        id="alternativeContact"
-                        placeholder="Informe seu contato alternativo"
-                        value={userData.alternativeContact}
-                        onChange={handleInputChange}
-                      />
-                      <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-                        Este contato será usado apenas para recuperação de conta em caso de emergência.
-                      </p>
-                    </FormGroup>
-
-                    <TwoColumnGrid>
-                      <FormGroup>
                         <Label htmlFor="gender">Gênero</Label>
-<<<<<<< HEAD
-                        <Select id="gender" value={userData.gender} onChange={handleInputChange}>
-                          <option value="" disabled>
-                            Selecione seu gênero
-                          </option>
-                          <option value="masculino">Masculino</option>
-                          <option value="feminino">Feminino</option>
-                          <option value="nao-binario">Não-binário</option>
-                          <option value="outro">Outro</option>
-                          <option value="prefiro-nao-informar">Prefiro não informar</option>
-=======
                         <Select
                           value={userData.gender}
                           onValueChange={(value) => setUserData((prev) => ({ ...prev, gender: value }))}
@@ -955,38 +844,99 @@ const ConfiguracoesTab: React.FC<{
                             <SelectItem value="feminino">Feminino</SelectItem>
                             <SelectItem value="prefiro-nao-informar">Prefiro não informar</SelectItem>
                           </SelectContent>
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
                         </Select>
                       </FormGroup>
+                    </TwoColumnGrid>
+
+                    <FormGroup>
+                      <Label htmlFor="occupation">Ocupação</Label>
+                      <Select
+                        value={userData.occupation}
+                        onValueChange={(value) => setUserData((prev) => ({ ...prev, occupation: value }))}
+                      >
+                        <SelectTrigger id="occupation">
+                          <SelectValue placeholder="Selecione sua ocupação" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="estudante">Estudante</SelectItem>
+                          <SelectItem value="profissional">Profissional</SelectItem>
+                          <SelectItem value="autonomo">Autônomo</SelectItem>
+                          <SelectItem value="aposentado">Aposentado</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {userData.occupation &&
+                        !["estudante", "profissional", "autonomo", "aposentado", "outro"].includes(
+                          userData.occupation,
+                        ) && (
+                          <p className="text-sm text-amber-600 mt-1">
+                            Ocupação original: {userData.occupation} (será salva como "{userData.occupation}")
+                          </p>
+                        )}
+                    </FormGroup>
+                  </FormGrid>
+                </CardContent>
+              </Card>
+
+              {/* Nova seção de Endereço */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    <MapPin size={18} />
+                    Endereço
+                  </CardTitle>
+                  <CardDescription>Atualize suas informações de endereço</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormGrid>
+                    <FormRow>
+                      <FormGroup style={{ width: "40%" }}>
+                        <Label htmlFor="zipCode">CEP</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="zipCode"
+                            placeholder="12345-678"
+                            value={addressData.zipCode}
+                            onChange={handleCepChange}
+                            maxLength={9}
+                          />
+                          <Button
+                            onClick={handleSearchCep}
+                            disabled={loadingCep || addressData.zipCode.replace(/\D/g, "").length !== 8}
+                            type="button"
+                          >
+                            {loadingCep ? (
+                              <span>Buscando...</span>
+                            ) : (
+                              <>
+                                <Search size={16} className="mr-2" />
+                                <span>Buscar</span>
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Formato: 12345-678</p>
+                      </FormGroup>
+                    </FormRow>
+
+                    <TwoColumnGrid>
                       <FormGroup>
-                        <Label htmlFor="occupation">Ocupação</Label>
-<<<<<<< HEAD
-                        <Select id="occupation" value={userData.occupation} onChange={handleInputChange}>
-                          <option value="" disabled>
-                            Selecione sua ocupação
-                          </option>
-                          <option value="estudante">Estudante</option>
-                          <option value="profissional">Profissional</option>
-                          <option value="autonomo">Autônomo</option>
-                          <option value="aposentado">Aposentado</option>
-                          <option value="outro">Outro</option>
-=======
-                        <Select
-                          value={userData.occupation}
-                          onValueChange={(value) => setUserData((prev) => ({ ...prev, occupation: value }))}
-                        >
-                          <SelectTrigger id="occupation">
-                            <SelectValue placeholder="Selecione sua ocupação" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="estudante">Estudante</SelectItem>
-                            <SelectItem value="profissional">Profissional</SelectItem>
-                            <SelectItem value="autonomo">Autônomo</SelectItem>
-                            <SelectItem value="aposentado">Aposentado</SelectItem>
-                            <SelectItem value="outro">Outro</SelectItem>
-                          </SelectContent>
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
-                        </Select>
+                        <Label htmlFor="street">Logradouro</Label>
+                        <Input
+                          id="street"
+                          placeholder="Rua, Avenida, etc."
+                          value={addressData.street}
+                          onChange={handleAddressChange}
+                        />
+                      </FormGroup>
+                      <FormGroup>
+                        <Label htmlFor="complementNumber">Número</Label>
+                        <Input
+                          id="complementNumber"
+                          placeholder="123"
+                          value={addressData.complementNumber}
+                          onChange={handleAddressChange}
+                        />
                       </FormGroup>
                     </TwoColumnGrid>
 
@@ -1470,19 +1420,7 @@ const ConfiguracoesTab: React.FC<{
         onConfirm={handleConfirmSave}
       />
 
-<<<<<<< HEAD
-      {showToast && (
-        <Toast>
-          <CheckCircle2 size={18} />
-          <div>
-            <strong>{toastMessage.title}</strong>
-            <p style={{ margin: "0", fontSize: "12px" }}>{toastMessage.message}</p>
-          </div>
-        </Toast>
-      )}
-=======
       <Toaster />
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
     </>
   )
 }

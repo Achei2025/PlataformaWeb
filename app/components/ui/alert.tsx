@@ -1,5 +1,27 @@
-import type React from "react"
-import styled from "styled-components"
+/*
+ * Achei: Stolen Object Tracking System.
+ * Copyright (C) 2025  Team Achei
+ * 
+ * This file is part of Achei.
+ * 
+ * Achei is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Achei is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Contact information: teamachei.2024@gmail.com
+*/
+
+import type React from "react";
+import styled from "styled-components";
 
 // Cores do Brasil
 const colors = {
@@ -12,7 +34,7 @@ const colors = {
   lightBlue: "#e6eeff",
   lightRed: "#ffebee",
   red: "#e53935",
-}
+};
 
 const AlertBoxContainer = styled.div<{ variant: "success" | "warning" | "info" | "danger" }>`
   padding: 12px 16px;
@@ -20,37 +42,19 @@ const AlertBoxContainer = styled.div<{ variant: "success" | "warning" | "info" |
   margin-bottom: 16px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 
-<<<<<<< HEAD
   ${(props) => {
     switch (props.variant) {
       case "warning":
-        return `
-          background-color: ${colors.lightYellow};
-          border: 1px solid ${colors.yellow};
-        `
+        return `background-color: ${colors.lightYellow}; border-color: #ffeeba;`;
       case "info":
-        return `
-          background-color: ${colors.lightBlue};
-          border: 1px solid ${colors.blue};
-        `
+        return `background-color: ${colors.lightBlue}; border-color: #bee5eb;`;
       case "danger":
-        return `
-          background-color: ${colors.lightRed};
-          border: 1px solid ${colors.red};
-        `
+        return `background-color: ${colors.lightRed}; border-color: #f5c6cb;`;
       default:
-        return `
-          background-color: ${colors.lightGreen};
-          border: 1px solid ${colors.green};
-        `
+        return `background-color: ${colors.lightGreen}; border-color: #c3e6cb;`;
     }
   }}
-`
-=======
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import styled from "styled-components"
->>>>>>> 781dada54d96921395cd7551e49774e7fa09e040
+`;
 
 const AlertTitleContainer = styled.h4<{ variant: "success" | "warning" | "info" | "danger" }>`
   margin: 0 0 8px 0;
@@ -64,39 +68,39 @@ const AlertTitleContainer = styled.h4<{ variant: "success" | "warning" | "info" 
   ${(props) => {
     switch (props.variant) {
       case "warning":
-        return `color: #856404;`
+        return `color: #856404;`;
       case "info":
-        return `color: ${colors.blue};`
+        return `color: ${colors.blue};`;
       case "danger":
-        return `color: ${colors.red};`
+        return `color: ${colors.red};`;
       default:
-        return `color: ${colors.green};`
+        return `color: ${colors.green};`;
     }
   }}
-`
+`;
 
 const AlertTextContainer = styled.p<{ variant: "success" | "warning" | "info" | "danger" }>`
   margin: 0;
   font-size: 14px;
   transition: color 0.3s ease;
-  
+
   ${(props) => {
     switch (props.variant) {
       case "warning":
-        return `color: #856404;`
+        return `color: #856404;`;
       case "info":
-        return `color: ${colors.blue};`
+        return `color: ${colors.blue};`;
       case "danger":
-        return `color: ${colors.red};`
+        return `color: ${colors.red};`;
       default:
-        return `color: ${colors.green};`
+        return `color: ${colors.green};`;
     }
   }}
-`
+`;
 
 interface AlertBoxProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant: "success" | "warning" | "info" | "danger"
-  children: React.ReactNode
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
 }
 
 export const AlertBox: React.FC<AlertBoxProps> = ({ variant, children, ...props }) => {
@@ -104,12 +108,12 @@ export const AlertBox: React.FC<AlertBoxProps> = ({ variant, children, ...props 
     <AlertBoxContainer variant={variant} {...props}>
       {children}
     </AlertBoxContainer>
-  )
-}
+  );
+};
 
 interface AlertTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
-  variant: "success" | "warning" | "info" | "danger"
-  children: React.ReactNode
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
 }
 
 export const AlertTitle: React.FC<AlertTitleProps> = ({ variant, children, ...props }) => {
@@ -117,12 +121,12 @@ export const AlertTitle: React.FC<AlertTitleProps> = ({ variant, children, ...pr
     <AlertTitleContainer variant={variant} {...props}>
       {children}
     </AlertTitleContainer>
-  )
-}
+  );
+};
 
 interface AlertTextProps extends React.HTMLAttributes<HTMLParagraphElement> {
-  variant: "success" | "warning" | "info" | "danger"
-  children: React.ReactNode
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
 }
 
 export const AlertText: React.FC<AlertTextProps> = ({ variant, children, ...props }) => {
@@ -130,28 +134,33 @@ export const AlertText: React.FC<AlertTextProps> = ({ variant, children, ...prop
     <AlertTextContainer variant={variant} {...props}>
       {children}
     </AlertTextContainer>
-  )
+  );
+};
+
+// Adicionando a definição para AlertDescription
+interface AlertDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
 }
 
-export const AlertBox = styled.div`
-  padding: 16px;
-  border-radius: 8px;
-  background-color: ${(props) => props.theme.colors[props.variant]};
-  color: ${(props) => props.theme.colors[`${props.variant}Foreground`]};
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`
+export const AlertDescription: React.FC<AlertDescriptionProps> = ({ variant, children, ...props }) => {
+  return (
+    <AlertTextContainer variant={variant} {...props}>
+      {children}
+    </AlertTextContainer>
+  );
+};
 
-export const AlertTitleStyled = styled.h4`
-  margin: 0;
-  font-size: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`
+// Adicionando a definição para Alert
+interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant: "success" | "warning" | "info" | "danger";
+  children: React.ReactNode;
+}
 
-export const AlertTextStyled = styled.p`
-  margin: 0;
-  font-size: 1rem;
-` 
+export const Alert: React.FC<AlertProps> = ({ variant, children, ...props }) => {
+  return (
+    <AlertBoxContainer variant={variant} {...props}>
+      {children}
+    </AlertBoxContainer>
+  );
+};
