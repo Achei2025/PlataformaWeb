@@ -31,7 +31,7 @@ const UserPanel: React.FC = () => {
     // Se não houver token no localStorage ou não for cidadão, redirecionar
     if (!storedToken || storedUserType !== "citizen") {
       console.log("System-Citizen - Redirecionando para login (dados não encontrados no localStorage)")
-      router.push("/login")
+      router.push("/Login")
       return
     }
 
