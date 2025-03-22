@@ -49,9 +49,9 @@ const mockItems: EcommerceItem[] = [
   {
     nome: "iPhone 13 Pro 256GB Azul Sierra",
     preco: 4299.99,
-    imagem: "/placeholder.svg?height=300&width=300&text=iPhone+13+Pro",
+    imagem: "/image/Iphone14.jpg",
     loja: "Mercado Livre",
-    logoLoja: "/placeholder.svg?height=40&width=40&text=ML",
+    logoLoja: "",
     dataListagem: "2023-12-11",
     suspeito: true,
     condicao: "Usado - Como novo",
@@ -60,9 +60,9 @@ const mockItems: EcommerceItem[] = [
   {
     nome: "iPhone 13 Pro Max Azul 256GB Desbloqueado",
     preco: 4899.99,
-    imagem: "/placeholder.svg?height=300&width=300&text=iPhone+13+Pro+Max",
+    imagem: "/image/Iphone14.jpg",
     loja: "OLX",
-    logoLoja: "/placeholder.svg?height=40&width=40&text=OLX",
+    logoLoja: "",
     dataListagem: "2023-12-12",
     suspeito: true,
     condicao: "Usado - Bom estado",
@@ -71,7 +71,7 @@ const mockItems: EcommerceItem[] = [
   {
     nome: "Apple iPhone 13 Pro 256GB Azul - Novo Lacrado",
     preco: 5499.99,
-    imagem: "/placeholder.svg?height=300&width=300&text=iPhone+13+Pro+Novo",
+    imagem: "/image/Iphone14.jpg",
     loja: "Amazon",
     logoLoja: "/placeholder.svg?height=40&width=40&text=AMZ",
     dataListagem: "2023-11-28",
@@ -82,7 +82,7 @@ const mockItems: EcommerceItem[] = [
   {
     nome: "iPhone 13 Pro 256GB Azul - Seminovo",
     preco: 3999.99,
-    imagem: "/placeholder.svg?height=300&width=300&text=iPhone+13+Pro+Seminovo",
+    imagem: "/image/Iphone14.jpg",
     loja: "Facebook Marketplace",
     logoLoja: "/placeholder.svg?height=40&width=40&text=FB",
     dataListagem: "2023-12-13",
@@ -125,7 +125,7 @@ export default function EcommerceDemo({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl h-[90vh] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Verificação de E-commerces</DialogTitle>
         </DialogHeader>
@@ -165,7 +165,7 @@ export default function EcommerceDemo({
           </div>
 
           <Tabs defaultValue="todos" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full max-w-md mx-auto mb-6">
+            <TabsList className="w-full max-w-full sm:max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-sm">
               <TabsTrigger value="todos" className="flex-1">
                 Todos os Itens
                 <Badge variant="outline" className="ml-2 bg-white">
@@ -215,16 +215,16 @@ export default function EcommerceDemo({
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {filteredItems.map((item, index) => (
-          <Card key={index} className={`overflow-hidden ${item.suspeito ? "border-red-300" : ""}`}>
+          <Card key={index} className={`overflow-hidden ${item.suspeito ? "border-red-300" : ""} text-sm sm:text-base`}>
             <div className="relative">
               <Image
                 src={item.imagem || "/placeholder.svg"}
                 alt={item.nome}
                 width={400}
                 height={300}
-                className="w-full h-48 object-cover"
+                className="w-full h-36 sm:h-48 object-cover"
               />
               {item.suspeito && (
                 <Badge className="absolute top-2 right-2 bg-red-500 text-white">
@@ -237,7 +237,7 @@ export default function EcommerceDemo({
               </Badge>
             </div>
 
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Image
@@ -260,7 +260,7 @@ export default function EcommerceDemo({
               </p>
             </CardHeader>
 
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 px-3 sm:px-6">
               <div className="flex flex-wrap gap-1 mb-2">
                 <Badge variant="outline" className="text-xs">
                   {item.condicao}
@@ -281,14 +281,14 @@ export default function EcommerceDemo({
               )}
             </CardContent>
 
-            <CardFooter className="flex justify-between pt-2 border-t">
-              <Button variant="outline" onClick={handleReportItem}>
-                <Flag className="h-4 w-4 mr-2" />
+            <CardFooter className="flex justify-between pt-2 border-t px-3 sm:px-6 pb-3 sm:pb-6">
+              <Button variant="outline" onClick={handleReportItem} size="sm" className="text-xs sm:text-sm">
+                <Flag className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Reportar
               </Button>
-              <Button asChild>
+              <Button asChild size="sm" className="text-xs sm:text-sm">
                 <a href="#" onClick={(e) => e.preventDefault()}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   Ver Anúncio
                 </a>
               </Button>

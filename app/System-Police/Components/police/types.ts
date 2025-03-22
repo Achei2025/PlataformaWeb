@@ -1,54 +1,54 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- * 
- * This file is part of Achei.
- * 
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
- * Contact information: teamachei.2024@gmail.com
-*/
-
-export interface Comentario {
-  autor: string
-  data: string
-  texto: string
-}
+// Definição dos tipos utilizados no sistema
 
 export interface Caso {
   id: string
-  categoriaObjeto: string
   nomeObjeto: string
-  situacao: string
-  marca: string
-  modelo: string
+  tipoObjeto: string // celular, notebook, bicicleta, acessorio, camera, relogio, tablet, eletronico, instrumento, outro
+  dataRoubo: Date
+  localRoubo: string
+  vitima: string
+  status: string // aberto, investigacao, resolvido, arquivado
+  imagemObjeto: string | null
+  descricao: string
+  numeroSerie: string
+  boletimOcorrencia: string
+  dataRegistro: Date
+
+  // Campos opcionais adicionais para o modal
+  categoriaObjeto?: string
+  situacao?: string
+  marca?: string
+  modelo?: string
   imei?: string
   chassi?: string
-  descricaoObjeto: string
+  descricaoObjeto?: string
   qrCode?: string
   imagensObjeto?: string[]
   outroContato?: string
   notaFiscal?: string
-  dataRoubo: string
-  horaRoubo: string
-  categoriaRoubo: string
-  localRoubo: string
-  descricaoRoubo: string
-  vitima: string
-  telefone: string
-  status: string
+  horaRoubo?: string
+  categoriaRoubo?: string
+  descricaoRoubo?: string
+  telefone?: string
+  email?: string
+
+  // Campos adicionais para a estrutura de detalhes do objeto
+  name?: string
+  category?: string
+  description?: string
+  serialNumber?: string
+  identificationCode?: string
+  brand?: string
+  model?: string
+  acquisitionDate?: string
+  invoice?: string
+  image?: string
+  properties?: Array<{ key: string; value?: string }>
+
+  // Campos adicionais para a estrutura de detalhes do incidente
+  incidentStatus?: string
+  crimeType?: string
+  location?: string
+  incidentDescription?: string
 }
-
-
 

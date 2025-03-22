@@ -1,127 +1,69 @@
-/*
- * Achei: Stolen Object Tracking System.
- * Copyright (C) 2025  Team Achei
- * 
- * This file is part of Achei.
- * 
- * Achei is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Achei is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
- * Contact information: teamachei.2024@gmail.com
-*/
-
 "use client"
 
-import type React from "react"
-import { useState } from "react"
-import { CasosList } from "./casos-list"
-import { CasosFilters } from "./casos-filters"
-import { CasosHeader } from "./casos-header"
-import { CasoModal } from "./caso-modal"
-import { mockCasos } from "./mock-data"
-import type { Caso } from "./types"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/app/components/ui/alert-dialog"
-import { useToast } from "@/app/components/ui/use-toast"
+import { useState, useEffect } from "react"
+import { CasosList } from "@/app/System-Police/Components/police/casos-list"
+import { CasoModal } from "@/app/System-Police/Components/police/caso-modal"
+import { casosMock } from "@/app/System-Police/Components/police/mock-data"
+import type { Caso } from "@/app/System-Police/Components/police/types"
 
-const CasosTab: React.FC = () => {
-  const [casos, setCasos] = useState<Caso[]>(mockCasos)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string | undefined>()
-  const [tipoObjetoFilter, setTipoObjetoFilter] = useState<string | undefined>()
+export default function CasosPage() {
+  const [casos, setCasos] = useState<Caso[]>([])
   const [selectedCasos, setSelectedCasos] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Caso
-    direction: "ascending" | "descending"
-  } | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [selectedCaso, setSelectedCaso] = useState<Caso | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
-  const [batchAction, setBatchAction] = useState<{ action: string; casoIds: string[] } | null>(null)
 
-  const { toast } = useToast()
+  const itemsPerPage = 5
 
-  const itemsPerPage = 10
+  // Carregar dados de exemplo
+  useEffect(() => {
+    setCasos(casosMock)
+  }, [])
 
+  // Filtrar casos
   const filteredCasos = casos.filter((caso) => {
-    const searchTermMatch =
-      caso.objeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      searchTerm === "" ||
+      caso.nomeObjeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
       caso.vitima.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      caso.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
       caso.id.toLowerCase().includes(searchTerm.toLowerCase())
-    const statusMatch = statusFilter ? caso.status === statusFilter : true
-    const tipoObjetoMatch = tipoObjetoFilter ? caso.tipoObjeto === tipoObjetoFilter : true
 
-    return searchTermMatch && statusMatch && tipoObjetoMatch
+    const matchesStatus = statusFilter === null || caso.status === statusFilter
+
+    return matchesSearch && matchesStatus
   })
 
+  // Paginação
   const totalPages = Math.ceil(filteredCasos.length / itemsPerPage)
-
   const paginatedCasos = filteredCasos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
+  // Manipuladores de eventos
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
       setSelectedCasos(paginatedCasos.map((caso) => caso.id))
     } else {
       setSelectedCasos([])
     }
   }
 
-  const handleSelectCaso = (casoId: string) => {
-    setSelectedCasos((prevSelectedCasos) => {
-      if (prevSelectedCasos.includes(casoId)) {
-        return prevSelectedCasos.filter((id) => id !== casoId)
-      } else {
-        return [...prevSelectedCasos, casoId]
-      }
-    })
+  const handleSelectCaso = (id: string) => {
+    if (selectedCasos.includes(id)) {
+      setSelectedCasos(selectedCasos.filter((casoId) => casoId !== id))
+    } else {
+      setSelectedCasos([...selectedCasos, id])
+    }
   }
 
   const handleSort = (key: keyof Caso) => {
-    let direction: "ascending" | "descending" = "ascending"
-
-    if (sortConfig?.key === key && sortConfig.direction === "ascending") {
-      direction = "descending"
-    }
-
-    setSortConfig({ key, direction })
-
-    setCasos((prevCasos) => {
-      return [...prevCasos].sort((a, b) => {
-        if (a[key] < b[key]) {
-          return direction === "ascending" ? -1 : 1
-        }
-        if (a[key] > b[key]) {
-          return direction === "ascending" ? 1 : -1
-        }
-        return 0
-      })
+    // Implementação simples de ordenação
+    const sortedCasos = [...casos].sort((a, b) => {
+      if (a[key] < b[key]) return -1
+      if (a[key] > b[key]) return 1
+      return 0
     })
-  }
-
-  const handleClearFilters = () => {
-    setSearchTerm("")
-    setStatusFilter(undefined)
-    setTipoObjetoFilter(undefined)
+    setCasos(sortedCasos)
   }
 
   const handleOpenModal = (caso: Caso) => {
@@ -130,69 +72,64 @@ const CasosTab: React.FC = () => {
   }
 
   const handleCloseModal = () => {
-    setSelectedCaso(null)
     setIsModalOpen(false)
   }
 
   const handleUpdateStatus = (casoId: string, newStatus: string) => {
-    setCasos((prevCasos) => prevCasos.map((caso) => (caso.id === casoId ? { ...caso, status: newStatus } : caso)))
-  }
-
-  const handleSendMessage = (casoId: string, message: string) => {
-    // Aqui você pode implementar a lógica para enviar a mensagem
-    console.log(`Mensagem enviada para o caso ${casoId}: ${message}`)
-    // Você pode atualizar o estado dos casos para incluir a nova mensagem, se necessário
+    setCasos(casos.map((caso) => (caso.id === casoId ? { ...caso, status: newStatus } : caso)))
   }
 
   const handleBatchAction = (action: string, casoIds: string[]) => {
-    setBatchAction({ action, casoIds })
-    setIsConfirmDialogOpen(true)
-  }
+    // Aqui você implementaria a lógica para ações em lote
+    console.log(`Executando ação ${action} para os casos:`, casoIds)
 
-  const confirmBatchAction = () => {
-    if (batchAction) {
-      const { action, casoIds } = batchAction
-      switch (action) {
-        case "resolver":
-          setCasos(casos.map((caso) => (casoIds.includes(caso.id) ? { ...caso, status: "Resolvido" } : caso)))
-          break
-        case "arquivar":
-          setCasos(casos.map((caso) => (casoIds.includes(caso.id) ? { ...caso, status: "Arquivado" } : caso)))
-          break
-        case "excluir":
-          setCasos(casos.filter((caso) => !casoIds.includes(caso.id)))
-          break
-        default:
-          console.log(`Ação não reconhecida: ${action}`)
-      }
-      setSelectedCasos([])
-      setIsConfirmDialogOpen(false)
-      toast({
-        title: "Ação em lote concluída",
-        description: `A ação "${action}" foi aplicada a ${casoIds.length} caso(s).`,
-      })
+    // Exemplo de atualização de status
+    if (action === "resolver") {
+      setCasos(casos.map((caso) => (casoIds.includes(caso.id) ? { ...caso, status: "resolvido" } : caso)))
+    } else if (action === "arquivar") {
+      setCasos(casos.map((caso) => (casoIds.includes(caso.id) ? { ...caso, status: "arquivado" } : caso)))
+    } else if (action === "excluir") {
+      setCasos(casos.filter((caso) => !casoIds.includes(caso.id)))
     }
+
+    // Limpar seleção após ação
+    setSelectedCasos([])
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <CasosHeader />
-      <CasosFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        tipoObjetoFilter={tipoObjetoFilter}
-        setTipoObjetoFilter={setTipoObjetoFilter}
-        handleClearFilters={handleClearFilters}
-      />
+    <div className="container mx-auto py-8">
+      <h1 className="text-2xl font-bold mb-6">Sistema de Registro de Objetos Roubados</h1>
+
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            type="text"
+            placeholder="Buscar por ID, objeto ou vítima..."
+            className="px-4 py-2 border rounded-md w-full sm:w-80"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+          <select
+            className="px-4 py-2 border rounded-md"
+            value={statusFilter || ""}
+            onChange={(e) => setStatusFilter(e.target.value || null)}
+          >
+            <option value="">Todos os status</option>
+            <option value="aberto">Aberto</option>
+            <option value="investigacao">Em investigação</option>
+            <option value="resolvido">Resolvido</option>
+            <option value="arquivado">Arquivado</option>
+          </select>
+        </div>
+      </div>
+
       <CasosList
         casos={paginatedCasos}
         selectedCasos={selectedCasos}
         handleSelectAll={handleSelectAll}
         handleSelectCaso={handleSelectCaso}
         handleSort={handleSort}
-        sortConfig={sortConfig}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         totalPages={totalPages}
@@ -201,33 +138,16 @@ const CasosTab: React.FC = () => {
         onOpenModal={handleOpenModal}
         onBatchAction={handleBatchAction}
       />
-      {selectedCaso && (
-        <CasoModal
-          caso={selectedCaso}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onUpdateStatus={handleUpdateStatus}
-          onSendMessage={handleSendMessage}
-        />
-      )}
-      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar ação em lote</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você tem certeza que deseja {batchAction?.action} {batchAction?.casoIds.length} caso(s)? Esta ação não
-              pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmBatchAction}>Confirmar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
+      {/* Modal de detalhes do caso */}
+      <CasoModal
+        caso={selectedCaso}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onUpdateStatus={handleUpdateStatus}
+        userType="police"
+      />
     </div>
   )
 }
-
-export default CasosTab
 
