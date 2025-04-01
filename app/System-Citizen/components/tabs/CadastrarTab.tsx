@@ -31,15 +31,15 @@ import { useState, useEffect } from "react"
 import { Form } from "formik"
 import * as Yup from "yup"
 import styled, { css } from "styled-components"
-import { Button } from "@/app/components/ui/button"
-import { Input } from "@/app/components/ui/input"
-import { Label } from "@/app/components/ui/label"
-import { Textarea } from "@/app/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
+import { Button } from "../../../components/ui/button"
+import { Input } from "../../../components/ui/input"
+import { Label } from "../../../components/ui/label"
+import { Textarea } from "../../../components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
 import { AlertTriangle } from "lucide-react"
-import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/app/components/ui/dialog"
-import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
-import { useToast } from "@/app/components/ui/use-toast"
+import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../../../components/ui/dialog"
+import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs"
+import { useToast } from "../../../components/ui/use-toast"
 
 const categories = [
   { value: "eletronico", label: "Eletrônico" },
@@ -81,6 +81,210 @@ interface ObjectItemProps {
   notaFiscalUrl?: string
   imagensUrls?: string[]
   preco: string
+}
+
+// Objetos mock para teste
+const mockObjects: ObjectItemProps[] = [
+  {
+    id: "obj-1",
+    categoria: "eletronico",
+    nome: "iPhone 13 Pro",
+    descricao: "Smartphone Apple em excelente estado, pouco uso",
+    marca: "Apple",
+    modelo: "iPhone 13 Pro",
+    dataAquisicao: "2022-05-15",
+    numeroSerie: "C7JDCN82KPH3R",
+    imei: "354751102341857",
+    situacao: "usado",
+    dataCadastro: "2023-01-10",
+    cpfDono: "123.456.789-00",
+    emailDono: "usuario@email.com",
+    notaFiscalUrl: "/placeholder.svg?height=1000&width=700&text=Nota+Fiscal",
+    imagensUrls: [
+      "/placeholder.svg?height=600&width=800&text=iPhone+Frente",
+      "/placeholder.svg?height=600&width=800&text=iPhone+Verso",
+    ],
+    preco: "4500.00",
+  },
+  {
+    id: "obj-2",
+    categoria: "eletronico",
+    nome: "Notebook Dell XPS",
+    descricao: "Notebook Dell XPS 15 com processador i7, 16GB RAM e SSD 512GB",
+    marca: "Dell",
+    modelo: "XPS 15",
+    dataAquisicao: "2021-11-20",
+    numeroSerie: "JH45KL78901",
+    imei: "865432109876543",
+    situacao: "usado",
+    dataCadastro: "2022-12-05",
+    cpfDono: "123.456.789-00",
+    emailDono: "usuario@email.com",
+    notaFiscalUrl: "/placeholder.svg?height=1000&width=700&text=Nota+Fiscal",
+    imagensUrls: [
+      "/placeholder.svg?height=600&width=800&text=Notebook+Aberto",
+      "/placeholder.svg?height=600&width=800&text=Notebook+Fechado",
+    ],
+    preco: "6800.00",
+  },
+  {
+    id: "obj-3",
+    categoria: "veiculo",
+    nome: "Honda Civic",
+    descricao: "Honda Civic EXL 2020, completo, único dono",
+    marca: "Honda",
+    modelo: "Civic EXL",
+    dataAquisicao: "2020-06-10",
+    chassi: "9BWHE21JX24060960",
+    situacao: "usado",
+    dataCadastro: "2023-02-15",
+    cpfDono: "123.456.789-00",
+    emailDono: "usuario@email.com",
+    notaFiscalUrl: "/placeholder.svg?height=1000&width=700&text=Nota+Fiscal",
+    imagensUrls: [
+      "/placeholder.svg?height=600&width=800&text=Carro+Frente",
+      "/placeholder.svg?height=600&width=800&text=Carro+Lateral",
+      "/placeholder.svg?height=600&width=800&text=Carro+Interior",
+    ],
+    preco: "98000.00",
+  },
+  {
+    id: "obj-4",
+    categoria: "outro",
+    nome: "Relógio Rolex",
+    descricao: "Relógio Rolex Submariner, original com certificado",
+    marca: "Rolex",
+    modelo: "Submariner",
+    dataAquisicao: "2019-12-25",
+    numeroSerie: "RLX78901234",
+    situacao: "novo",
+    dataCadastro: "2023-03-01",
+    cpfDono: "123.456.789-00",
+    emailDono: "usuario@email.com",
+    notaFiscalUrl: "/placeholder.svg?height=1000&width=700&text=Nota+Fiscal",
+    imagensUrls: [
+      "/placeholder.svg?height=600&width=800&text=Relógio+Frente",
+      "/placeholder.svg?height=600&width=800&text=Relógio+Detalhe",
+    ],
+    preco: "35000.00",
+  },
+  {
+    id: "obj-5",
+    categoria: "eletronico",
+    nome: "Smart TV Samsung",
+    descricao: "Smart TV Samsung 65 polegadas 4K, com controle remoto",
+    marca: "Samsung",
+    modelo: "QN65Q80T",
+    dataAquisicao: "2022-01-15",
+    numeroSerie: "SMTV65432109",
+    situacao: "usado",
+    dataCadastro: "2023-01-20",
+    cpfDono: "123.456.789-00",
+    emailDono: "usuario@email.com",
+    notaFiscalUrl: "/placeholder.svg?height=1000&width=700&text=Nota+Fiscal",
+    imagensUrls: [
+      "/placeholder.svg?height=600&width=800&text=TV+Frontal",
+      "/placeholder.svg?height=600&width=800&text=TV+Lateral",
+    ],
+    preco: "5200.00",
+  },
+]
+
+type ObjectsTabProps = {
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>
+  token: string
+}
+
+// Function to generate random mock objects
+const generateMockObjects = (count: number): ObjectItemProps[] => {
+  const categories = ["eletronico", "veiculo", "outro"]
+  const electronics = ["Smartphone", "Notebook", "Tablet", "Smart TV", "Console de Games", "Câmera Digital"]
+  const vehicles = ["Carro", "Moto", "Bicicleta", "Patinete Elétrico"]
+  const other = ["Relógio", "Joia", "Instrumento Musical", "Ferramenta Profissional"]
+
+  const brands = {
+    eletronico: ["Apple", "Samsung", "Xiaomi", "LG", "Sony", "Motorola", "Dell", "Acer"],
+    veiculo: ["Toyota", "Honda", "Ford", "Volkswagen", "Fiat", "Chevrolet", "Nissan"],
+    outro: ["Casio", "Rolex", "Seiko", "Yamaha", "Bosch", "Stanley", "Levis"],
+  }
+
+  const models = {
+    eletronico: ["Pro Max", "Ultra", "S23", "Galaxy", "Mi 13", "G9", "XPS", "Aspire"],
+    veiculo: ["Corolla", "Civic", "Focus", "Golf", "Uno", "Onix", "Versa"],
+    outro: ["G-Shock", "Submariner", "Presage", "P-45", "GSB 18V", "FatMax", "501"],
+  }
+
+  const situations = ["novo", "usado", "danificado"]
+
+  return Array.from({ length: count }, (_, i) => {
+    const category = categories[Math.floor(Math.random() * categories.length)]
+    const itemTypes = category === "eletronico" ? electronics : category === "veiculo" ? vehicles : other
+    const itemName = itemTypes[Math.floor(Math.random() * itemTypes.length)]
+    const brand =
+      brands[category as keyof typeof brands][
+        Math.floor(Math.random() * brands[category as keyof typeof brands].length)
+      ]
+    const model =
+      models[category as keyof typeof models][
+        Math.floor(Math.random() * models[category as keyof typeof models].length)
+      ]
+    const situation = situations[Math.floor(Math.random() * situations.length)]
+
+    // Generate random dates
+    const currentDate = new Date()
+    const randomDaysAgo = Math.floor(Math.random() * 730) // Up to 2 years ago
+    const acquisitionDate = new Date(currentDate)
+    acquisitionDate.setDate(currentDate.getDate() - randomDaysAgo)
+
+    const creationDate = new Date(acquisitionDate)
+    creationDate.setDate(acquisitionDate.getDate() + Math.floor(Math.random() * 14) + 1) // 1-14 days after acquisition
+
+    // Generate random price between 100 and 10000
+    const price = (Math.floor(Math.random() * 9900) + 100).toFixed(2)
+
+    // Generate random serial number, IMEI, or chassi based on category
+    const serialNumber =
+      category === "eletronico" ? `SN${Math.random().toString(36).substring(2, 10).toUpperCase()}` : undefined
+
+    const imei =
+      category === "eletronico" ? Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join("") : undefined
+
+    const chassi =
+      category === "veiculo"
+        ? Array.from({ length: 17 }, () => "0123456789ABCDEFGHJKLMNPRSTUVWXYZ"[Math.floor(Math.random() * 33)]).join("")
+        : undefined
+
+    // Generate random image URLs (1-3 images)
+    const imageCount = Math.floor(Math.random() * 3) + 1
+    const imageUrls = Array.from(
+      { length: imageCount },
+      (_, i) => `/placeholder.svg?height=600&width=800&text=Imagem+${i + 1}`,
+    )
+
+    // Random invoice URL (50% chance to have one)
+    const hasInvoice = Math.random() > 0.5
+    const invoiceUrl = hasInvoice ? "/placeholder.svg?height=1000&width=700&text=Nota+Fiscal" : undefined
+
+    return {
+      id: `obj-${i + 1}-${Date.now().toString(36)}`,
+      categoria: category,
+      nome: `${itemName} ${brand}`,
+      descricao: `${itemName} ${brand} ${model} em condição ${situation}. Este é um objeto mock gerado para testes.`,
+      marca: brand,
+      modelo: model,
+      dataAquisicao: acquisitionDate.toISOString().split("T")[0],
+      numeroSerie: serialNumber,
+      imei: imei,
+      chassi: chassi,
+      situacao: situation,
+      dataCadastro: creationDate.toISOString().split("T")[0],
+      cpfDono: "123.456.789-00",
+      emailDono: "usuario.teste@email.com",
+      notaFiscalUrl: invoiceUrl,
+      imagensUrls: imageUrls,
+      preco: price,
+    }
+  })
 }
 
 const validationSchema: Yup.ObjectSchema<FormValues> = Yup.object().shape({
@@ -662,11 +866,6 @@ const EmptyStateContainer = styled.div`
   color: ${theme.textLight};
 `
 
-type ObjectsTabProps = {
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>
-  token: string
-}
-
 // Add a mock mode flag at the top of the component
 const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
   const { toast } = useToast()
@@ -716,67 +915,24 @@ const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
       setIsLoading(true)
       setError(null)
 
-      const response = await authFetch("http://26.190.233.3:8080/api/objects/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      // Simular um pequeno atraso para mostrar o loading
+      await new Promise((resolve) => setTimeout(resolve, 800))
 
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar objetos: ${response.status}`)
-      }
-
-      const data = await response.json()
-      console.log("Objetos recebidos:", data)
-
-      // Mapear os dados recebidos para o formato esperado pelo componente
-      const mappedObjects = data.map((obj: any) => ({
-        id: obj.id || `obj${Math.random().toString(36).substr(2, 9)}`,
-        categoria: obj.category || "outro",
-        nome: obj.name || "",
-        descricao: obj.description || "",
-        marca: obj.brand || "",
-        modelo: obj.model || "",
-        dataAquisicao: obj.acquisitionDate || new Date().toISOString().split("T")[0],
-        numeroSerie: obj.serialNumber,
-        imei: obj.properties?.find((prop: any) => prop.key === "IMEI")?.value,
-        chassi: obj.properties?.find((prop: any) => prop.key === "CHASSI")?.value,
-        situacao: obj.status || "usado",
-        dataCadastro: obj.createdAt || new Date().toISOString().split("T")[0],
-        cpfDono: obj.ownerCpf || "",
-        emailDono: obj.ownerEmail || "",
-        notaFiscalUrl: obj.invoiceUrl,
-        imagensUrls: obj.imageUrls || [],
-        preco: obj.price || "0.00",
-      }))
-
-      setObjectsData(mappedObjects)
-      setFilteredObjects(mappedObjects)
-      setShowObjectList(mappedObjects.length > 0)
+      // Usar os objetos mock em vez de fazer chamada à API
+      setObjectsData(mockObjects)
+      setFilteredObjects(mockObjects)
+      setShowObjectList(mockObjects.length > 0)
+      setIsLoading(false)
     } catch (error: any) {
-      console.error("Erro ao buscar objetos:", error)
-
-      // Get the error status code if available
-      let errorCode = "Desconhecido"
-      if (error.response && error.response.status) {
-        errorCode = error.response.status.toString()
-      } else if (error.message && error.message.includes("status")) {
-        // Try to extract status code from error message
-        const match = error.message.match(/status: (\d+)/i) || error.message.match(/(\d+)/)
-        if (match && match[1]) {
-          errorCode = match[1]
-        }
-      }
-
-      setError(`Erro ${errorCode}: Não foi possível carregar os objetos.`)
+      console.error("Erro ao carregar objetos mock:", error)
+      setError("Erro ao carregar objetos mock.")
+      setIsLoading(false)
 
       toast({
-        title: `Erro ${errorCode} ao carregar objetos`,
-        description: "Usando dados de exemplo devido a problemas com a API.",
+        title: "Erro ao carregar objetos",
+        description: "Não foi possível carregar os objetos de teste.",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -831,58 +987,43 @@ const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
     try {
       setIsSubmitting(true)
 
-      // Map the frontend field names to the backend field names
-      const objectData = {
-        name: values.nome,
-        category: values.categoria,
-        description: values.descricao,
-        brand: values.marca,
-        model: values.modelo,
-        acquisitionDate: values.dataAquisicao,
-        serialNumber: values.numeroSerie || "",
-        status: values.situacao,
-        price: values.preco,
-        properties: [],
+      // Simular um pequeno atraso
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
+      // Criar um novo objeto mock
+      const newObject: ObjectItemProps = {
+        id: `obj-new-${Date.now().toString(36)}`,
+        categoria: values.categoria,
+        nome: values.nome,
+        descricao: values.descricao,
+        marca: values.marca,
+        modelo: values.modelo,
+        dataAquisicao: values.dataAquisicao,
+        numeroSerie: values.numeroSerie,
+        imei: values.imei,
+        chassi: values.chassi,
+        situacao: values.situacao,
+        dataCadastro: new Date().toISOString().split("T")[0],
+        cpfDono: "123.456.789-00",
+        emailDono: "usuario@email.com",
+        notaFiscalUrl: values.notaFiscal ? "/placeholder.svg?height=1000&width=700&text=Nota+Fiscal" : undefined,
+        imagensUrls: values.imagens
+          ? Array.from(
+              { length: values.imagens.length },
+              (_, i) => `/placeholder.svg?height=600&width=800&text=Imagem+${i + 1}`,
+            )
+          : [],
+        preco: values.preco,
       }
 
-      // If IMEI exists, add it as a property
-      if (values.imei) {
-        objectData.properties.push({
-          key: "IMEI",
-          value: values.imei,
-        })
-      }
-
-      // If chassi exists, add it as a property
-      if (values.chassi) {
-        objectData.properties.push({
-          key: "CHASSI",
-          value: values.chassi,
-        })
-      }
-
-      console.log("Sending object data:", objectData) // Debug log
-
-      const response = await authFetch("http://26.190.233.3:8080/api/objects/me", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(objectData),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Erro ao cadastrar objeto: ${response.status}`)
-      }
+      // Adicionar o novo objeto à lista
+      setObjectsData((prev) => [newObject, ...prev])
+      setFilteredObjects((prev) => [newObject, ...prev])
 
       toast({
         title: "Objeto cadastrado com sucesso!",
         description: "O objeto foi adicionado à sua lista.",
       })
-
-      // Atualizar a lista de objetos
-      fetchObjects()
 
       return true
     } catch (error: any) {
@@ -892,6 +1033,7 @@ const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
         description: error.message,
         variant: "destructive",
       })
+      return false
     } finally {
       setIsSubmitting(false)
     }
@@ -921,67 +1063,51 @@ const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
     try {
       setIsSubmitting(true)
 
-      // Map the frontend field names to the backend field names
-      const objectData = {
-        name: values.nome,
-        category: values.categoria,
-        description: values.descricao,
-        brand: values.marca,
-        model: values.modelo,
-        acquisitionDate: values.dataAquisicao,
-        serialNumber: values.numeroSerie || "",
-        status: values.situacao,
-        price: values.preco,
-        properties: [],
+      // Simular um pequeno atraso
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
+      // Encontrar o objeto a ser atualizado
+      const objectToUpdate = objectsData.find((obj) => obj.id === objectId)
+
+      if (!objectToUpdate) {
+        throw new Error("Objeto não encontrado")
       }
 
-      // If IMEI exists, add it as a property
-      if (values.imei) {
-        objectData.properties.push({
-          key: "IMEI",
-          value: values.imei,
-        })
+      // Atualizar o objeto
+      const updatedObject: ObjectItemProps = {
+        ...objectToUpdate,
+        categoria: values.categoria,
+        nome: values.nome,
+        descricao: values.descricao,
+        marca: values.marca,
+        modelo: values.modelo,
+        dataAquisicao: values.dataAquisicao,
+        numeroSerie: values.numeroSerie,
+        imei: values.imei,
+        chassi: values.chassi,
+        situacao: values.situacao,
+        preco: values.preco,
       }
 
-      // If chassi exists, add it as a property
-      if (values.chassi) {
-        objectData.properties.push({
-          key: "CHASSI",
-          value: values.chassi,
-        })
-      }
-
-      console.log("Updating object data:", objectData) // Debug log
-
-      const response = await authFetch(`http://26.190.233.3:8080/api/objects/me/${objectId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(objectData),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Erro ao atualizar objeto: ${response.status}`)
-      }
+      // Atualizar as listas
+      const updatedObjects = objectsData.map((obj) => (obj.id === objectId ? updatedObject : obj))
+      setObjectsData(updatedObjects)
+      setFilteredObjects(updatedObjects)
 
       toast({
         title: "Objeto atualizado com sucesso!",
         description: "As alterações foram salvas.",
       })
 
-      // Atualizar a lista de objetos
-      fetchObjects()
-
       return true
     } catch (error: any) {
       console.error("Erro ao atualizar objeto:", error)
       toast({
         title: "Erro ao atualizar objeto!",
-        description: error.message,
+        description: error.message || "Ocorreu um erro ao atualizar o objeto.",
         variant: "destructive",
       })
+      return false
     } finally {
       setIsSubmitting(false)
     }
@@ -1018,33 +1144,28 @@ const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
     try {
       setIsSubmitting(true)
 
-      const response = await authFetch(`http://26.190.233.3:8080/api/objects/me/${objectId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      // Simular um pequeno atraso
+      await new Promise((resolve) => setTimeout(resolve, 800))
 
-      if (!response.ok) {
-        throw new Error(`Erro ao excluir objeto: ${response.status}`)
-      }
+      // Remover o objeto das listas
+      const updatedObjects = objectsData.filter((obj) => obj.id !== objectId)
+      setObjectsData(updatedObjects)
+      setFilteredObjects(updatedObjects)
 
       toast({
         title: "Objeto excluído com sucesso!",
         description: "O objeto foi removido da sua lista.",
       })
 
-      // Atualizar a lista de objetos
-      fetchObjects()
-
       return true
     } catch (error: any) {
       console.error("Erro ao excluir objeto:", error)
       toast({
         title: "Erro ao excluir objeto!",
-        description: "Usando modo offline devido a problemas com a API.",
+        description: "Ocorreu um erro ao excluir o objeto.",
         variant: "destructive",
       })
+      return false
     } finally {
       setIsSubmitting(false)
     }
@@ -1223,6 +1344,15 @@ const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
   // Add a mock mode indicator in the UI
   return (
     <Container>
+      <div className="bg-amber-100 border-l-4 border-amber-500 p-4 mb-4">
+        <div className="flex">
+          <AlertTriangle className="h-6 w-6 text-amber-500 mr-2" />
+          <div>
+            <p className="font-medium text-amber-700">Modo de Demonstração</p>
+            <p className="text-sm text-amber-700">Usando dados mock para teste. Nenhuma API está sendo chamada.</p>
+          </div>
+        </div>
+      </div>
       <Tabs
         defaultValue={objectsData.length > 0 ? "list" : "form"}
         onValueChange={(val) => setShowObjectList(val === "list")}
@@ -1997,6 +2127,7 @@ const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
                         <circle cx="11" cy="11" r="8" />
                         <line x1="21" x2="16.65" y1="21" y2="16.65" />
                         <line x1="8" x2="14" y1="11" y2="11" />
+                        <line x1="11" x2="11" y1="8" y2="14" />
                       </svg>
                     </Button>
                     <Button variant="secondary" onClick={resetZoom} disabled={isSubmitting}>
@@ -2564,5 +2695,5 @@ const ObjectsTab: React.FC<ObjectsTabProps> = ({ authFetch, token }) => {
 export default ObjectsTab
 
 import { Formik, FastField } from "formik"
-import { Dialog } from "@/app/components/ui/dialog"
+import { Dialog } from "../../../components/ui/dialog"
 

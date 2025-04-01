@@ -1,24 +1,24 @@
 /*
  * Achei: Stolen Object Tracking System.
  * Copyright (C) 2025  Team Achei
- * 
+ *
  * This file is part of Achei.
- * 
+ *
  * Achei is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Achei is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Achei.  If not, see <https://www.gnu.org/licenses/>.
- * 
+ *
  * Contact information: teamachei.2024@gmail.com
-*/
+ */
 
 "use client"
 
@@ -82,9 +82,12 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ casos, onCasoSelect, onToggleHe
     if (userType === "visitor") {
       // Navigate to the home page for visitors
       router.push("/")
-    } else {
-      // Use the provided onBack function for other user types
-      onBack()
+    } else if (userType === "citizen") {
+      // Simply navigate to System-Citizen to restart the page
+      window.location.href = "/System-Citizen"
+    } else if (userType === "police") {
+      // Simply navigate to System-Police to restart the page
+      window.location.href = "/System-Police"
     }
   }
 

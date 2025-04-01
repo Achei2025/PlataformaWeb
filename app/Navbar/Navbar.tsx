@@ -47,7 +47,7 @@ const Navbar = () => {
   const navItems = [
     { href: "/", text: "Home", icon: <Home className="h-4 w-4 mr-2" /> },
     { href: "/AboutUs", text: "Sobre Nós", icon: <Info className="h-4 w-4 mr-2" /> },
-    { href: "/map", text: "Mapa", icon: <Map className="h-4 w-4 mr-2" /> },
+    { href: "/Map", text: "Mapa", icon: <Map className="h-4 w-4 mr-2" /> },
     { href: "/Download", text: "Download", icon: <Download className="h-4 w-4 mr-2" /> },
   ]
 
